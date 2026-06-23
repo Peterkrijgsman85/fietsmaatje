@@ -36,15 +36,18 @@
     }
 
     html.page-weer, body.page-weer {
-      background: linear-gradient(160deg, var(--accent), #0f2c5a 18%, #1a4a8a 100%);
+      background-color: #0f2c5a;
+      background-image: linear-gradient(160deg, var(--accent), #0f2c5a 18%, #1a4a8a 100%);
     }
 
     html.page-water, body.page-water {
-      background: linear-gradient(160deg, var(--accent), #0a3d4a 18%, #0e6b7c 100%);
+      background-color: #0a3d4a;
+      background-image: linear-gradient(160deg, var(--accent), #0a3d4a 18%, #0e6b7c 100%);
     }
 
     html.page-planner, body.page-planner {
-      background: linear-gradient(160deg, var(--accent), #2d1a4a 18%, #4a1a8a 100%);
+      background-color: #2d1a4a;
+      background-image: linear-gradient(160deg, var(--accent), #2d1a4a 18%, #4a1a8a 100%);
     }
 
     /* Wanneer de app als standalone gestart is, forceer volledige viewport
@@ -58,15 +61,18 @@
 
     /* Zorg dat standalone-modus de pagina-achtergrond behoudt achter de statusbar. */
     html.is-standalone.page-weer, body.is-standalone.page-weer {
-      background: linear-gradient(160deg, #0f2c5a, #1a4a8a);
+      background-color: #0f2c5a;
+      background-image: linear-gradient(160deg, #0f2c5a, #1a4a8a);
     }
 
     html.is-standalone.page-water, body.is-standalone.page-water {
-      background: linear-gradient(160deg, #0a3d4a, #0e6b7c);
+      background-color: #0a3d4a;
+      background-image: linear-gradient(160deg, #0a3d4a, #0e6b7c);
     }
 
     html.is-standalone.page-planner, body.is-standalone.page-planner {
-      background: linear-gradient(160deg, #2d1a4a, #4a1a8a);
+      background-color: #2d1a4a;
+      background-image: linear-gradient(160deg, #2d1a4a, #4a1a8a);
     }
 
     body {
@@ -83,7 +89,7 @@
       right: 0;
       height: env(safe-area-inset-top, 44px);
       pointer-events: none;
-      z-index: 9999;
+      z-index: 0;
       background-repeat: no-repeat;
       background-size: cover;
     }
@@ -98,6 +104,12 @@
 
     body.page-planner.is-standalone::before {
       background: #2d1a4a;
+    }
+
+    html.is-standalone, body.is-standalone {
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: center top;
     }
 
     #app {
