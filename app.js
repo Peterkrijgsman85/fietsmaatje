@@ -13,60 +13,50 @@ async function navigate(name) {
   const page = pages[name];
   if (!page) return;
 
-  // Definieer de kleuren per pagina
+  // 1. Update de theme-color meta tag (cruciaal voor de iOS statusbalk)
   const themeColors = {
     weer: '#d8f1ff',
     water: '#0a3d4a',
     planner: '#2d1a4a',
     menu: '#2d2f34'
   };
-
-  // Update de theme-color meta tag
   const metaThemeColor = document.getElementById('theme-color-meta');
-  metaThemeColor.setAttribute('content', themeColors[name]);
+  if (metaThemeColor) {
+    metaThemeColor.setAttribute('content', themeColors[name]);
+  }
 
+  // 2. Cleanup de vorige pagina als die er is
   if (currentCleanup) {
     currentCleanup();
     currentCleanup = null;
   }
 
-  // 1. ZET DE KLASSE EERST (dit zet de kleur op de body)
-  document.documentElement.className = `page-${name}`;
-  document.body.className = `page-${name}`;
-
-  // 2. Render de content
-  app.innerHTML = page.html;
-
-  // 3. Init...
-  if (typeof page.init === 'function') {
-    currentCleanup = await page.init() ?? null;
-  }
-
-  // Body/html-klasse voor de pagina-achtergrond achter de dynamic island/statusbar
-  document.documentElement.classList.remove('page-weer', 'page-water', 'page-planner', 'page-menu');
-  document.documentElement.classList.add(`page-${name}`);
-  document.body.classList.remove('page-weer', 'page-water', 'page-planner', 'page-menu');
+  // 3. Forceer een schone lei voor de body en zet de nieuwe kleur-klasse
+  document.body.className = ''; 
   document.body.classList.add(`page-${name}`);
 
-  // Draai init() als de pagina die heeft
+  // 4. Render de nieuwe HTML content
+  app.innerHTML = page.html;
+
+  // 5. Draai de logica (init) van de nieuwe pagina
   if (typeof page.init === 'function') {
     currentCleanup = await page.init() ?? null;
   }
 
-  // Update nav
+  // 6. Update de actieve status in de navigatiebalk
   buttons.forEach(btn => {
     btn.classList.toggle('active', btn.dataset.page === name);
   });
 
-  // Sla actieve pagina op
+  // 7. Sla de huidige pagina op in het geheugen
   sessionStorage.setItem('activePage', name);
 }
 
-// Nav klikken
+// Luister naar klikken in de navigatiebalk
 buttons.forEach(btn => {
   btn.addEventListener('click', () => navigate(btn.dataset.page));
 });
 
-// Start op de laatste pagina (of 'weer' als default)
+// Start op de laatst bezochte pagina (of 'weer' als dit de eerste keer is)
 const startPage = sessionStorage.getItem('activePage') ?? 'weer';
 navigate(startPage);
