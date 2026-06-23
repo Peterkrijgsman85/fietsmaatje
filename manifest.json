@@ -1,7 +1,8 @@
 {
   "name": "Fietsmaatje",
   "short_name": "Fietsmaatje",
-  "start_url": "/index.html",
+  "start_url": "index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0f2c5a",
   "theme_color": "#0f2c5a",
