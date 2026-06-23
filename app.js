@@ -1,8 +1,9 @@
 import { page as weer } from './pages/weer.js';
 import { page as water } from './pages/water.js';
 import { page as planner } from './pages/planner.js';
+import { page as menu } from './pages/menu.js';
 
-const pages = { weer, water, planner };
+const pages = { weer, water, planner, menu };
 const app = document.getElementById('app');
 const buttons = document.querySelectorAll('.pill-nav button');
 
