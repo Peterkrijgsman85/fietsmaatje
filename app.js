@@ -13,14 +13,22 @@ async function navigate(name) {
   const page = pages[name];
   if (!page) return;
 
-  // Cleanup vorige pagina als die een cleanup heeft
   if (currentCleanup) {
     currentCleanup();
     currentCleanup = null;
   }
 
-  // Render pagina
+  // 1. ZET DE KLASSE EERST (dit zet de kleur op de body)
+  document.documentElement.className = `page-${name}`;
+  document.body.className = `page-${name}`;
+
+  // 2. Render de content
   app.innerHTML = page.html;
+
+  // 3. Init...
+  if (typeof page.init === 'function') {
+    currentCleanup = await page.init() ?? null;
+  }
 
   // Body/html-klasse voor de pagina-achtergrond achter de dynamic island/statusbar
   document.documentElement.classList.remove('page-weer', 'page-water', 'page-planner', 'page-menu');
