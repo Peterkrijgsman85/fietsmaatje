@@ -446,10 +446,15 @@ export const page = {
       const url = new URL('https://api.open-meteo.com/v1/forecast');
       url.searchParams.set('latitude', lat);
       url.searchParams.set('longitude', lon);
-      url.searchParams.set('hourly', 'temperature_2m,apparent_temperature,weathercode,windspeed_10m,winddirection_10m,relativehumidity_2m,precipitation_probability,wet_bulb_temperature');
+      url.searchParams.set('hourly', 'temperature_2m,apparent_temperature,weathercode,windspeed_10m,winddirection_10m,relativehumidity_2m,precipitation_probability');
       url.searchParams.set('current_weather', 'true');
       url.searchParams.set('timezone', timezone);
-      return fetch(url.toString()).then(res => res.json());
+      const response = await fetch(url.toString());
+      if (!response.ok) {
+        const body = await response.text();
+        throw new Error(`Weather fetch failed: ${response.status} ${body}`);
+      }
+      return response.json();
     };
 
     const renderHourly = (weather, score) => {
@@ -496,20 +501,43 @@ export const page = {
       `).join('');
     };
 
+    const formatWbgt = (temperature, humidity) => {
+      const T = temperature;
+      const RH = Math.max(0, Math.min(100, humidity));
+      const gamma = Math.log(RH / 100) + (17.62 * T) / (243.12 + T);
+      const dewPoint = 243.12 * gamma / (17.62 - gamma);
+      const tw = T * Math.atan(0.151977 * Math.sqrt(RH + 8.313659)) +
+        Math.atan(T + RH) -
+        Math.atan(RH - 1.676331) +
+        0.00391838 * Math.pow(RH, 1.5) * Math.atan(0.023101 * RH) -
+        4.686035;
+      const wbgt = 0.7 * tw + 0.3 * T;
+      return Math.round(wbgt);
+    };
+
+    const showFetchError = message => {
+      const loader = document.getElementById('weather-loading');
+      if (loader) {
+        loader.innerHTML = `<div class="error-note">⚠️ ${message}</div>`;
+        loader.style.display = 'grid';
+      }
+    };
+
     const updateWeather = async () => {
-      const location = await getLocation();
-      if (isCancelled) return;
+      try {
+        const location = await getLocation();
+        if (isCancelled) return;
 
-      const placeName = location.label || await reverseGeo(location.latitude, location.longitude);
-      if (isCancelled) return;
-      setText('weather-location', placeName);
-      setText('geo-name', placeName);
+        const placeName = location.label || await reverseGeo(location.latitude, location.longitude);
+        if (isCancelled) return;
+        setText('weather-location', placeName);
+        setText('geo-name', placeName);
 
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Amsterdam';
-      const weather = await fetchWeather(location.latitude, location.longitude, timezone);
-      if (isCancelled) return;
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Amsterdam';
+        const weather = await fetchWeather(location.latitude, location.longitude, timezone);
+        if (isCancelled) return;
 
-      const current = weather.current_weather;
+        const current = weather.current_weather;
       const code = current.weathercode;
       const icon = icons[code] ? icons[code][0] : '❔';
       const description = icons[code] ? icons[code][1] : 'Onbekend weer';
@@ -521,19 +549,23 @@ export const page = {
         windspeed: current.windspeed,
         precipitation_probability: weather.hourly.precipitation_probability[weather.hourly.time.indexOf(weather.current_weather.time)] ?? 0
       });
+      const currentIndex = weather.hourly.time.indexOf(weather.current_weather.time);
+      const feelsLike = weather.hourly.apparent_temperature[currentIndex] ?? current.temperature;
+      const humidity = weather.hourly.relativehumidity_2m[currentIndex] ?? 0;
+      const wbgtValue = formatWbgt(current.temperature, humidity);
       const advice = getAdvice({
         temperature: current.temperature,
-        feels_like: weather.hourly.apparent_temperature[weather.hourly.time.indexOf(weather.current_weather.time)] ?? current.temperature,
+        feels_like: feelsLike,
         windspeed: current.windspeed,
         weathercode: code,
-        precipitation_probability: weather.hourly.precipitation_probability[weather.hourly.time.indexOf(weather.current_weather.time)] ?? 0
+        precipitation_probability: weather.hourly.precipitation_probability[currentIndex] ?? 0
       });
 
       setText('weather-type', `${icon} ${description}`);
       setText('bike-score', `${score}/10`);
       setText('temperature', `${Math.round(current.temperature)}°C`);
-      setText('feels-like', `${Math.round(weather.hourly.apparent_temperature[weather.hourly.time.indexOf(weather.current_weather.time)] ?? current.temperature)}°C`);
-      setText('wbgt', `${Math.round(weather.hourly.wet_bulb_temperature[weather.hourly.time.indexOf(weather.current_weather.time)] ?? current.temperature)}°C`);
+      setText('feels-like', `${Math.round(feelsLike)}°C`);
+      setText('wbgt', `${wbgtValue}°C`);
       setText('wind-info', `${windDir} · ${Math.round(current.windspeed)} km/h · ${bft} Bft`);
       setText('weather-description', description);
       setText('short-advice', advice[0]);
@@ -543,7 +575,11 @@ export const page = {
 
       const loader = document.getElementById('weather-loading');
       if (loader) loader.style.display = 'none';
-    };
+    } catch (error) {
+      console.error(error);
+      showFetchError('Kon het weer niet laden. Controleer je internetverbinding of probeer later opnieuw.');
+    }
+  };
 
     updateWeather();
 
