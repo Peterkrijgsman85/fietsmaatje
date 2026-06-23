@@ -196,7 +196,7 @@ export const page = {
         <div class="location-title" id="weather-location">Locatie laden...</div>
         
         <div class="hero-center">
-          <div class="hero-icon" id="weather-icon">〰️</div>
+          <div class="hero-icon" id="weather-icon">–</div>
           <div class="hero-temp" id="temperature">–°</div>
         </div>
         
