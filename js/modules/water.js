@@ -1,11 +1,8 @@
-export function renderWeather(container) {
+export function renderWater(container) {
     container.innerHTML = `
-        <h1 class="text-2xl font-bold mb-4">Weerbericht</h1>
-        <div class="bg-white p-6 rounded-2xl shadow-sm">
-            <p>Hier komt de API call naar OpenMeteo.</p>
+        <div class="h-full w-full bg-blue-200 p-6 flex flex-col items-center justify-center">
+            <h1 class="text-4xl font-bold text-blue-900">💧 Water</h1>
+            <p class="text-blue-800">Pagina geladen: Blauw</p>
         </div>
     `;
-    
-    // Voeg hier je specifieke logica toe (bijv. fetch aanroep)
-    console.log("Weer module gerenderd");
 }
