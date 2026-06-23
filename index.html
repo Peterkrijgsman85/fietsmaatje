@@ -6,16 +6,18 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Fietsmaatje" />
+  <meta name="application-name" content="Fietsmaatje" />
   <meta name="theme-color" content="#0f2c5a" />
-  <link rel="manifest" href="/manifest.json" />
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" type="image/png" />
-  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" sizes="180x180" type="image/png" />
-  <link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png" sizes="180x180" />
-  <link rel="apple-touch-icon-precomposed" href="/icons/apple-touch-icon.png" sizes="180x180" />
-  <link rel="icon" href="/apple-touch-icon.png" type="image/png" sizes="180x180" />
-  <link rel="icon" href="/icons/apple-touch-icon.png" type="image/png" sizes="180x180" />
-  <link rel="shortcut icon" href="/apple-touch-icon.png" />
-  <link rel="shortcut icon" href="/icons/apple-touch-icon.png" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" sizes="180x180" type="image/png" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" sizes="180x180" type="image/png" />
+  <link rel="apple-touch-icon-precomposed" href="apple-touch-icon.png" sizes="180x180" />
+  <link rel="apple-touch-icon-precomposed" href="icons/apple-touch-icon.png" sizes="180x180" />
+  <link rel="icon" href="apple-touch-icon.png" type="image/png" sizes="180x180" />
+  <link rel="icon" href="icons/apple-touch-icon.png" type="image/png" sizes="180x180" />
+  <link rel="shortcut icon" href="apple-touch-icon.png" />
+  <link rel="shortcut icon" href="icons/apple-touch-icon.png" />
   <title>Fietsmaatje</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -59,6 +61,37 @@
     }
 
     html.is-standalone.page-planner, body.is-standalone.page-planner {
+      background: linear-gradient(160deg, #2d1a4a, #4a1a8a);
+    }
+
+    body {
+      position: relative;
+    }
+
+    body.page-weer.is-standalone::before,
+    body.page-water.is-standalone::before,
+    body.page-planner.is-standalone::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: env(safe-area-inset-top);
+      pointer-events: none;
+      z-index: -1;
+      background-repeat: no-repeat;
+      background-size: cover;
+    }
+
+    body.page-weer.is-standalone::before {
+      background: linear-gradient(160deg, #0f2c5a, #1a4a8a);
+    }
+
+    body.page-water.is-standalone::before {
+      background: linear-gradient(160deg, #0a3d4a, #0e6b7c);
+    }
+
+    body.page-planner.is-standalone::before {
       background: linear-gradient(160deg, #2d1a4a, #4a1a8a);
     }
 
