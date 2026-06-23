@@ -89,35 +89,31 @@
       position: relative;
     }
 
-    body.page-weer.is-standalone::before,
-    body.page-water.is-standalone::before,
-    body.page-planner.is-standalone::before,
-    body.page-menu.is-standalone::before {
-      content: '';
+    #statusbar-overlay {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       height: env(safe-area-inset-top, 44px);
+      min-height: 44px;
       pointer-events: none;
       z-index: 9999;
-      background-repeat: no-repeat;
-      background-size: cover;
+      background: transparent;
     }
 
-    body.page-weer.is-standalone::before {
+    body.page-weer #statusbar-overlay {
       background: #d8f1ff;
     }
 
-    body.page-water.is-standalone::before {
+    body.page-water #statusbar-overlay {
       background: #0a3d4a;
     }
 
-    body.page-planner.is-standalone::before {
+    body.page-planner #statusbar-overlay {
       background: #2d1a4a;
     }
 
-    body.page-menu.is-standalone::before {
+    body.page-menu #statusbar-overlay {
       background: #2d2f34;
     }
 
@@ -261,6 +257,7 @@
 </head>
 <body>
 
+  <div id="statusbar-overlay"></div>
   <div id="app"></div>
 
   <nav class="pill-nav">

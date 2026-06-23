@@ -4,10 +4,14 @@ export const page = {
       <style>
         /* Basis Layout */
         .weather-page {
-          background: transparent;
+          position: fixed;
+          inset: 0;
+          overflow-y: auto;
+          overflow-x: hidden;
+          background: linear-gradient(160deg, #d8f1ff 0%, #9edcff 40%, #67c7ff 100%);
           color: #1C1C1E;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-          padding: 20px 16px 80px 16px;
+          padding: calc(env(safe-area-inset-top, 20px) + 4px) 16px calc(env(safe-area-inset-bottom, 80px) + 16px) 16px;
           min-height: 100vh;
         }
 
