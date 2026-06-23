@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <title>Mijn App</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -12,14 +13,21 @@
     html, body {
       height: 100%;
       width: 100%;
+      /* Voorkom dat de browser zelf scrollt of ruimte reserveert */
       overflow: hidden;
+      position: fixed;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       -webkit-font-smoothing: antialiased;
+      background: #0f2c5a;
     }
 
     #app {
       position: fixed;
-      inset: 0;
+      /* Vul het hele scherm inclusief onder de statusbalk en home indicator */
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
     }
 
     .pill-nav {
