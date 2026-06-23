@@ -13,6 +13,18 @@ async function navigate(name) {
   const page = pages[name];
   if (!page) return;
 
+  // Definieer de kleuren per pagina
+  const themeColors = {
+    weer: '#d8f1ff',
+    water: '#0a3d4a',
+    planner: '#2d1a4a',
+    menu: '#2d2f34'
+  };
+
+  // Update de theme-color meta tag
+  const metaThemeColor = document.getElementById('theme-color-meta');
+  metaThemeColor.setAttribute('content', themeColors[name]);
+
   if (currentCleanup) {
     currentCleanup();
     currentCleanup = null;
