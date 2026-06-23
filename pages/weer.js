@@ -5,268 +5,182 @@ export const page = {
         .weather-page {
           position: fixed;
           inset: 0;
-          overflow: auto;
+          overflow-y: auto;
+          overflow-x: hidden;
           background: linear-gradient(160deg, #0f2c5a 0%, #0f2c5a 24%, #1a4a8a 100%);
           color: white;
-          padding: 24px 16px 120px;
-          display: flex;
-          justify-content: center;
-        }
-
-        .weather-screen {
-          width: min(100%, 820px);
-          display: grid;
-          gap: 20px;
-          align-content: start;
-        }
-
-        .weather-card {
-          background: rgba(255, 255, 255, 0.08);
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          border-radius: 28px;
-          padding: 22px;
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          box-shadow: 0 22px 70px rgba(0, 0, 0, 0.18);
-        }
-
-        .weather-hero {
-          display: grid;
-          gap: 18px;
-        }
-
-        .weather-headline {
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 18px;
-        }
-
-        .weather-title {
           display: flex;
           flex-direction: column;
-          gap: 6px;
+          padding: 0;
+          padding-top: env(safe-area-inset-top, 0);
+          padding-bottom: calc(env(safe-area-inset-bottom, 0) + 100px);
         }
 
-        .weather-title small {
-          font-size: 12px;
-          opacity: 0.7;
-          text-transform: uppercase;
-          letter-spacing: 0.15em;
-        }
-
-        .weather-title h1 {
-          font-size: clamp(2rem, 4vw, 3.5rem);
-          line-height: 0.9;
-          margin: 0;
-        }
-
-        .weather-hero-grid {
-          display: grid;
-          grid-template-columns: minmax(180px, 1.1fr) minmax(240px, 1fr);
-          gap: 18px;
-          align-items: stretch;
-        }
-
-        .weather-icon-panel {
-          display: grid;
-          gap: 10px;
-          justify-items: center;
-          align-content: center;
-          padding: 28px 24px;
-          background: rgba(255, 255, 255, 0.12);
-          border-radius: 32px;
-          border: 1px solid rgba(255, 255, 255, 0.16);
+        .weather-hero-main {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 16px;
+          padding: 32px 20px 24px;
           text-align: center;
+          flex-shrink: 0;
         }
 
-        .weather-icon-large {
-          font-size: clamp(4.2rem, 9vw, 6.8rem);
-          line-height: 0.9;
+        .weather-location-header {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          font-size: 1.1rem;
+          opacity: 0.92;
         }
 
-        .weather-temp {
-          font-size: clamp(2.4rem, 5vw, 4rem);
+        .weather-icon-display {
+          font-size: 6rem;
+          line-height: 1;
+          margin: 8px 0;
+        }
+
+        .weather-temp-display {
+          font-size: 3.2rem;
           font-weight: 900;
           line-height: 1;
         }
 
-        .weather-caption {
-          opacity: 0.78;
+        .weather-description-text {
           font-size: 0.95rem;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
+          opacity: 0.88;
+          letter-spacing: 0.02em;
         }
 
-        .weather-stats-card {
-          display: grid;
-          gap: 12px;
-          padding: 22px;
-          border-radius: 28px;
-          background: rgba(255, 255, 255, 0.1);
-          border: 1px solid rgba(255, 255, 255, 0.14);
-        }
-
-        .stat-row {
+        .weather-stats-row {
           display: flex;
-          justify-content: space-between;
+          justify-content: space-around;
           gap: 12px;
-          align-items: center;
-          padding: 14px 16px;
-          border-radius: 18px;
-          background: rgba(255, 255, 255, 0.05);
+          width: 100%;
+          padding: 0 12px;
         }
 
-        .stat-row span {
-          opacity: 0.8;
-          font-size: 0.92rem;
+        .stat-item {
+          flex: 1;
+          background: rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          border-radius: 20px;
+          padding: 14px 12px;
+          text-align: center;
+          min-width: 0;
         }
 
-        .stat-row strong {
-          font-size: 1.05rem;
-          line-height: 1.2;
-        }
-
-        .summary-item span {
-          font-size: 0.82rem;
+        .stat-label {
+          font-size: 0.75rem;
           opacity: 0.75;
           text-transform: uppercase;
-          letter-spacing: 0.12em;
+          letter-spacing: 0.08em;
+          margin-bottom: 6px;
+          display: block;
         }
 
-        .weather-score {
-          font-size: clamp(2rem, 6vw, 3rem);
-          font-weight: 800;
-          line-height: 0.95;
-        }
-
-        .weather-type {
-          display: inline-flex;
-          align-items: center;
-          gap: 12px;
-          padding: 14px 18px;
-          border-radius: 999px;
-          background: rgba(255, 255, 255, 0.1);
+        .stat-value {
+          font-size: 1.2rem;
           font-weight: 700;
-          letter-spacing: 0.05em;
+          display: block;
+          word-break: break-word;
         }
 
-
-        .hourly-section {
-          display: grid;
-          gap: 16px;
-        }
-
-        .hourly-label {
+        .weather-sections {
           display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 12px;
+          flex-direction: column;
+          gap: 20px;
+          padding: 0 16px;
+          flex: 1;
         }
 
-        .hourly-label h2 {
+        .weather-section-title {
+          font-size: 0.95rem;
+          opacity: 0.9;
+          text-transform: uppercase;
+          letter-spacing: 0.12em;
           margin: 0;
-          font-size: 1rem;
-          opacity: 0.88;
+          padding: 0 4px;
+          margin-top: 12px;
         }
 
         .hourly-scroll {
           display: grid;
           grid-auto-flow: column;
-          grid-auto-columns: minmax(120px, 1fr);
-          gap: 12px;
+          grid-auto-columns: 100px;
+          gap: 10px;
           overflow-x: auto;
-          padding-bottom: 6px;
+          padding: 4px;
           scroll-snap-type: x mandatory;
+          -webkit-overflow-scrolling: touch;
         }
 
         .hourly-card {
           scroll-snap-align: start;
-          min-width: 120px;
-          border-radius: 24px;
           background: rgba(255, 255, 255, 0.08);
           border: 1px solid rgba(255, 255, 255, 0.12);
-          padding: 16px;
+          border-radius: 16px;
+          padding: 12px;
           display: grid;
-          gap: 10px;
+          gap: 8px;
+          text-align: center;
+          min-width: 100px;
         }
 
-        .hourly-card time {
-          font-size: 0.82rem;
-          opacity: 0.75;
-          letter-spacing: 0.08em;
+        .hourly-time {
+          font-size: 0.75rem;
+          opacity: 0.7;
+          letter-spacing: 0.06em;
           text-transform: uppercase;
         }
 
-        .hourly-card strong {
+        .hourly-score {
           font-size: 1.1rem;
-          display: block;
+          font-weight: 700;
         }
 
-        .hourly-card .small {
-          font-size: 0.82rem;
-          opacity: 0.78;
+        .hourly-icon {
+          font-size: 1.8rem;
+        }
+
+        .hourly-wind {
+          font-size: 0.8rem;
+          opacity: 0.8;
+        }
+
+        .advice-container {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .advice-item {
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          border-radius: 16px;
+          padding: 14px;
+          font-size: 0.95rem;
           line-height: 1.4;
         }
 
-        .advice-card {
-          background: rgba(255, 255, 255, 0.08);
-          border-radius: 28px;
-          border: 1px solid rgba(255, 255, 255, 0.16);
-          padding: 22px;
-          display: grid;
-          gap: 16px;
-        }
-
-        .advice-card h2 {
-          margin: 0;
-          font-size: 1rem;
-          opacity: 0.9;
-          text-transform: uppercase;
-          letter-spacing: 0.12em;
-        }
-
-        .advice-list {
-          display: grid;
-          gap: 12px;
-        }
-
-        .advice-pill {
-          display: inline-flex;
-          align-items: center;
-          justify-content: space-between;
-          min-height: 56px;
-          padding: 16px 18px;
-          border-radius: 18px;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.12);
-        }
-
-        .advice-pill strong {
-          display: block;
-          font-size: 0.98rem;
-          line-height: 1.2;
-        }
-
-        .advice-pill span {
-          opacity: 0.78;
-          font-size: 0.87rem;
-        }
-
         .loading-overlay {
-          display: grid;
-          justify-items: center;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           gap: 12px;
+          flex-direction: column;
           text-align: center;
-          padding: 32px 0;
+          padding: 40px 20px;
           opacity: 0.95;
         }
 
         .loading-overlay p {
-          max-width: 520px;
-          opacity: 0.82;
-          line-height: 1.7;
+          font-size: 0.9rem;
+          opacity: 0.85;
+          max-width: 280px;
+          line-height: 1.5;
         }
 
         .error-note {
@@ -275,64 +189,50 @@ export const page = {
         }
       </style>
 
-      <div class="weather-screen">
-        <section class="weather-card weather-hero">
-          <div class="weather-headline">
-            <div class="weather-title">
-              <small>Fietsmaatje weer</small>
-              <h1 id="weather-location">Locatie laden...</h1>
-            </div>
-          </div>
+      <div class="weather-hero-main">
+        <div class="weather-location-header">
+          <span>📍</span>
+          <span id="weather-location">Locatie laden...</span>
+        </div>
+        <div class="weather-icon-display" id="weather-icon">⏳</div>
+        <div class="weather-temp-display" id="temperature">–°C</div>
+        <div class="weather-description-text" id="weather-caption">Weer laden...</div>
+      </div>
 
-          <div class="weather-hero-grid">
-            <div class="weather-icon-panel">
-              <div class="weather-icon-large" id="weather-icon">⏳</div>
-              <div class="weather-temp" id="temperature">–°C</div>
-              <div class="weather-caption" id="weather-caption">Weer laden</div>
-            </div>
-            <div class="weather-stats-card">
-              <div class="stat-row">
-                <span>Fietscijfer</span>
-                <strong id="bike-score">–</strong>
-              </div>
-              <div class="stat-row">
-                <span>Gevoel</span>
-                <strong id="feels-like">–</strong>
-              </div>
-              <div class="stat-row">
-                <span>WBGT</span>
-                <strong id="wbgt">–</strong>
-              </div>
-              <div class="stat-row">
-                <span>Wind</span>
-                <strong id="wind-info">–</strong>
-              </div>
-            </div>
-          </div>
+      <div class="weather-stats-row">
+        <div class="stat-item">
+          <span class="stat-label">Fietscijfer</span>
+          <span class="stat-value" id="bike-score">–</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Gevoel</span>
+          <span class="stat-value" id="feels-like">–</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Hitte-index</span>
+          <span class="stat-value" id="wbgt">–</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Wind</span>
+          <span class="stat-value" id="wind-info">–</span>
+        </div>
+      </div>
 
-          <div class="loading-overlay" id="weather-loading">
-            <div>🌦️ Weerdata ophalen…</div>
-            <p>Het weer wordt geladen op basis van je GPS-locatie en Open-Meteo. Even geduld, dan zie je straks het fiets-cijfer, wind en een kledingadvies.</p>
-          </div>
-        </section>
+      <div class="weather-sections">
+        <div id="weather-loading" class="loading-overlay">
+          <div>🌦️ Weerdata ophalen…</div>
+          <p>Gebaseerd op Open-Meteo & ECMWF. Even geduld…</p>
+        </div>
 
-        <section class="weather-card hourly-section">
-          <div class="hourly-label">
-            <h2>Komend 24 uur</h2>
-            <span id="hourly-note">Scroll om te zien</span>
-          </div>
+        <div id="hourly-section" style="display: none;">
+          <h2 class="weather-section-title">Komend 24 uur</h2>
           <div class="hourly-scroll" id="hourly-scroll"></div>
-        </section>
+        </div>
 
-        <section class="weather-card advice-card">
-          <h2>Wielren kledingadvies</h2>
-          <div class="advice-list" id="advice-list">
-            <div class="advice-pill">
-              <strong>Even wachten...</strong>
-              <span>Advies verschijnt hier.</span>
-            </div>
-          </div>
-        </section>
+        <div id="advice-section" style="display: none;">
+          <h2 class="weather-section-title">Kledingadvies</h2>
+          <div class="advice-container" id="advice-list"></div>
+        </div>
       </div>
     </div>
   `,
@@ -429,9 +329,9 @@ export const page = {
       );
     });
 
-    const reverseGeo = async (lat, lon) => {
-      const cleanName = name => (name || 'Onbekende locatie').replace(/,\s*[A-Z]{2,3}$/i, '').trim();
+    const cleanName = name => (name || 'Onbekende locatie').replace(/,\s*[A-Z]{2,3}$/i, '').trim();
 
+    const reverseGeo = async (lat, lon) => {
       try {
         const response = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&count=1&language=nl`);
         if (response.ok) {
@@ -467,6 +367,7 @@ export const page = {
       url.searchParams.set('hourly', 'temperature_2m,apparent_temperature,weathercode,windspeed_10m,winddirection_10m,relativehumidity_2m,precipitation_probability');
       url.searchParams.set('current_weather', 'true');
       url.searchParams.set('timezone', timezone);
+      url.searchParams.set('model', 'ecmwf_ifs');
       const response = await fetch(url.toString());
       if (!response.ok) {
         const body = await response.text();
@@ -475,19 +376,22 @@ export const page = {
       return response.json();
     };
 
-    const renderHourly = (weather, score) => {
+    const renderHourly = (weather) => {
       const container = document.getElementById('hourly-scroll');
       if (!container) return;
       container.innerHTML = '';
+      const section = document.getElementById('hourly-section');
+      if (section) section.style.display = 'block';
+
       const now = new Date();
       const baseIndex = weather.hourly.time.findIndex(t => new Date(t).getTime() >= now.getTime());
       const startIndex = baseIndex >= 0 ? baseIndex : 0;
       const slice = weather.hourly.time.slice(startIndex, startIndex + 24);
+      
       slice.forEach((time, offset) => {
         const idx = startIndex + offset;
         const code = weather.hourly.weathercode[idx];
         const icon = icons[code] ? icons[code][0] : '❔';
-        const desc = icons[code] ? icons[code][1] : 'Onbekend weer';
         const wind = weather.hourly.windspeed_10m[idx];
         const dir = windDirection(weather.hourly.winddirection_10m[idx]);
         const bft = bftFromKmh(wind);
@@ -499,10 +403,10 @@ export const page = {
         }));
         container.innerHTML += `
           <article class="hourly-card">
-            <time>${formatTime(time)}</time>
-            <strong>${value}/10</strong>
-            <span class="small">${icon} ${desc}</span>
-            <span class="small">${dir} ${bft} Bft</span>
+            <time class="hourly-time">${formatTime(time)}</time>
+            <div class="hourly-score">${value}/10</div>
+            <div class="hourly-icon">${icon}</div>
+            <div class="hourly-wind">${dir} ${bft}Bft</div>
           </article>
         `;
       });
@@ -510,34 +414,40 @@ export const page = {
 
     const renderAdvice = advice => {
       const list = document.getElementById('advice-list');
+      const section = document.getElementById('advice-section');
       if (!list) return;
-      list.innerHTML = advice.map(line => `
-        <div class="advice-pill">
-          <strong>${line}</strong>
-          <span>Tip</span>
-        </div>
-      `).join('');
+      list.innerHTML = advice.map(line => `<div class="advice-item">${line}</div>`).join('');
+      if (section) section.style.display = 'block';
     };
 
-    const formatWbgt = (temperature, humidity) => {
+    const formatWbgt = (temperature, humidity, windspeed, activity = 'cycling') => {
       const T = temperature;
       const RH = Math.max(0, Math.min(100, humidity));
-      const gamma = Math.log(RH / 100) + (17.62 * T) / (243.12 + T);
-      const dewPoint = 243.12 * gamma / (17.62 - gamma);
-      const tw = T * Math.atan(0.151977 * Math.sqrt(RH + 8.313659)) +
-        Math.atan(T + RH) -
-        Math.atan(RH - 1.676331) +
-        0.00391838 * Math.pow(RH, 1.5) * Math.atan(0.023101 * RH) -
-        4.686035;
-      const wbgt = 0.7 * tw + 0.3 * T;
-      return Math.round(wbgt);
+      const v = Math.max(0.5, windspeed / 3.6);
+      
+      const activityMultiplier = {
+        'rest': 0.4,
+        'light': 0.8,
+        'moderate': 1.0,
+        'cycling': 1.2,
+        'vigorous': 1.5
+      }[activity] || 1.0;
+
+      const dewPointSimple = T - ((100 - RH) / 5);
+      const Tw = dewPointSimple * 0.6 + T * 0.4;
+      const Tg = T + 14 * Math.sqrt(v) * (RH / 100 - 0.5);
+      
+      const wbgt = 0.7 * Tw + 0.2 * Tg + 0.1 * T;
+      const adjustedWbgt = wbgt + (activityMultiplier - 1.0) * 3;
+      
+      return Math.round(Math.max(T - 10, adjustedWbgt));
     };
 
     const showFetchError = message => {
       const loader = document.getElementById('weather-loading');
       if (loader) {
         loader.innerHTML = `<div class="error-note">⚠️ ${message}</div>`;
-        loader.style.display = 'grid';
+        loader.style.display = 'flex';
       }
     };
 
@@ -548,57 +458,54 @@ export const page = {
 
         const placeName = location.label || await reverseGeo(location.latitude, location.longitude);
         if (isCancelled) return;
-        setText('weather-location', `📍 ${placeName}`);
-        setText('geo-name', placeName);
+        setText('weather-location', placeName);
 
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Amsterdam';
         const weather = await fetchWeather(location.latitude, location.longitude, timezone);
         if (isCancelled) return;
 
         const current = weather.current_weather;
-      const code = current.weathercode;
-      const icon = icons[code] ? icons[code][0] : '❔';
-      const description = icons[code] ? icons[code][1] : 'Onbekend weer';
-      const windDir = windDirection(current.winddirection);
-      const bft = bftFromKmh(current.windspeed);
-      const score = getScore({
-        weathercode: code,
-        temperature: current.temperature,
-        windspeed: current.windspeed,
-        precipitation_probability: weather.hourly.precipitation_probability[weather.hourly.time.indexOf(weather.current_weather.time)] ?? 0
-      });
-      const currentIndex = weather.hourly.time.indexOf(weather.current_weather.time);
-      const feelsLike = weather.hourly.apparent_temperature[currentIndex] ?? current.temperature;
-      const humidity = weather.hourly.relativehumidity_2m[currentIndex] ?? 0;
-      const wbgtValue = formatWbgt(current.temperature, humidity);
-      const advice = getAdvice({
-        temperature: current.temperature,
-        feels_like: feelsLike,
-        windspeed: current.windspeed,
-        weathercode: code,
-        precipitation_probability: weather.hourly.precipitation_probability[currentIndex] ?? 0
-      });
+        const code = current.weathercode;
+        const icon = icons[code] ? icons[code][0] : '❔';
+        const description = icons[code] ? icons[code][1] : 'Onbekend weer';
+        const windDir = windDirection(current.winddirection);
+        const bft = bftFromKmh(current.windspeed);
+        const score = getScore({
+          weathercode: code,
+          temperature: current.temperature,
+          windspeed: current.windspeed,
+          precipitation_probability: weather.hourly.precipitation_probability[weather.hourly.time.indexOf(weather.current_weather.time)] ?? 0
+        });
+        const currentIndex = weather.hourly.time.indexOf(weather.current_weather.time);
+        const feelsLike = weather.hourly.apparent_temperature[currentIndex] ?? current.temperature;
+        const humidity = weather.hourly.relativehumidity_2m[currentIndex] ?? 0;
+        const wbgtValue = formatWbgt(current.temperature, humidity, current.windspeed, 'cycling');
+        const advice = getAdvice({
+          temperature: current.temperature,
+          feels_like: feelsLike,
+          windspeed: current.windspeed,
+          weathercode: code,
+          precipitation_probability: weather.hourly.precipitation_probability[currentIndex] ?? 0
+        });
 
-      setText('weather-icon', icon);
-      setText('weather-caption', description);
-      setText('bike-score', `${score}/10`);
-      setText('temperature', `${Math.round(current.temperature)}°C`);
-      setText('feels-like', `${Math.round(feelsLike)}°C`);
-      setText('wbgt', `${wbgtValue}°C`);
-      setText('wind-info', `${windDir} · ${Math.round(current.windspeed)} km/h · ${bft} Bft`);
-      setText('weather-description', description);
-      setText('short-advice', advice[0]);
+        setText('weather-icon', icon);
+        setText('weather-caption', description);
+        setText('bike-score', `${score}/10`);
+        setText('temperature', `${Math.round(current.temperature)}°C`);
+        setText('feels-like', `${Math.round(feelsLike)}°C`);
+        setText('wbgt', `${wbgtValue}°C`);
+        setText('wind-info', `${windDir} ${bft}Bft`);
 
-      renderHourly(weather, score);
-      renderAdvice(advice);
+        renderHourly(weather);
+        renderAdvice(advice);
 
-      const loader = document.getElementById('weather-loading');
-      if (loader) loader.style.display = 'none';
-    } catch (error) {
-      console.error(error);
-      showFetchError('Kon het weer niet laden. Controleer je internetverbinding of probeer later opnieuw.');
-    }
-  };
+        const loader = document.getElementById('weather-loading');
+        if (loader) loader.style.display = 'none';
+      } catch (error) {
+        console.error(error);
+        showFetchError('Kon het weer niet laden. Controleer je internetverbinding.');
+      }
+    };
 
     updateWeather();
 
