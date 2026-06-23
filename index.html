@@ -100,7 +100,7 @@
       right: 0;
       height: env(safe-area-inset-top, 44px);
       pointer-events: none;
-      z-index: 0;
+      z-index: 9999;
       background-repeat: no-repeat;
       background-size: cover;
     }
@@ -139,6 +139,7 @@
       padding-bottom: env(safe-area-inset-bottom);
       min-height: 100vh;
       box-sizing: border-box;
+      z-index: 0;
     }
 
     /* Extra zekerheid dat content het volledige scherm vult in standalone */

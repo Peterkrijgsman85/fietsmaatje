@@ -4,7 +4,7 @@ export const page = {
       <style>
         /* Basis Layout */
         .weather-page {
-          background: linear-gradient(160deg, #d8f1ff 0%, #9edcff 40%, #67c7ff 100%);
+          background: transparent;
           color: #1C1C1E;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
           padding: 20px 16px 80px 16px;
