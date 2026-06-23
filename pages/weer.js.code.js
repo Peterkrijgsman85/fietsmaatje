@@ -2,224 +2,308 @@ export const page = {
   html: `
     <div class="weather-page">
       <style>
-        /* Basis Layout */
         .weather-page {
-          background-color: #F2F2F7; /* iOS System Light Gray */
-          color: #1C1C1E;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-          padding: 20px 16px 80px 16px;
-          min-height: 100vh;
-        }
-
-        /* Hero Sectie (Direct op de achtergrond) */
-        .hero-section {
+          position: fixed;
+          inset: 0;
+          overflow-y: auto;
+          overflow-x: hidden;
+          background: linear-gradient(160deg, #0f2c5a 0%, #0f2c5a 24%, #1a4a8a 100%);
+          color: white;
           display: flex;
           flex-direction: column;
+          padding: 0;
+          padding-top: env(safe-area-inset-top, 0);
+          padding-bottom: calc(env(safe-area-inset-bottom, 0) + 100px);
+        }
+
+        .weather-hero-section {
+          display: flex;
+          justify-content: center;
+          padding: 18px 12px;
+          flex-shrink: 0;
+        }
+
+        .weather-main-card {
+          width: min(100%, 760px);
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.12);
+          border-radius: 28px;
+          padding: 16px;
+          display: grid;
+          grid-template-columns: 1fr minmax(140px, 260px);
+          gap: 12px;
           align-items: center;
-          text-align: center;
-          margin-top: 10px;
-          margin-bottom: 32px;
+          position: relative;
+          backdrop-filter: blur(12px);
         }
 
         .score-badge {
-          background: #FF453A;
+          display: inline-block;
+          background: #ff5a00;
           color: white;
-          font-weight: 700;
-          font-size: 0.85rem;
-          padding: 6px 14px;
-          border-radius: 20px;
-          margin-bottom: 16px;
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          box-shadow: 0 4px 10px rgba(255, 69, 58, 0.2);
+          font-weight: 800;
+          border-radius: 12px;
+          padding: 6px 10px;
+          font-size: 0.95rem;
+          box-shadow: 0 6px 18px rgba(255,90,0,0.18);
+          margin-bottom: 8px;
         }
 
-        .location-title {
-          font-size: 1.8rem;
-          font-weight: 400;
-          letter-spacing: 0.02em;
-          margin-bottom: 4px;
-        }
-
-        .hero-center {
+        .weather-left-panel {
           display: flex;
-          align-items: center;
+          flex-direction: column;
+          align-items: flex-start;
           justify-content: center;
-          gap: 8px;
+          gap: 6px;
+          text-align: left;
+          padding-left: 8px;
         }
 
-        .hero-icon {
-          font-size: 3.5rem;
+        .weather-location {
+          font-size: 0.85rem;
+          opacity: 0.85;
+          letter-spacing: 0.05em;
+        }
+
+        .weather-icon-large {
+          font-size: 4.2rem;
+          line-height: 1;
+          margin: 0 0 6px 0;
+        }
+
+        .weather-temp-main {
+          font-size: 2.4rem;
+          font-weight: 900;
           line-height: 1;
         }
 
-        .hero-temp {
-          font-size: 5.5rem;
-          font-weight: 200; /* Typisch iOS: dunne letters voor grote temperaturen */
-          letter-spacing: -2px;
-          margin-left: 4px;
+        .weather-description {
+          font-size: 0.8rem;
+          opacity: 0.82;
+          letter-spacing: 0.05em;
+          margin-top: 2px;
         }
 
-        .hero-desc {
-          font-size: 1.1rem;
-          font-weight: 500;
-          opacity: 0.8;
-          margin-top: -8px;
+        
+
+        .weather-stats-card {
+          background: rgba(255, 255, 255, 0.12);
+          border: 1px solid rgba(255, 255, 255, 0.18);
+          border-radius: 24px;
+          padding: 14px 16px;
+          display: grid;
+          gap: 10px;
+          backdrop-filter: blur(10px);
         }
 
-        /* Horizontale Stats Rij */
-        .stats-row {
+        .stat-line {
           display: flex;
+          justify-content: space-between;
           align-items: center;
-          justify-content: center;
-          gap: 16px;
-          margin-top: 20px;
-        }
-
-        .stat-item {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 4px;
-        }
-
-        .stat-divider {
-          width: 1px;
-          height: 24px;
-          background-color: #D1D1D6;
+          padding: 8px 0;
         }
 
         .stat-label {
-          font-size: 0.7rem;
-          color: #8E8E93;
-          text-transform: uppercase;
-          font-weight: 600;
-          letter-spacing: 0.05em;
-        }
-
-        .stat-val {
-          font-size: 1rem;
-          font-weight: 600;
-        }
-
-        /* Kaart Containers voor de lijsten */
-        .card-container {
-          background: #FFFFFF;
-          border-radius: 20px;
-          padding: 16px;
-          box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-          margin-bottom: 20px;
-        }
-
-        .section-title {
-          font-size: 0.8rem;
-          font-weight: 600;
-          color: #8E8E93;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          margin: 0 0 16px 4px;
           display: flex;
           align-items: center;
           gap: 6px;
+          font-size: 0.8rem;
+          opacity: 0.8;
         }
 
-        /* 24-uurs overzicht */
-        .hourly-scroll {
+        .stat-emoji {
+          font-size: 1rem;
+        }
+
+        .stat-value {
+          font-size: 1.2rem;
+          font-weight: 700;
+          letter-spacing: -0.02em;
+        }
+
+        .weather-sections {
           display: flex;
-          gap: 20px;
+          flex-direction: column;
+          gap: 24px;
+          padding: 0 16px;
+          flex: 1;
+        }
+
+        .section-title {
+          font-size: 0.85rem;
+          opacity: 0.75;
+          text-transform: uppercase;
+          letter-spacing: 0.15em;
+          margin: 0;
+          padding: 0;
+          margin-top: 8px;
+        }
+
+        .hourly-scroll {
+          display: grid;
+          grid-auto-flow: column;
+          grid-auto-columns: 90px;
+          gap: 8px;
           overflow-x: auto;
-          padding-bottom: 8px;
-          scrollbar-width: none;
+          padding: 2px;
+          scroll-snap-type: x mandatory;
           -webkit-overflow-scrolling: touch;
         }
-        .hourly-scroll::-webkit-scrollbar { display: none; }
 
-        .hourly-item {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          min-width: 50px;
-          gap: 10px;
+        .hourly-card {
+          position: relative;
+          scroll-snap-align: start;
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          border-radius: 14px;
+          padding: 11px 10px;
+          display: grid;
+          gap: 6px;
+          text-align: center;
+          min-width: 90px;
+          font-size: 0.8rem;
+        }
+        
+
+        .hourly-score-pill {
+          display: inline-block;
+          background: #ff5a00;
+          color: white;
+          font-weight: 800;
+          border-radius: 10px;
+          padding: 6px 8px;
+          font-size: 0.88rem;
+          box-shadow: 0 6px 12px rgba(255,90,0,0.12);
+          margin: 4px auto 0 auto;
         }
 
-        .hourly-time { font-size: 0.85rem; font-weight: 500; }
-        .hourly-icon { font-size: 1.8rem; line-height: 1; }
-        .hourly-score-pill { font-weight: 700; color: #FF453A; font-size: 0.95rem; }
-        .hourly-detail { font-size: 0.7rem; color: #8E8E93; font-weight: 500; }
+        .hourly-time {
+          opacity: 0.65;
+          font-size: 0.7rem;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+        }
 
-        /* Advies overzicht */
-        .advice-list {
-          display: flex;
-          flex-direction: column;
+        .hourly-score {
+          font-size: 1rem;
+          font-weight: 700;
+        }
+
+        .hourly-icon {
+          font-size: 1.6rem;
+        }
+
+        .hourly-detail {
+          opacity: 0.8;
+          font-size: 0.7rem;
         }
 
         .advice-item {
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          border-radius: 14px;
+          padding: 13px;
+          font-size: 0.92rem;
+          line-height: 1.5;
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+        }
+
+        .advice-emoji {
+          font-size: 1.1rem;
+          flex-shrink: 0;
+          margin-top: 2px;
+        }
+
+        .advice-text {
+          flex: 1;
+        }
+
+        .loading-overlay {
           display: flex;
           align-items: center;
-          gap: 16px;
-          padding: 14px 0;
-          border-bottom: 1px solid #E5E5EA;
-        }
-        .advice-item:last-child {
-          border-bottom: none;
-          padding-bottom: 4px;
+          justify-content: center;
+          gap: 12px;
+          flex-direction: column;
+          text-align: center;
+          padding: 40px 20px;
+          opacity: 0.95;
         }
 
-        .advice-emoji { font-size: 1.5rem; }
-        .advice-text { font-size: 0.95rem; font-weight: 500; }
+        .loading-overlay p {
+          font-size: 0.85rem;
+          opacity: 0.8;
+          max-width: 280px;
+          line-height: 1.5;
+        }
 
-        /* Laders */
-        .loading-overlay { text-align: center; padding: 40px 20px; color: #8E8E93; font-weight: 500; }
-        .error-note { color: #FF453A; }
+        .error-note {
+          color: #ffd7a9;
+          opacity: 0.95;
+        }
       </style>
 
-      <div class="hero-section">
-        <div class="score-badge">
-          🚴 Fiets-score: <span id="bike-score-display">–</span>
-        </div>
-        
-        <div class="location-title" id="weather-location">Locatie laden...</div>
-        
-        <div class="hero-center">
-          <div class="hero-icon" id="weather-icon">⏳</div>
-          <div class="hero-temp" id="temperature">–°</div>
-        </div>
-        
-        <div class="hero-desc" id="weather-caption">Weer laden...</div>
-
-        <div class="stats-row">
-          <div class="stat-item">
-            <span class="stat-label">Gevoel</span>
-            <span class="stat-val" id="feels-like">–</span>
+      <div class="weather-hero-section">
+        <div class="weather-main-card">
+          <div class="weather-left-panel">
+            <div class="weather-location">📍 <span id="weather-location">Locatie laden...</span></div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div class="weather-icon-large" id="weather-icon">⏳</div>
+              <div>
+                <div class="weather-temp-main" id="temperature">–°</div>
+                <div class="weather-description" id="weather-caption">Weer laden...</div>
+              </div>
+            </div>
           </div>
-          <div class="stat-divider"></div>
-          <div class="stat-item">
-            <span class="stat-label">WBGT</span>
-            <span class="stat-val" id="wbgt">–</span>
-          </div>
-          <div class="stat-divider"></div>
-          <div class="stat-item">
-            <span class="stat-label">Wind</span>
-            <span class="stat-val" id="wind-info">–</span>
+
+          <div>
+              <div style="display:flex; justify-content:flex-end;">
+                <div class="score-badge" id="bike-score-badge">🚴 <span id="bike-score-display">–</span></div>
+              </div>
+              <div class="weather-stats-card">
+              <div class="stat-line">
+                <span class="stat-label">
+                  <span class="stat-emoji">🌡</span>
+                    Gevoel
+                </span>
+                <span class="stat-value" id="feels-like">–</span>
+              </div>
+              <div class="stat-line">
+                <span class="stat-label">
+                  <span class="stat-emoji">🔥</span>
+                    WBGT
+                </span>
+                <span class="stat-value" id="wbgt">–</span>
+              </div>
+              <div class="stat-line">
+                <span class="stat-label">
+                  <span class="stat-emoji">💨</span>
+                  Wind
+                </span>
+                <span class="stat-value" id="wind-info">–</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div id="weather-loading" class="loading-overlay">
-        Even geduld, je weer wordt opgehaald…
-      </div>
+      <div class="weather-sections">
+        <div id="weather-loading" class="loading-overlay">
+          <div style="font-size: 2.4rem;">🌦️</div>
+          <p>Even geduld, je weer wordt opgehaald…</p>
+        </div>
 
-      <div id="hourly-section" class="card-container" style="display: none;">
-        <div class="section-title">⏰ Komende 24 uur</div>
-        <div class="hourly-scroll" id="hourly-scroll"></div>
-      </div>
+        <div id="hourly-section" style="display: none;">
+          <h2 class="section-title">⏰ Komend 24 uur</h2>
+          <div class="hourly-scroll" id="hourly-scroll"></div>
+        </div>
 
-      <div id="advice-section" class="card-container" style="display: none;">
-        <div class="section-title">👕 Kledingadvies</div>
-        <div id="advice-list" class="advice-list"></div>
+        <div id="advice-section" style="display: none;">
+          <h2 class="section-title">👕 Kledingadvies</h2>
+          <div id="advice-list" style="display: grid; gap: 10px;"></div>
+        </div>
       </div>
-
     </div>
   `,
 
@@ -413,14 +497,13 @@ export const page = {
           windspeed: wind,
           precipitation_probability: weather.hourly.precipitation_probability[idx]
         }));
-        
         container.innerHTML += `
-          <div class="hourly-item">
+          <article class="hourly-card">
             <div class="hourly-time">${formatTime(time)}</div>
             <div class="hourly-icon">${icon}</div>
             <div class="hourly-score-pill">${value}</div>
             <div class="hourly-detail">${dir} ${bft}Bft</div>
-          </div>
+          </article>
         `;
       });
     };
@@ -465,7 +548,7 @@ export const page = {
       const loader = document.getElementById('weather-loading');
       if (loader) {
         loader.innerHTML = `<div class="error-note">⚠️ ${message}</div>`;
-        loader.style.display = 'block';
+        loader.style.display = 'flex';
       }
     };
 
