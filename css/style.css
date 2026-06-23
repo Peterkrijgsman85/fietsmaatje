@@ -1,47 +1,41 @@
-/* Basis reset */
+/* Basis reset: vul altijd het volledige scherm */
 html, body {
     height: 100dvh;
+    width: 100vw;
     margin: 0;
     padding: 0;
-    overflow: hidden; /* Geen scroll op body zelf */
-    font-family: sans-serif;
+    overflow: hidden;
 }
 
+/* #app is de container voor alles */
 #app {
     position: relative;
-    width: 100vw;
     height: 100dvh;
+    width: 100%;
 }
 
-/* Elke pagina vult exact het hele scherm */
-.page {
+/* De content vult nu 100% van de achtergrond */
+#main-content {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 100dvh; /* Vult volledig scherm */
-    display: none; /* Standaard verborgen */
-    padding: 20px;
-    box-sizing: border-box;
+    height: 100%;
+    z-index: 1; /* Content ligt op de achtergrond */
 }
 
-.page.active {
-    display: block; /* Alleen de actieve pagina zichtbaar */
-}
-
-/* Navigatie: Zweeft onderaan */
-nav {
+/* De nav zweeft nu als een overlay over de content */
+.nav-container {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
-    padding-bottom: env(safe-area-inset-bottom); /* Houdt rekening met Home Bar */
-    background: transparent;
-    pointer-events: none; /* Klikken gaan door de nav heen als er geen knop is */
+    padding-bottom: env(safe-area-inset-bottom);
+    z-index: 2; /* Navigatie ligt bovenop */
 }
 
 .menu-pill {
-    margin: 0 10px 10px 10px;
+    margin: 0 10px 10px 10px; /* 10px van onderen, 10px van zijkanten */
     background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(15px);
     border: 1px solid rgba(0,0,0,0.1);
@@ -50,5 +44,12 @@ nav {
     justify-content: space-around;
     padding: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    pointer-events: auto; /* Zorgt dat knoppen wel klikbaar zijn */
+}
+
+.menu-pill button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 10px;
+    font-weight: 700;
 }
