@@ -43,7 +43,19 @@
       min-height: 100vh;
       width: 100%;
       overflow: hidden;
-      background: #0f2c5a;
+    }
+
+    /* Zorg dat standalone-modus de pagina-achtergrond behoudt achter de statusbar. */
+    html.is-standalone.page-weer, body.is-standalone.page-weer {
+      background: linear-gradient(160deg, #0f2c5a, #1a4a8a);
+    }
+
+    html.is-standalone.page-water, body.is-standalone.page-water {
+      background: linear-gradient(160deg, #0a3d4a, #0e6b7c);
+    }
+
+    html.is-standalone.page-planner, body.is-standalone.page-planner {
+      background: linear-gradient(160deg, #2d1a4a, #4a1a8a);
     }
 
     #app {
