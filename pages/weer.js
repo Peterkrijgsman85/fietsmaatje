@@ -62,24 +62,70 @@ export const page = {
           margin: 0;
         }
 
-        .weather-summary {
+        .weather-hero-grid {
           display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
+          grid-template-columns: minmax(180px, 1.1fr) minmax(240px, 1fr);
+          gap: 18px;
+          align-items: stretch;
+        }
+
+        .weather-icon-panel {
+          display: grid;
+          gap: 10px;
+          justify-items: center;
+          align-content: center;
+          padding: 28px 24px;
+          background: rgba(255, 255, 255, 0.12);
+          border-radius: 32px;
+          border: 1px solid rgba(255, 255, 255, 0.16);
+          text-align: center;
+        }
+
+        .weather-icon-large {
+          font-size: clamp(4.2rem, 9vw, 6.8rem);
+          line-height: 0.9;
+        }
+
+        .weather-temp {
+          font-size: clamp(2.4rem, 5vw, 4rem);
+          font-weight: 900;
+          line-height: 1;
+        }
+
+        .weather-caption {
+          opacity: 0.78;
+          font-size: 0.95rem;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+
+        .weather-stats-card {
+          display: grid;
           gap: 12px;
+          padding: 22px;
+          border-radius: 28px;
+          background: rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.14);
         }
 
-        .weather-summary .summary-item {
-          background: rgba(255, 255, 255, 0.08);
-          border-radius: 20px;
+        .stat-row {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          align-items: center;
           padding: 14px 16px;
-          min-height: 96px;
-          display: grid;
-          gap: 8px;
+          border-radius: 18px;
+          background: rgba(255, 255, 255, 0.05);
         }
 
-        .summary-item strong {
-          font-size: 1.12rem;
-          display: block;
+        .stat-row span {
+          opacity: 0.8;
+          font-size: 0.92rem;
+        }
+
+        .stat-row strong {
+          font-size: 1.05rem;
+          line-height: 1.2;
         }
 
         .summary-item span {
@@ -106,35 +152,6 @@ export const page = {
           letter-spacing: 0.05em;
         }
 
-        .weather-detail-grid {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 14px;
-        }
-
-        .detail-card {
-          background: rgba(255, 255, 255, 0.06);
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          border-radius: 24px;
-          padding: 16px;
-          min-height: 98px;
-          display: grid;
-          gap: 10px;
-        }
-
-        .detail-card h2 {
-          margin: 0;
-          font-size: 0.95rem;
-          opacity: 0.75;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-        }
-
-        .detail-card p {
-          margin: 0;
-          font-size: 1.28rem;
-          font-weight: 700;
-        }
 
         .hourly-section {
           display: grid;
@@ -265,47 +282,31 @@ export const page = {
               <small>Fietsmaatje weer</small>
               <h1 id="weather-location">Locatie laden...</h1>
             </div>
-            <div class="weather-type" id="weather-type">
-              <span>⏳</span>
-              <span>Weer laden</span>
-            </div>
           </div>
 
-          <div class="weather-summary">
-            <div class="summary-item">
-              <span>Fietscijfer</span>
-              <strong id="bike-score">–</strong>
+          <div class="weather-hero-grid">
+            <div class="weather-icon-panel">
+              <div class="weather-icon-large" id="weather-icon">⏳</div>
+              <div class="weather-temp" id="temperature">–°C</div>
+              <div class="weather-caption" id="weather-caption">Weer laden</div>
             </div>
-            <div class="summary-item">
-              <span>Temperatuur</span>
-              <strong id="temperature">–</strong>
-            </div>
-            <div class="summary-item">
-              <span>Gevoelstemperatuur</span>
-              <strong id="feels-like">–</strong>
-            </div>
-            <div class="summary-item">
-              <span>WBGT</span>
-              <strong id="wbgt">–</strong>
-            </div>
-          </div>
-
-          <div class="weather-detail-grid">
-            <div class="detail-card">
-              <h2>Wind</h2>
-              <p id="wind-info">–</p>
-            </div>
-            <div class="detail-card">
-              <h2>Weertype</h2>
-              <p id="weather-description">–</p>
-            </div>
-            <div class="detail-card">
-              <h2>Locatie</h2>
-              <p id="geo-name">–</p>
-            </div>
-            <div class="detail-card">
-              <h2>Advies</h2>
-              <p id="short-advice">–</p>
+            <div class="weather-stats-card">
+              <div class="stat-row">
+                <span>Fietscijfer</span>
+                <strong id="bike-score">–</strong>
+              </div>
+              <div class="stat-row">
+                <span>Gevoel</span>
+                <strong id="feels-like">–</strong>
+              </div>
+              <div class="stat-row">
+                <span>WBGT</span>
+                <strong id="wbgt">–</strong>
+              </div>
+              <div class="stat-row">
+                <span>Wind</span>
+                <strong id="wind-info">–</strong>
+              </div>
             </div>
           </div>
 
@@ -417,28 +418,45 @@ export const page = {
 
     const getLocation = () => new Promise(resolve => {
       if (!navigator.geolocation) {
-        resolve({ latitude: 52.3676, longitude: 4.9041, label: 'Amsterdam, NL' });
+        resolve({ latitude: 52.3676, longitude: 4.9041, label: 'Amsterdam' });
         return;
       }
 
       navigator.geolocation.getCurrentPosition(
         pos => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
-        () => resolve({ latitude: 52.3676, longitude: 4.9041, label: 'Amsterdam, NL' }),
+        () => resolve({ latitude: 52.3676, longitude: 4.9041, label: 'Amsterdam' }),
         { timeout: 7000 }
       );
     });
 
     const reverseGeo = async (lat, lon) => {
+      const cleanName = name => (name || 'Onbekende locatie').replace(/,\s*[A-Z]{2,3}$/i, '').trim();
+
       try {
         const response = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&count=1&language=nl`);
-        const data = await response.json();
-        if (data.results && data.results.length) {
-          const place = data.results[0];
-          return `${place.name}${place.admin1 ? ', ' + place.admin1 : ''}`;
+        if (response.ok) {
+          const data = await response.json();
+          if (data.results && data.results.length) {
+            const place = data.results[0];
+            return cleanName(place.name || place.address?.city || place.address?.town || place.address?.village || place.address?.county);
+          }
         }
       } catch (e) {
         // fallback
       }
+
+      try {
+        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=nl`;
+        const response = await fetch(url, { headers: { 'User-Agent': 'Fietsmaatje/1.0' } });
+        if (response.ok) {
+          const data = await response.json();
+          const display = data.display_name || '';
+          return cleanName(display.split(',')[0]);
+        }
+      } catch (e) {
+        // fallback
+      }
+
       return 'Onbekende locatie';
     };
 
@@ -530,7 +548,7 @@ export const page = {
 
         const placeName = location.label || await reverseGeo(location.latitude, location.longitude);
         if (isCancelled) return;
-        setText('weather-location', placeName);
+        setText('weather-location', `📍 ${placeName}`);
         setText('geo-name', placeName);
 
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Amsterdam';
@@ -561,7 +579,8 @@ export const page = {
         precipitation_probability: weather.hourly.precipitation_probability[currentIndex] ?? 0
       });
 
-      setText('weather-type', `${icon} ${description}`);
+      setText('weather-icon', icon);
+      setText('weather-caption', description);
       setText('bike-score', `${score}/10`);
       setText('temperature', `${Math.round(current.temperature)}°C`);
       setText('feels-like', `${Math.round(feelsLike)}°C`);
