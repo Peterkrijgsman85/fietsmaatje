@@ -16,11 +16,18 @@
     html, body {
       height: 100%;
       width: 100%;
-      /* Voorkom dat de browser zelf scrollt of ruimte reserveert */
-      overflow: hidden;
-      position: fixed;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       -webkit-font-smoothing: antialiased;
+      background: #0f2c5a;
+    }
+
+    /* Wanneer de app als standalone gestart is, forceer volledige viewport
+       en verberg browser scrollbars/werkbalken. */
+    html.is-standalone, body.is-standalone {
+      height: 100vh;
+      min-height: 100vh;
+      width: 100%;
+      overflow: hidden;
       background: #0f2c5a;
     }
 
@@ -31,6 +38,16 @@
       left: 0;
       right: 0;
       bottom: 0;
+      /* Zorg dat content niet achter notch of home-indicator valt */
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+
+    /* Extra zekerheid dat content het volledige scherm vult in standalone */
+    html.is-standalone #app, body.is-standalone #app {
+      min-height: calc(100vh + env(safe-area-inset-bottom));
     }
 
     .pill-nav {
@@ -80,5 +97,14 @@
   </nav>
 
   <script type="module" src="app.js"></script>
+  <script>
+    (function(){
+      var isStandalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      if(isStandalone){
+        document.documentElement.classList.add('is-standalone');
+        document.body.classList.add('is-standalone');
+      }
+    })();
+  </script>
 </body>
 </html>
