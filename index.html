@@ -18,6 +18,14 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    :root {
+      --accent: #fc4c02;
+      --accent-dark: #c63f04;
+      --accent-rgb: 252, 76, 2;
+      --accent-soft: rgba(252, 76, 2, 0.14);
+      --surface: rgba(255, 255, 255, 0.16);
+    }
+
     html, body {
       height: 100%;
       width: 100%;
@@ -27,15 +35,15 @@
     }
 
     html.page-weer, body.page-weer {
-      background: linear-gradient(160deg, #0f2c5a, #1a4a8a);
+      background: linear-gradient(160deg, var(--accent), #0f2c5a 18%, #1a4a8a 100%);
     }
 
     html.page-water, body.page-water {
-      background: linear-gradient(160deg, #0a3d4a, #0e6b7c);
+      background: linear-gradient(160deg, var(--accent), #0a3d4a 18%, #0e6b7c 100%);
     }
 
     html.page-planner, body.page-planner {
-      background: linear-gradient(160deg, #2d1a4a, #4a1a8a);
+      background: linear-gradient(160deg, var(--accent), #2d1a4a 18%, #4a1a8a 100%);
     }
 
     /* Wanneer de app als standalone gestart is, forceer volledige viewport
@@ -72,23 +80,23 @@
       top: 0;
       left: 0;
       right: 0;
-      height: env(safe-area-inset-top);
+      height: env(safe-area-inset-top, 44px);
       pointer-events: none;
-      z-index: -1;
+      z-index: 9999;
       background-repeat: no-repeat;
       background-size: cover;
     }
 
     body.page-weer.is-standalone::before {
-      background: linear-gradient(160deg, #0f2c5a, #1a4a8a);
+      background: #0f2c5a;
     }
 
     body.page-water.is-standalone::before {
-      background: linear-gradient(160deg, #0a3d4a, #0e6b7c);
+      background: #0a3d4a;
     }
 
     body.page-planner.is-standalone::before {
-      background: linear-gradient(160deg, #2d1a4a, #4a1a8a);
+      background: #2d1a4a;
     }
 
     #app {
@@ -116,15 +124,60 @@
       bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
       left: 12px;
       right: 12px;
-      background: rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.16);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       border-radius: 100px;
       padding: 6px;
       display: flex;
       gap: 4px;
-      border: 0.5px solid rgba(255, 255, 255, 0.25);
+      border: 1px solid rgba(var(--accent-rgb), 0.16);
       z-index: 100;
+      box-shadow: 0 20px 80px rgba(0, 0, 0, 0.12);
+    }
+
+    .page-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(var(--accent-rgb), 0.18);
+      color: white;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 700;
+      box-shadow: 0 16px 40px rgba(var(--accent-rgb), 0.12);
+      margin-bottom: 18px;
+    }
+
+    .page-splash {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      pointer-events: none;
+    }
+
+    .page-splash > div {
+      text-align: center;
+      opacity: 0.35;
+    }
+
+    .page-splash h1 {
+      margin-top: 10px;
+      font-size: 18px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.95);
+    }
+
+    .page-splash-icon {
+      font-size: 72px;
+      line-height: 1;
     }
 
     .pill-nav button {
@@ -132,18 +185,24 @@
       background: transparent;
       border: none;
       border-radius: 100px;
-      padding: 12px 8px;
+      padding: 12px 10px;
       font-size: 14px;
-      font-weight: 500;
-      color: rgba(255, 255, 255, 0.75);
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.85);
       cursor: pointer;
-      transition: background 0.2s, color 0.2s;
+      transition: background 0.2s, color 0.2s, transform 0.2s;
       -webkit-tap-highlight-color: transparent;
     }
 
+    .pill-nav button:hover,
+    .pill-nav button:focus {
+      transform: translateY(-1px);
+    }
+
     .pill-nav button.active {
-      background: white;
-      color: #1a1a2e;
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 10px 20px rgba(252, 76, 2, 0.2);
     }
   </style>
 </head>
