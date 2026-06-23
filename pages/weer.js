@@ -1,18 +1,21 @@
 export const page = {
   html: `
-    <div class="weather-page">
+    <div class="weather-page" style="
+      background-color: #d8f1ff; 
+      background-image: linear-gradient(160deg, #d8f1ff 0%, #9edcff 40%, #67c7ff 100%); 
+      background-attachment: fixed;
+    ">
       <style>
         /* Basis Layout */
         .weather-page {
-  position: relative;
-  width: 100%;
-  min-height: 100vh; /* Gebruik vh in plaats van 100% voor mobiel */
-  background: linear-gradient(160deg, #d8f1ff 0%, #9edcff 40%, #67c7ff 100%);
-  background-attachment: fixed; /* ZEER BELANGRIJK voor statusbalk stabiliteit */
-  color: #1C1C1E;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  padding: 20px 16px 110px;
-}
+          position: relative;
+          width: 100%;
+          min-height: 100vh; 
+          /* background is hier weggehaald! */
+          color: #1C1C1E;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          padding: 20px 16px 110px;
+        }
 
         /* Hero Sectie (Direct op de achtergrond) */
         .hero-section {
