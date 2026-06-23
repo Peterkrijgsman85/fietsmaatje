@@ -50,6 +50,11 @@
       background-image: linear-gradient(160deg, #2d1a4a 0%, #2d1a4a 18%, #4a1a8a 100%);
     }
 
+    html.page-menu, body.page-menu {
+      background-color: #2d2f34;
+      background-image: linear-gradient(160deg, #2d2f34 0%, #2d2f34 18%, #202429 100%);
+    }
+
     /* Wanneer de app als standalone gestart is, forceer volledige viewport
        en verberg browser scrollbars/werkbalken. */
     html.is-standalone, body.is-standalone {
@@ -75,13 +80,19 @@
       background-image: linear-gradient(160deg, #2d1a4a 0%, #2d1a4a 18%, #4a1a8a 100%);
     }
 
+    html.is-standalone.page-menu, body.is-standalone.page-menu {
+      background-color: #2d2f34;
+      background-image: linear-gradient(160deg, #2d2f34 0%, #2d2f34 18%, #202429 100%);
+    }
+
     body {
       position: relative;
     }
 
     body.page-weer.is-standalone::before,
     body.page-water.is-standalone::before,
-    body.page-planner.is-standalone::before {
+    body.page-planner.is-standalone::before,
+    body.page-menu.is-standalone::before {
       content: '';
       position: fixed;
       top: 0;
@@ -104,6 +115,10 @@
 
     body.page-planner.is-standalone::before {
       background: #2d1a4a;
+    }
+
+    body.page-menu.is-standalone::before {
+      background: #2d2f34;
     }
 
     html.is-standalone, body.is-standalone {
@@ -195,22 +210,44 @@
 
     .pill-nav button {
       flex: 1;
+      min-height: 52px;
       background: transparent;
       border: 1px solid transparent;
       border-radius: 100px;
-      padding: 12px 10px;
-      font-size: 14px;
+      padding: 10px 8px;
+      font-size: 13px;
       font-weight: 600;
       color: rgba(255, 255, 255, 0.88);
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      line-height: 1.1;
       cursor: pointer;
       transition: background 0.2s, color 0.2s, transform 0.2s, border-color 0.2s;
       -webkit-tap-highlight-color: transparent;
     }
 
+    .pill-nav button span {
+      display: block;
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .pill-nav button strong {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.85;
+    }
+
     .pill-nav button:hover,
     .pill-nav button:focus {
       transform: translateY(-1px);
-      background: rgba(255, 255, 255, 0.32);
+      background: rgba(255, 255, 255, 0.24);
     }
 
     .pill-nav button.active {
@@ -226,10 +263,10 @@
   <div id="app"></div>
 
   <nav class="pill-nav">
-    <button data-page="weer">🌤 Weer</button>
-    <button data-page="water">💧 Water</button>
-    <button data-page="planner">📅 Planner</button>
-    <button data-page="menu">≡</button>
+    <button data-page="weer"><span>🌤</span><strong>Weer</strong></button>
+    <button data-page="water"><span>💧</span><strong>Water</strong></button>
+    <button data-page="planner"><span>📅</span><strong>Planner</strong></button>
+    <button data-page="menu"><span>≡</span><strong>Menu</strong></button>
   </nav>
 
   <script type="module" src="app.js"></script>

@@ -23,9 +23,9 @@ async function navigate(name) {
   app.innerHTML = page.html;
 
   // Body/html-klasse voor de pagina-achtergrond achter de dynamic island/statusbar
-  document.documentElement.classList.remove('page-weer', 'page-water', 'page-planner');
+  document.documentElement.classList.remove('page-weer', 'page-water', 'page-planner', 'page-menu');
   document.documentElement.classList.add(`page-${name}`);
-  document.body.classList.remove('page-weer', 'page-water', 'page-planner');
+  document.body.classList.remove('page-weer', 'page-water', 'page-planner', 'page-menu');
   document.body.classList.add(`page-${name}`);
 
   // Draai init() als de pagina die heeft
