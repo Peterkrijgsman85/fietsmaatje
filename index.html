@@ -89,38 +89,6 @@
       position: relative;
     }
 
-    #statusbar-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: env(safe-area-inset-top, 44px);
-      min-height: 44px;
-      pointer-events: none;
-      z-index: 9999;
-      background: transparent;
-    }
-
-    body.page-weer #statusbar-overlay,
-    body.page-weer.is-standalone::before {
-      background: #d8f1ff;
-    }
-
-    body.page-water #statusbar-overlay,
-    body.page-water.is-standalone::before {
-      background: #0a3d4a;
-    }
-
-    body.page-planner #statusbar-overlay,
-    body.page-planner.is-standalone::before {
-      background: #2d1a4a;
-    }
-
-    body.page-menu #statusbar-overlay,
-    body.page-menu.is-standalone::before {
-      background: #2d2f34;
-    }
-
     html.is-standalone, body.is-standalone {
       background-repeat: no-repeat;
       background-size: cover;
@@ -261,7 +229,6 @@
 </head>
 <body>
 
-  <div id="statusbar-overlay"></div>
   <div id="app"></div>
 
   <nav class="pill-nav">

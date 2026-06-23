@@ -5,14 +5,12 @@ export const page = {
         /* Basis Layout */
         .weather-page {
           position: fixed;
-          inset: 0;
-          overflow-y: auto;
-          overflow-x: hidden;
-          background: linear-gradient(160deg, #d8f1ff 0%, #9edcff 40%, #67c7ff 100%);
-          color: #1C1C1E;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-          padding: calc(env(safe-area-inset-top, 20px) + 4px) 16px calc(env(safe-area-inset-bottom, 80px) + 16px) 16px;
-          min-height: 100vh;
+      inset: 0;
+      background: linear-gradient(160deg, #2d1a4a 0%, #2d1a4a 22%, #4a1a8a 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
         }
 
         /* Hero Sectie (Direct op de achtergrond) */
