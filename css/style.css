@@ -20,9 +20,12 @@ html, body {
 }
 
 .nav-container {
-    padding: 16px;
-    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    /* We halen de 'padding' weg en gebruiken alleen de broodnodige ruimte */
+    padding: 0 10px; 
+    /* De env() zorgt voor de home-bar, die 10px is de ruimte tussen het menu en de rand */
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
     flex-shrink: 0;
+    margin-top: auto; /* Zorgt dat hij altijd naar beneden zakt in de flex-container */
 }
 
 .menu-pill {
