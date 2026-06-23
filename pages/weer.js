@@ -339,21 +339,29 @@ export const page = {
           const data = await res.json();
           if (data.results && data.results.length) {
             const place = data.results[0];
-            return cleanName(place.name || place.address?.city || place.address?.town || place.address?.village || place.address?.county);
+            // Pak de stad, maar als het een getal is (zoals "56"), probeer het volgende veld
+            const name = place.name || place.address?.city || place.address?.town || place.address?.village || place.address?.county;
+            if (name && isNaN(name)) return cleanName(name);
           }
         }
       } catch (e) {}
 
+      // Fallback naar Nominatim
       try {
         const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=nl`;
         const res = await fetch(url, { headers: { 'User-Agent': 'Fietsmaatje/1.0' } });
         if (res.ok) {
           const data = await res.json();
+          if (data.address) {
+            // Zoek naar de meest logische naam in de adresstructuur
+            const town = data.address.city || data.address.town || data.address.village || data.address.municipality;
+            if (town) return cleanName(town);
+          }
           return cleanName((data.display_name || '').split(',')[0]);
         }
       } catch (e) {}
 
-      return 'Onbekende locatie';
+      return 'Je locatie';
     };
 
     const fetchWeather = async (lat, lon, timezone) => {
