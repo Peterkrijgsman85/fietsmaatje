@@ -1,6 +1,6 @@
 {
   "name": "Fietsmaatje",
-  "short_name": "Fiets",
+  "short_name": "Fietsmaatje",
   "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#0f2c5a",
