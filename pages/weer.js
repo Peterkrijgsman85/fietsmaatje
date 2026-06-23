@@ -22,7 +22,7 @@ export const page = {
         }
 
         .score-badge {
-          background: #FF453A;
+          background: #8E8E93; /* Standaard grijs, wordt overschreven via JS */
           color: white;
           font-weight: 700;
           font-size: 0.85rem;
@@ -32,7 +32,8 @@ export const page = {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          box-shadow: 0 4px 10px rgba(255, 69, 58, 0.2);
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+          transition: background-color 0.3s ease;
         }
 
         .location-title {
@@ -145,7 +146,16 @@ export const page = {
 
         .hourly-time { font-size: 0.85rem; font-weight: 500; }
         .hourly-icon { font-size: 1.8rem; line-height: 1; }
-        .hourly-score-pill { font-weight: 700; color: #FF453A; font-size: 0.95rem; }
+        
+        /* De nieuwe vierkant-afgeronde badge voor het cijfer in de lijst */
+        .hourly-score-pill { 
+          font-weight: 700; 
+          color: #FFFFFF; 
+          font-size: 0.95rem; 
+          padding: 4px 10px; /* Vierkantere verhouding */
+          border-radius: 8px; /* Afgeronde hoekjes i.p.v. een pil-vorm */
+        }
+        
         .hourly-detail { font-size: 0.7rem; color: #8E8E93; font-weight: 500; }
 
         /* Advies overzicht */
@@ -175,8 +185,8 @@ export const page = {
       </style>
 
       <div class="hero-section">
-        <div class="score-badge">
-          🚴 Fiets-score: <span id="bike-score-display">–</span>
+        <div class="score-badge" id="top-score-badge">
+          🚴 Weer ophalen...
         </div>
         
         <div class="location-title" id="weather-location">Locatie laden...</div>
@@ -227,45 +237,21 @@ export const page = {
     let isCancelled = false;
 
     const icons = {
-      0: ['☀️', 'Zonnig'],
-      1: ['🌤', 'Grotendeels zonnig'],
-      2: ['⛅️', 'Half bewolkt'],
-      3: ['☁️', 'Bewolkt'],
-      45: ['🌫', 'Mistig'],
-      48: ['🌫', 'Dichte mist'],
-      51: ['🌦', 'Lichte motregen'],
-      53: ['🌦', 'Motregen'],
-      55: ['🌧', 'Dikke motregen'],
-      56: ['🌧', 'IJzige motregen'],
-      57: ['🌧', 'IJzige motregen'],
-      61: ['🌦', 'Lichte regen'],
-      63: ['🌧', 'Regen'],
-      65: ['🌧', 'Zware regen'],
-      66: ['🌧', 'IJzige regen'],
-      67: ['🌧', 'IJzige regen'],
-      71: ['🌨', 'Sneeuw'],
-      73: ['🌨', 'Zware sneeuw'],
-      75: ['🌨', 'Sneeuwval'],
-      77: ['🌨', 'Sneeuwkorrels'],
-      80: ['⛈', 'Buien'],
-      81: ['⛈', 'Stevige buien'],
-      82: ['⛈', 'Zware buien'],
-      85: ['❄️', 'Sneeuwbuien'],
-      86: ['❄️', 'Zware sneeuwbuien'],
-      95: ['🌩', 'Onweer'],
-      96: ['⛈', 'Onweer met hagel'],
+      0: ['☀️', 'Zonnig'], 1: ['🌤', 'Grotendeels zonnig'], 2: ['⛅️', 'Half bewolkt'],
+      3: ['☁️', 'Bewolkt'], 45: ['🌫', 'Mistig'], 48: ['🌫', 'Dichte mist'],
+      51: ['🌦', 'Lichte motregen'], 53: ['🌦', 'Motregen'], 55: ['🌧', 'Dikke motregen'],
+      56: ['🌧', 'IJzige motregen'], 57: ['🌧', 'IJzige motregen'], 61: ['🌦', 'Lichte regen'],
+      63: ['🌧', 'Regen'], 65: ['🌧', 'Zware regen'], 66: ['🌧', 'IJzige regen'],
+      67: ['🌧', 'IJzige regen'], 71: ['🌨', 'Sneeuw'], 73: ['🌨', 'Zware sneeuw'],
+      75: ['🌨', 'Sneeuwval'], 77: ['🌨', 'Sneeuwkorrels'], 80: ['⛈', 'Buien'],
+      81: ['⛈', 'Stevige buien'], 82: ['⛈', 'Zware buien'], 85: ['❄️', 'Sneeuwbuien'],
+      86: ['❄️', 'Zware sneeuwbuien'], 95: ['🌩', 'Onweer'], 96: ['⛈', 'Onweer met hagel'],
       99: ['⛈', 'Ernstig onweer']
     };
 
     const adviceEmojis = {
-      thermo: '❄️',
-      long: '👕',
-      short: '👖',
-      wind: '💨',
-      rain: '🌧',
-      windchill: '❄️',
-      storm: '⚠️',
-      default: '✨'
+      thermo: '❄️', long: '👕', short: '👖', wind: '💨',
+      rain: '🌧', windchill: '❄️', storm: '⚠️', default: '✨'
     };
 
     const windDirection = deg => {
@@ -279,41 +265,45 @@ export const page = {
       return idx === -1 ? 12 : idx;
     };
 
+    // De geüpdatete score logica
     const getScore = ({ weathercode, temperature, windspeed, precipitation_probability }) => {
       let score = 10;
+      
       if ([51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99].includes(weathercode)) score -= 3;
       if ([71,73,75,85,86].includes(weathercode)) score -= 3;
-      score -= Math.max(0, Math.abs(temperature - 18) / 4);
-      score -= Math.min(3, windspeed / 14);
-      score -= Math.min(2, precipitation_probability / 15);
-      return Math.max(1, Math.round(score));
+
+      if (temperature > 24) {
+        score -= (temperature - 24) / 3;
+      } else if (temperature < 19) {
+        score -= (19 - temperature) / 4;
+      }
+
+      score -= Math.min(4, windspeed / 12);
+      score -= Math.min(3, precipitation_probability / 20);
+
+      return Math.max(1, Math.min(10, Math.round(score)));
+    };
+
+    // Hulpscript voor tekst en kleuren
+    const getScoreInfo = (score) => {
+      if (score >= 9) return { text: 'Ideaal fietsweer', color: '#34C759' }; // Groen
+      if (score >= 7) return { text: 'Prima fietsweer', color: '#34C759' }; // Groen
+      if (score >= 5) return { text: 'Redelijk te doen', color: '#FF9500' }; // Oranje
+      if (score >= 3) return { text: 'Matig fietsweer', color: '#FF9500' }; // Oranje
+      return { text: 'Beter binnen blijven', color: '#FF3B30' }; // Rood
     };
 
     const getAdvice = ({ temperature, feels_like, windspeed, weathercode, precipitation_probability }) => {
       const advice = [];
-      
-      if (temperature <= 8) {
-        advice.push({ emoji: adviceEmojis.thermo, text: 'Lange thermo + winddichte jas' });
-      } else if (temperature <= 14) {
-        advice.push({ emoji: adviceEmojis.long, text: 'Lange mouwen en een licht jack' });
-      } else if (temperature <= 20) {
-        advice.push({ emoji: adviceEmojis.short, text: 'Korte mouwen met een licht vest' });
-      } else {
-        advice.push({ emoji: adviceEmojis.short, text: 'Korte mouwen en korte broek' });
-      }
+      if (temperature <= 8) advice.push({ emoji: adviceEmojis.thermo, text: 'Lange thermo + winddichte jas' });
+      else if (temperature <= 14) advice.push({ emoji: adviceEmojis.long, text: 'Lange mouwen en een licht jack' });
+      else if (temperature <= 20) advice.push({ emoji: adviceEmojis.short, text: 'Korte mouwen met een licht vest' });
+      else advice.push({ emoji: adviceEmojis.short, text: 'Korte mouwen en korte broek' });
 
-      if (windspeed >= 30) {
-        advice.push({ emoji: adviceEmojis.wind, text: 'Let op wind: lagere versnelling kiezen' });
-      }
-      if (precipitation_probability >= 40) {
-        advice.push({ emoji: adviceEmojis.rain, text: 'Regenkleding of spatborden aan' });
-      }
-      if (feels_like < temperature - 3) {
-        advice.push({ emoji: adviceEmojis.windchill, text: 'Extra laag mee nemen' });
-      }
-      if ([95,96,99].includes(weathercode)) {
-        advice.push({ emoji: adviceEmojis.storm, text: 'Paarse flags: uitstel aanbevolen' });
-      }
+      if (windspeed >= 30) advice.push({ emoji: adviceEmojis.wind, text: 'Let op wind: lagere versnelling kiezen' });
+      if (precipitation_probability >= 40) advice.push({ emoji: adviceEmojis.rain, text: 'Regenkleding of spatborden aan' });
+      if (feels_like < temperature - 3) advice.push({ emoji: adviceEmojis.windchill, text: 'Extra laag mee nemen' });
+      if ([95,96,99].includes(weathercode)) advice.push({ emoji: adviceEmojis.storm, text: 'Paarse flags: uitstel aanbevolen' });
       
       return advice.length ? advice : [{ emoji: adviceEmojis.default, text: 'Frisse rit! Let wel op het verkeer.' }];
     };
@@ -333,7 +323,6 @@ export const page = {
         resolve({ latitude: 52.3676, longitude: 4.9041, label: 'Amsterdam' });
         return;
       }
-
       navigator.geolocation.getCurrentPosition(
         pos => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
         () => resolve({ latitude: 52.3676, longitude: 4.9041, label: 'Amsterdam' }),
@@ -345,29 +334,24 @@ export const page = {
 
     const reverseGeo = async (lat, lon) => {
       try {
-        const response = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&count=1&language=nl`);
-        if (response.ok) {
-          const data = await response.json();
+        const res = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&count=1&language=nl`);
+        if (res.ok) {
+          const data = await res.json();
           if (data.results && data.results.length) {
             const place = data.results[0];
             return cleanName(place.name || place.address?.city || place.address?.town || place.address?.village || place.address?.county);
           }
         }
-      } catch (e) {
-        // fallback
-      }
+      } catch (e) {}
 
       try {
         const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=nl`;
-        const response = await fetch(url, { headers: { 'User-Agent': 'Fietsmaatje/1.0' } });
-        if (response.ok) {
-          const data = await response.json();
-          const display = data.display_name || '';
-          return cleanName(display.split(',')[0]);
+        const res = await fetch(url, { headers: { 'User-Agent': 'Fietsmaatje/1.0' } });
+        if (res.ok) {
+          const data = await res.json();
+          return cleanName((data.display_name || '').split(',')[0]);
         }
-      } catch (e) {
-        // fallback
-      }
+      } catch (e) {}
 
       return 'Onbekende locatie';
     };
@@ -381,10 +365,7 @@ export const page = {
       url.searchParams.set('timezone', timezone);
       url.searchParams.set('model', 'ecmwf_ifs');
       const response = await fetch(url.toString());
-      if (!response.ok) {
-        const body = await response.text();
-        throw new Error(`Weather fetch failed: ${response.status} ${body}`);
-      }
+      if (!response.ok) throw new Error('Weather fetch failed');
       return response.json();
     };
 
@@ -414,11 +395,13 @@ export const page = {
           precipitation_probability: weather.hourly.precipitation_probability[idx]
         }));
         
+        const info = getScoreInfo(value);
+        
         container.innerHTML += `
           <div class="hourly-item">
             <div class="hourly-time">${formatTime(time)}</div>
             <div class="hourly-icon">${icon}</div>
-            <div class="hourly-score-pill">${value}</div>
+            <div class="hourly-score-pill" style="background-color: ${info.color};">${value}</div>
             <div class="hourly-detail">${dir} ${bft}Bft</div>
           </div>
         `;
@@ -442,22 +425,12 @@ export const page = {
       const T = temperature;
       const RH = Math.max(0, Math.min(100, humidity));
       const v = Math.max(0.5, windspeed / 3.6);
-      
-      const activityMultiplier = {
-        'rest': 0.4,
-        'light': 0.8,
-        'moderate': 1.0,
-        'cycling': 1.2,
-        'vigorous': 1.5
-      }[activity] || 1.0;
-
+      const activityMultiplier = { 'rest': 0.4, 'light': 0.8, 'moderate': 1.0, 'cycling': 1.2, 'vigorous': 1.5 }[activity] || 1.0;
       const dewPointSimple = T - ((100 - RH) / 5);
       const Tw = dewPointSimple * 0.6 + T * 0.4;
       const Tg = T + 14 * Math.sqrt(v) * (RH / 100 - 0.5);
-      
       const wbgt = 0.7 * Tw + 0.2 * Tg + 0.1 * T;
       const adjustedWbgt = wbgt + (activityMultiplier - 1.0) * 3;
-      
       return (Math.max(T - 10, adjustedWbgt)).toFixed(1);
     };
 
@@ -486,18 +459,29 @@ export const page = {
         const code = current.weathercode;
         const icon = icons[code] ? icons[code][0] : '❔';
         const description = icons[code] ? icons[code][1] : 'Onbekend weer';
-        const windDir = windDirection(current.winddirection);
         const bft = bftFromKmh(current.windspeed);
+        
+        const currentIndex = weather.hourly.time.indexOf(weather.current_weather.time);
+        
         const score = getScore({
           weathercode: code,
           temperature: current.temperature,
           windspeed: current.windspeed,
-          precipitation_probability: weather.hourly.precipitation_probability[weather.hourly.time.indexOf(weather.current_weather.time)] ?? 0
+          precipitation_probability: weather.hourly.precipitation_probability[currentIndex] ?? 0
         });
-        const currentIndex = weather.hourly.time.indexOf(weather.current_weather.time);
+
+        // Top Badge bijwerken met tekst en kleur!
+        const scoreInfo = getScoreInfo(score);
+        const topBadge = document.getElementById('top-score-badge');
+        if (topBadge) {
+          topBadge.textContent = '🚴 ' + scoreInfo.text;
+          topBadge.style.backgroundColor = scoreInfo.color;
+        }
+
         const feelsLike = weather.hourly.apparent_temperature[currentIndex] ?? current.temperature;
         const humidity = weather.hourly.relativehumidity_2m[currentIndex] ?? 0;
         const wbgtValue = formatWbgt(current.temperature, humidity, current.windspeed, 'cycling');
+        
         const advice = getAdvice({
           temperature: current.temperature,
           feels_like: feelsLike,
@@ -508,7 +492,6 @@ export const page = {
 
         setText('weather-icon', icon);
         setText('weather-caption', description);
-        setText('bike-score-display', score);
         setText('temperature', `${Math.round(current.temperature)}°`);
         setText('feels-like', `${Math.round(feelsLike)}°`);
         setText('wbgt', `${wbgtValue}°C`);
@@ -527,8 +510,6 @@ export const page = {
 
     updateWeather();
 
-    return () => {
-      isCancelled = true;
-    };
+    return () => { isCancelled = true; };
   }
 };
