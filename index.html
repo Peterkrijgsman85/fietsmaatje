@@ -52,9 +52,10 @@
 
     .pill-nav {
       position: fixed;
-      bottom: calc(16px + env(safe-area-inset-bottom));
-      left: 16px;
-      right: 16px;
+      /* Plaats zo laag mogelijk, gebruik safe-area inset en kleine offset */
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
+      left: 12px;
+      right: 12px;
       background: rgba(255, 255, 255, 0.18);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
