@@ -523,13 +523,58 @@ export const page = {
         const location = await getLocation();
         if (isCancelled) return;
 
-        const placeName = location.label || await reverseGeo(location.latitude, location.longitude);
-        if (isCancelled) return;
-        setText('weather-location', placeName);
+        // === START CACHING LOGICA ===
+        const CACHE_KEY = 'fietsmaatje_weather_cache';
+        const CACHE_TTL = 5 * 60 * 1000; // 5 minuten in milliseconden
 
-        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Amsterdam';
-        const weather = await fetchWeather(location.latitude, location.longitude, timezone);
-        if (isCancelled) return;
+        let placeName;
+        let weather;
+        let useCache = false;
+
+        const cachedData = localStorage.getItem(CACHE_KEY);
+        if (cachedData) {
+          try {
+            const parsed = JSON.parse(cachedData);
+            const isFresh = (Date.now() - parsed.timestamp) < CACHE_TTL;
+            
+            // Rond af op 2 decimalen (~1 km) om kleine GPS-schommelingen op te vangen
+            const isSameLocation = Math.round(parsed.lat * 100) === Math.round(location.latitude * 100) &&
+                                   Math.round(parsed.lon * 100) === Math.round(location.longitude * 100);
+
+            if (isFresh && isSameLocation) {
+              placeName = parsed.placeName;
+              weather = parsed.weather;
+              useCache = true;
+              console.log('☀️ Weergegevens geladen uit cache (bespaart API request)');
+            }
+          } catch (e) {
+            console.warn('Weercache defect, live gegevens ophalen...');
+          }
+        }
+
+        // Als er geen geldige cache is, halen we de gegevens live op
+        if (!useCache) {
+          console.log('🔄 Live weer en locatie ophalen via API...');
+          placeName = location.label || await reverseGeo(location.latitude, location.longitude);
+          if (isCancelled) return;
+
+          const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Amsterdam';
+          weather = await fetchWeather(location.latitude, location.longitude, timezone);
+          if (isCancelled) return;
+
+          // Sla de nieuwe gegevens direct op in de cache
+          localStorage.setItem(CACHE_KEY, JSON.stringify({
+            timestamp: Date.now(),
+            lat: location.latitude,
+            lon: location.longitude,
+            placeName: placeName,
+            weather: weather
+          }));
+        }
+        // === EINDE CACHING LOGICA ===
+
+        // Vanaf hier blijft je originele render-code exact hetzelfde:
+        setText('weather-location', placeName);
 
         const current = weather.current_weather;
         const code = current.weathercode;
@@ -582,7 +627,6 @@ export const page = {
         showFetchError('Kon het weer niet laden. Check je verbinding.');
       }
     };
-
     updateWeather();
 
     return () => { isCancelled = true; };
