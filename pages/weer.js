@@ -317,8 +317,8 @@ export const page = {
       if ([51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99].includes(weathercode)) score -= 3;
       if ([71,73,75,85,86].includes(weathercode)) score -= 3;
 
-      if (temperature > 24) {
-        score -= (temperature - 24) / 3;
+      if (temperature > 26) {
+        score -= (temperature - 26) / 3;
       } else if (temperature < 19) {
         score -= (19 - temperature) / 4;
       }

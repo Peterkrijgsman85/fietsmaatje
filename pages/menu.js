@@ -52,6 +52,30 @@ export const page = {
           <span style="font-size: 18px; color: rgba(15, 44, 90, 0.4); font-weight: 700; padding-right: 4px;">›</span>
         </div>
 
+        <div id="menu-btn-ridelog" style="
+          background: rgba(255, 255, 255, 0.45);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.4);
+          border-radius: 24px;
+          padding: 18px;
+          box-shadow: 0 8px 32px rgba(15, 44, 90, 0.04);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          transition: background 0.2s ease, transform 0.1s ease;
+        " ontouchstart="this.style.background='rgba(255,255,255,0.6)'; this.style.transform='scale(0.98)';" ontouchend="this.style.background='rgba(255,255,255,0.45)'; this.style.transform='scale(1)';">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <span style="font-size: 24px; background: rgba(255,255,255,0.6); padding: 6px; border-radius: 12px; display: inline-flex;">📝</span>
+            <div>
+              <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: #0f2c5a;">Strava Weerbericht Generator</h3>
+              <p style="margin: 2px 0 0 0; font-size: 12px; color: rgba(15, 44, 90, 0.6); font-weight: 500;">Genereer data voor je rittenverslag</p>
+            </div>
+          </div>
+          <span style="font-size: 18px; color: rgba(15, 44, 90, 0.4); font-weight: 700; padding-right: 4px;">›</span>
+        </div>
+
         <div style="
           background: rgba(255, 255, 255, 0.45);
           backdrop-filter: blur(20px);
@@ -108,14 +132,19 @@ export const page = {
   `,
 
   init() {
-    // Luister naar de klik op de bandenspanning-knop
+    // Bestaande klik voor pressure
     const pressureBtn = document.getElementById('menu-btn-pressure');
     if (pressureBtn) {
       pressureBtn.addEventListener('click', () => {
-        // Roep de globale navigate functie aan die we zojuist in app.js hebben gemaakt
-        if (typeof window.navigate === 'function') {
-          window.navigate('pressure');
-        }
+        if (typeof window.navigate === 'function') window.navigate('pressure');
+      });
+    }
+
+    // NIEUW: Klik voor ridelog
+    const ridelogBtn = document.getElementById('menu-btn-ridelog');
+    if (ridelogBtn) {
+      ridelogBtn.addEventListener('click', () => {
+        if (typeof window.navigate === 'function') window.navigate('ridelog');
       });
     }
   }

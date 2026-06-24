@@ -2,10 +2,11 @@ import { page as weer } from './pages/weer.js';
 import { page as water } from './pages/water.js';
 import { page as planner } from './pages/planner.js';
 import { page as menu } from './pages/menu.js';
-import { page as pressure } from './pages/pressure.js'; // 1. Importeer de nieuwe pagina
+import { page as pressure } from './pages/pressure.js';
+import { page as ridelog } from './pages/ridelog.js'; // 1. Importeer ridelog
 
-// 2. Voeg pressure toe aan de beschikbare pagina's
-const pages = { weer, water, planner, menu, pressure }; 
+// 2. Voeg ridelog toe aan het pages object
+const pages = { weer, water, planner, menu, pressure, ridelog };
 const app = document.getElementById('app');
 const buttons = document.querySelectorAll('.pill-nav button');
 
