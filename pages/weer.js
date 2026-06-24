@@ -6,7 +6,6 @@ export const page = {
         .weather-page {
           position: relative;
           width: 100%;
-          /* GEEN achtergrondkleuren of gradients meer hier! */
           color: #1C1C1E;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
           padding: 10px 16px 110px;
@@ -23,7 +22,7 @@ export const page = {
         }
 
         .score-badge {
-          background: #8E8E93; /* Standaard grijs, wordt overschreven via JS */
+          background: #8E8E93;
           color: white;
           font-weight: 700;
           font-size: 0.85rem;
@@ -33,14 +32,15 @@ export const page = {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
           transition: background-color 0.3s ease;
         }
 
         .location-title {
           font-size: 1.8rem;
-          font-weight: 400;
-          letter-spacing: 0.02em;
+          font-weight: 500;
+          letter-spacing: -0.01em;
+          color: #0f2c5a;
           margin-bottom: 4px;
         }
 
@@ -58,16 +58,17 @@ export const page = {
 
         .hero-temp {
           font-size: 5.5rem;
-          font-weight: 200; /* Typisch iOS: dunne letters voor grote temperaturen */
+          font-weight: 200;
           letter-spacing: -2px;
+          color: #0f2c5a;
           margin-left: 4px;
         }
 
         .hero-desc {
           font-size: 1.1rem;
-          font-weight: 500;
-          opacity: 0.8;
-          margin-top: -8px;
+          font-weight: 600;
+          color: rgba(15, 44, 90, 0.7);
+          margin-top: -6px;
         }
 
         /* Horizontale Stats Rij */
@@ -76,7 +77,7 @@ export const page = {
           align-items: center;
           justify-content: center;
           gap: 16px;
-          margin-top: 20px;
+          margin-top: 24px;
         }
 
         .stat-item {
@@ -89,38 +90,42 @@ export const page = {
         .stat-divider {
           width: 1px;
           height: 24px;
-          background-color: #D1D1D6;
+          background-color: rgba(15, 44, 90, 0.15);
         }
 
         .stat-label {
           font-size: 0.7rem;
-          color: #8E8E93;
+          color: rgba(15, 44, 90, 0.6);
           text-transform: uppercase;
-          font-weight: 600;
+          font-weight: 700;
           letter-spacing: 0.05em;
         }
 
         .stat-val {
           font-size: 1rem;
           font-weight: 600;
+          color: #0f2c5a;
         }
 
-        /* Kaart Containers voor de lijsten */
+        /* NEXT LEVEL iOS: Glazen Kaart Containers */
         .card-container {
-          background: #FFFFFF;
-          border-radius: 20px;
-          padding: 16px;
-          box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+          background: rgba(255, 255, 255, 0.45); /* Ultra-transparant wit */
+          backdrop-filter: blur(20px); /* De magische iOS blur effect */
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.4); /* Subtiele glanzende rand */
+          border-radius: 24px; /* Prachtige vloeiende hoeken */
+          padding: 18px;
+          box-shadow: 0 8px 32px rgba(15, 44, 90, 0.04); /* Zachte diepe schaduw */
           margin-bottom: 20px;
         }
 
         .section-title {
-          font-size: 0.8rem;
-          font-weight: 600;
-          color: #8E8E93;
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: rgba(15, 44, 90, 0.5); /* Echte iOS-stijl muted header text */
           text-transform: uppercase;
-          letter-spacing: 0.05em;
-          margin: 0 0 16px 4px;
+          letter-spacing: 0.06em;
+          margin: 0 0 14px 4px;
           display: flex;
           align-items: center;
           gap: 6px;
@@ -129,56 +134,96 @@ export const page = {
         /* 24-uurs overzicht */
         .hourly-scroll {
           display: flex;
-          gap: 20px;
+          gap: 10px;
           overflow-x: auto;
-          padding-bottom: 8px;
+          padding-bottom: 4px;
           scrollbar-width: none;
           -webkit-overflow-scrolling: touch;
         }
         .hourly-scroll::-webkit-scrollbar { display: none; }
 
+        /* Uur-items als losse glazen widgets */
         .hourly-item {
           display: flex;
           flex-direction: column;
           align-items: center;
-          min-width: 50px;
-          gap: 10px;
+          min-width: 58px;
+          gap: 6px;
+          background: rgba(255, 255, 255, 0.35);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          padding: 12px 6px;
+          border-radius: 16px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.01);
         }
 
-        .hourly-time { font-size: 0.85rem; font-weight: 500; }
-        .hourly-icon { font-size: 1.8rem; line-height: 1; }
-        
-        /* De nieuwe vierkant-afgeronde badge voor het cijfer in de lijst */
-        .hourly-score-pill { 
-          font-weight: 700; 
-          color: #FFFFFF; 
-          font-size: 0.95rem; 
-          padding: 4px 10px; /* Vierkantere verhouding */
-          border-radius: 8px; /* Afgeronde hoekjes i.p.v. een pil-vorm */
+        .hourly-time { 
+          font-size: 0.75rem; 
+          font-weight: 600; 
+          color: rgba(15, 44, 90, 0.7); 
         }
         
-        .hourly-detail { font-size: 0.7rem; color: #8E8E93; font-weight: 500; }
+        .hourly-icon { 
+          font-size: 1.6rem; 
+          line-height: 1; 
+          margin: 2px 0;
+        }
+        
+        .hourly-temp { 
+          font-size: 1rem; 
+          font-weight: 700; 
+          color: #0f2c5a; 
+        }
+        
+        .hourly-score-pill { 
+          font-weight: 800; 
+          color: #FFFFFF; 
+          font-size: 0.75rem; 
+          padding: 2px 8px;
+          border-radius: 6px;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .hourly-detail { 
+          font-size: 0.65rem; 
+          color: rgba(15, 44, 90, 0.6); 
+          font-weight: 700; 
+          letter-spacing: -0.01em;
+        }
 
         /* Advies overzicht */
         .advice-list {
           display: flex;
           flex-direction: column;
+          gap: 8px; /* Ruimte tussen de widgets */
         }
 
+        /* Kledingadvies omgetoverd naar strakke banners */
         .advice-item {
           display: flex;
           align-items: center;
-          gap: 16px;
-          padding: 14px 0;
-          border-bottom: 1px solid #E5E5EA;
-        }
-        .advice-item:last-child {
-          border-bottom: none;
-          padding-bottom: 4px;
+          gap: 14px;
+          padding: 12px 14px;
+          background: rgba(255, 255, 255, 0.35);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: 16px;
         }
 
-        .advice-emoji { font-size: 1.5rem; }
-        .advice-text { font-size: 0.95rem; font-weight: 500; }
+        .advice-emoji { 
+          font-size: 1.4rem; 
+          background: rgba(255, 255, 255, 0.6);
+          padding: 6px;
+          border-radius: 10px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        
+        .advice-text { 
+          font-size: 0.9rem; 
+          font-weight: 600; 
+          color: #0f2c5a; 
+        }
 
         /* Laders */
         .loading-overlay { text-align: center; padding: 40px 20px; color: #8E8E93; font-weight: 500; }
@@ -266,7 +311,6 @@ export const page = {
       return idx === -1 ? 12 : idx;
     };
 
-    // De geüpdatete score logica
     const getScore = ({ weathercode, temperature, windspeed, precipitation_probability }) => {
       let score = 10;
       
@@ -285,13 +329,12 @@ export const page = {
       return Math.max(1, Math.min(10, Math.round(score)));
     };
 
-    // Hulpscript voor tekst en kleuren
     const getScoreInfo = (score) => {
-      if (score >= 9) return { text: 'Ideaal fietsweer', color: '#34C759' }; // Groen
-      if (score >= 7) return { text: 'Prima fietsweer', color: '#34C759' }; // Groen
-      if (score >= 5) return { text: 'Redelijk te doen', color: '#FF9500' }; // Oranje
-      if (score >= 3) return { text: 'Matig fietsweer', color: '#FF9500' }; // Oranje
-      return { text: 'Beter binnen blijven', color: '#FF3B30' }; // Rood
+      if (score >= 9) return { text: 'Ideaal fietsweer', color: '#34C759' };
+      if (score >= 7) return { text: 'Prima fietsweer', color: '#34C759' };
+      if (score >= 5) return { text: 'Redelijk te doen', color: '#FF9500' };
+      if (score >= 3) return { text: 'Matig fietsweer', color: '#FF9500' };
+      return { text: 'Beter binnen blijven', color: '#FF3B30' };
     };
 
     const getAdvice = ({ temperature, feels_like, windspeed, weathercode, precipitation_probability }) => {
@@ -340,21 +383,18 @@ export const page = {
           const data = await res.json();
           if (data.results && data.results.length) {
             const place = data.results[0];
-            // Pak de stad, maar als het een getal is (zoals "56"), probeer het volgende veld
             const name = place.name || place.address?.city || place.address?.town || place.address?.village || place.address?.county;
             if (name && isNaN(name)) return cleanName(name);
           }
         }
       } catch (e) {}
 
-      // Fallback naar Nominatim
       try {
         const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=nl`;
         const res = await fetch(url, { headers: { 'User-Agent': 'Fietsmaatje/1.0' } });
         if (res.ok) {
           const data = await res.json();
           if (data.address) {
-            // Zoek naar de meest logische naam in de adresstructuur
             const town = data.address.city || data.address.town || data.address.village || data.address.municipality;
             if (town) return cleanName(town);
           }
@@ -394,6 +434,7 @@ export const page = {
         const idx = startIndex + offset;
         const code = weather.hourly.weathercode[idx];
         const icon = icons[code] ? icons[code][0] : '❔';
+        const hourlyTemp = Math.round(weather.hourly.temperature_2m[idx]);
         const wind = weather.hourly.windspeed_10m[idx];
         const dir = windDirection(weather.hourly.winddirection_10m[idx]);
         const bft = bftFromKmh(wind);
@@ -410,6 +451,7 @@ export const page = {
           <div class="hourly-item">
             <div class="hourly-time">${formatTime(time)}</div>
             <div class="hourly-icon">${icon}</div>
+            <div class="hourly-temp">${hourlyTemp}°</div>
             <div class="hourly-score-pill" style="background-color: ${info.color};">${value}</div>
             <div class="hourly-detail">${dir} ${bft}Bft</div>
           </div>
@@ -479,7 +521,6 @@ export const page = {
           precipitation_probability: weather.hourly.precipitation_probability[currentIndex] ?? 0
         });
 
-        // Top Badge bijwerken met tekst en kleur!
         const scoreInfo = getScoreInfo(score);
         const topBadge = document.getElementById('top-score-badge');
         if (topBadge) {
