@@ -94,7 +94,7 @@ export const page = {
 
       <button id="water-btn-location" style="
         position: absolute;
-        bottom: 110px; /* Pas dit aan als je basismenu hoger is */
+        bottom: 180px; 
         right: 16px;
         z-index: 99999;
         width: 44px;
@@ -110,12 +110,12 @@ export const page = {
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: bottom 0.3s ease;
+        transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       ">🛰️</button>
 
       <div id="water-details-sheet" style="
         position: absolute;
-        bottom: 110px; /* Pas dit aan om de kaart hoger/lager boven je menu te plaatsen */
+        bottom: 180px; 
         left: 16px;
         right: 16px;
         z-index: 99999;
@@ -148,7 +148,7 @@ export const page = {
           cursor: pointer;
         ">✕</button>
 
-        <div style="display: flex; justify-between; align-items: center; border-bottom: 1px solid rgba(15, 44, 90, 0.08); padding-bottom: 8px; margin-right: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(15, 44, 90, 0.08); padding-bottom: 8px; margin-right: 20px;">
           <h3 id="water-details-distance" style="margin: 0; font-size: 18px; font-weight: 800; color: #0f2c5a; display: flex; align-items: center; gap: 6px;">
             <span id="water-details-emoji">💧</span> <span id="water-details-dist-txt">0.0 km</span>
           </h3>
@@ -272,6 +272,11 @@ export const page = {
   },
 
   setupWaterMap() {
+    // === HOOGTE-INSTELLINGEN (Pas hier aan indien nodig!) ===
+    const BASE_BOTTOM = 180;      // Hoeveel pixels boven de schermrand starten de elementen (was 110)
+    const GPS_OPEN_OFFSET = 220;  // Hoeveel pixels de GPS-knop EXTRA omhoog schiet als de card opent
+
+    // Elementen selecteren
     const loadingEl = document.getElementById('water-loading');
     const zoomWarningEl = document.getElementById('water-zoom-warning');
     const btnLegend = document.getElementById('water-btn-legend');
@@ -285,10 +290,14 @@ export const page = {
     const sheetBadge = document.getElementById('water-details-badge');
     const sheetCity = document.getElementById('water-details-city');
     const sheetDesc = document.getElementById('water-details-desc');
-    const scriptRoute = document.getElementById('water-details-route');
+    const sheetRoute = document.getElementById('water-details-route');
 
     const modalLegend = document.getElementById('water-legend-modal');
     const modalLegendClose = document.getElementById('water-legend-close');
+
+    // Zet de initiële CSS hoogtes op basis van de JS variabelen
+    sheetEl.style.bottom = `${BASE_BOTTOM}px`;
+    btnLocation.style.bottom = `${BASE_BOTTOM}px`;
 
     let map = null;
     let userMarker = null;
@@ -300,10 +309,6 @@ export const page = {
 
     const CACHE_KEY = 'rivm_water_points_data_v2';
     const CACHE_TTL = 24 * 60 * 60 * 1000;
-
-    // Dynamische hoogtes op basis van de basis bottom positie
-    const BASE_BOTTOM = 110; 
-    const OPEN_BOTTOM = BASE_BOTTOM + 170; // Verschuift de GPS knop exact mee tot boven de geopende card
 
     const calculateDistance = (lat1, lon1, lat2, lon2) => {
       const R = 6371;
@@ -319,7 +324,7 @@ export const page = {
     const getNavigationLink = (lat, lon) => {
       const isApple = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
                       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-      return isApple ? `maps://?q=Drinkwaterpunt&ll=${lat},${lon}` : `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+      return isApple ? `maps://?q=Drinkwaterpunt&ll=${lat},${lon}` : `http://googleusercontent.com/maps.google.com/?q=${lat},${lon}&nav=1`;
     };
 
     const showSheet = (point) => {
@@ -327,7 +332,7 @@ export const page = {
       sheetDistTxt.innerText = point.distanceLabel;
       sheetCity.innerText = point.plaats;
       sheetDesc.innerText = point.beschrijving || 'Geen extra beschrijving beschikbaar.';
-      scriptRoute.href = getNavigationLink(point.lat, point.lon);
+      sheetRoute.href = getNavigationLink(point.lat, point.lon);
 
       if (point.isStoring) {
         sheetBadge.innerText = point.type;
@@ -340,7 +345,7 @@ export const page = {
       }
 
       sheetEl.style.display = 'flex';
-      btnLocation.style.bottom = `${OPEN_BOTTOM}px`;
+      btnLocation.style.bottom = `${BASE_BOTTOM + GPS_OPEN_OFFSET}px`; // GPS knop schiet nu flink omhoog
       setTimeout(() => {
         sheetEl.style.transform = 'translateY(0)';
         sheetEl.style.opacity = '1';
@@ -350,7 +355,7 @@ export const page = {
     const hideSheet = () => {
       sheetEl.style.transform = 'translateY(20px)';
       sheetEl.style.opacity = '0';
-      btnLocation.style.bottom = `${BASE_BOTTOM}px`;
+      btnLocation.style.bottom = `${BASE_BOTTOM}px`; // Reset naar de rustpositie
       setTimeout(() => { sheetEl.style.display = 'none'; }, 300);
     };
 
