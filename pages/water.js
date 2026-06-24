@@ -3,7 +3,6 @@ export const page = {
     <div style="
       position: fixed;
       inset: 0;
-      background: linear-gradient(160deg, #0a3d4a 0%, #0a3d4a 22%, #0e6b7c 100%);
       display: flex;
       align-items: center;
       justify-content: center;

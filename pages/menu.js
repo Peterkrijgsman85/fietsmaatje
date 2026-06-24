@@ -3,7 +3,6 @@ export const page = {
     <div style="
       position: fixed;
       inset: 0;
-      background: linear-gradient(160deg, #2d2f34 0%, #2d2f34 22%, #202429 100%);
       display: flex;
       flex-direction: column;
       justify-content: center;
