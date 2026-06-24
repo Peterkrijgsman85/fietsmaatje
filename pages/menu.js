@@ -1,10 +1,67 @@
 export const page = {
   html: `
+    <style>
+      /* --- FIX VOOR SCROLL & SCROLLBALK --- */
+      #app::-webkit-scrollbar {
+        display: none !important;
+      }
+      #app {
+        -ms-overflow-style: none !important; 
+        scrollbar-width: none !important;
+      }
+
+      /* --- FAQ ACCORDION STYLING --- */
+      .faq-item {
+        background: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 24px;
+        padding: 18px;
+        box-shadow: 0 8px 32px rgba(15, 44, 90, 0.04);
+        overflow: hidden;
+      }
+      .faq-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+      }
+      .faq-title {
+        margin: 0; 
+        font-size: 14px; 
+        font-weight: 700; 
+        color: #0f2c5a; 
+        display: flex; 
+        align-items: center; 
+        gap: 8px;
+      }
+      .faq-chevron {
+        font-size: 18px;
+        color: rgba(15, 44, 90, 0.4);
+        transition: transform 0.3s ease;
+      }
+      .faq-content {
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: all 0.3s ease;
+      }
+      .faq-item.open .faq-content {
+        max-height: 800px; /* Groot genoeg om de tekst te tonen */
+        opacity: 1;
+        margin-top: 12px;
+      }
+      .faq-item.open .faq-chevron {
+        transform: rotate(90deg);
+      }
+    </style>
+
     <div style="
       position: relative;
       width: 100%;
       min-height: 100vh;
-      padding: 10px 16px 110px;
+      padding: 10px 16px 150px; /* Ademruimte boven het menu */
       box-sizing: border-box;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       color: #1C1C1E;
@@ -81,27 +138,51 @@ export const page = {
           box-shadow: 0 8px 32px rgba(15, 44, 90, 0.04);
         ">
           <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 700; color: #0f2c5a; display: flex; align-items: center; gap: 8px;">
-            <span>🚴</span> Hoe werkt de Fietsscore?
+            <span>📱</span> Over Fietsmaatje
           </h3>
           <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #1C1C1E; opacity: 0.8;">
-            De fietsscore (1-10) berekent automatisch je comfort. We wegen temperatuur, wind, neerslag en weertype. Een 10 is perfect terrasweer; storm of regen trekken de score omlaag.
+            Fietsmaatje is jouw ultieme digitale ploegleider. Of je nu wilt weten of je een kort of lang shirt aan moet (Fietsscore), hoeveel krentenbollen er mee moeten (Voeding Planner), hoe hard je banden moeten staan (Bandenspanning), of hoe je achteraf indruk maakt op Strava (Weerbericht Generator): deze app regelt het voor je ritten. Nooit meer onvoorbereid op de pedalen!
           </p>
         </div>
 
         <div style="
-          background: rgba(255, 255, 255, 0.45);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.4);
-          border-radius: 24px;
-          padding: 18px;
-          box-shadow: 0 8px 32px rgba(15, 44, 90, 0.04);
+          margin: 10px 0 -5px 5px; 
+          font-size: 12px; 
+          font-weight: 700; 
+          letter-spacing: 0.1em; 
+          text-transform: uppercase; 
+          color: rgba(15, 44, 90, 0.6);
         ">
-          <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 700; color: #0f2c5a; display: flex; align-items: center; gap: 8px;">
-            <span>🌡️</span> Wat is WBGT?
-          </h3>
-          <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #1C1C1E; opacity: 0.8;">
-            De <em>Wet Bulb Globe Temperature</em> meet hittestress. Het houdt rekening met luchtvochtigheid, zon en wind. Zo zie je direct of het te broeierig is voor een intensieve rit.
-          </p>
+          Veelgestelde vragen
+        </div>
+
+        <div class="faq-item" id="faq-fietsscore">
+          <div class="faq-header" id="header-fietsscore">
+            <h3 class="faq-title"><span>🚴</span> Hoe berekent de Fietsscore?</h3>
+            <span class="faq-chevron">›</span>
+          </div>
+          <div class="faq-content">
+            <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #1C1C1E; opacity: 0.8;">
+              De score start bij een perfecte 10 en wordt via een algoritme stapsgewijs afgebouwd. <strong>Temperatuur</strong> vormt de basis: de sweet spot ligt tussen 17°C en 23°C. Daarbuiten (kou óf extreme hitte) kost dit direct punten. Vervolgens passen we harde aftrekken toe voor <strong>neerslag</strong> (tot -5 punten op basis van mm/u) en <strong>windkracht</strong> (vanaf 4 Bft kost elke extra Beaufort 1 tot 1.5 punt). Tot slot weegt de <strong>bewolking</strong> mee: een onbewolkte lucht houdt de score maximaal, terwijl een grauwe, grijze lucht een extra straffractie oplevert.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item" id="faq-wbgt">
+          <div class="faq-header" id="header-wbgt">
+            <h3 class="faq-title"><span>🌡️</span> Hoe wordt de WBGT bepaald?</h3>
+            <span class="faq-chevron">›</span>
+          </div>
+          <div class="faq-content">
+            <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #1C1C1E; opacity: 0.8;">
+              De Wet Bulb Globe Temperature meet de daadwerkelijke hittestress op het menselijk lichaam, wat wezenlijk anders is dan de gewone schaduwtemperatuur. De formule weegt drie specifieke meteorologische componenten:
+              <br><br>
+              • <strong>70% Natteboltemperatuur (Luchtvochtigheid):</strong> Bepaalt hoe effectief jouw zweet nog kan verdampen om je lichaam te koelen. Bij een hoge vochtigheid schiet deze waarde omhoog.<br>
+              • <strong>20% Zwarteboltemperatuur (Straling):</strong> Simuleert de directe impact van zonnestraling op je (vaak donkere) fietskleding en huid.<br>
+              • <strong>10% Droge luchttemperatuur:</strong> De traditionele luchttemperatuur in de schaduw.<br><br>
+              <strong>De invloed van wind:</strong> Windkracht fungeert hierin als de cruciale koelfactor. Een stevige bries versnelt de verdamping op de natte bol en trekt de WBGT omlaag. Is het daarentegen windstil én vochtig? Dan kruipt de WBGT angstaanjagend dicht tegen de echte temperatuur aan en raakt je lichaam de hitte niet kwijt.
+            </p>
+          </div>
         </div>
 
       </div>
@@ -109,7 +190,29 @@ export const page = {
   `,
 
   init() {
+    // Bestaande navigatie
     document.getElementById('menu-btn-pressure')?.addEventListener('click', () => window.navigate('pressure'));
     document.getElementById('menu-btn-ridelog')?.addEventListener('click', () => window.navigate('ridelog'));
+
+    // FAQ Toggle logica
+    const setupFaqToggle = (headerId, itemId) => {
+      const header = document.getElementById(headerId);
+      const item = document.getElementById(itemId);
+      
+      if (header && item) {
+        header.addEventListener('click', () => {
+          // Optioneel: sluit de andere als je er één opent. 
+          // (Verwijder deze twee regels als je wil dat ze tegelijk open kunnen staan)
+          document.querySelectorAll('.faq-item').forEach(el => {
+            if (el.id !== itemId) el.classList.remove('open');
+          });
+          
+          item.classList.toggle('open');
+        });
+      }
+    };
+
+    setupFaqToggle('header-fietsscore', 'faq-fietsscore');
+    setupFaqToggle('header-wbgt', 'faq-wbgt');
   }
 };

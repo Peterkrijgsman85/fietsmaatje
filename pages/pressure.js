@@ -1,9 +1,25 @@
 export const page = {
   html: `
+    <style>
+      /* --- FIX VOOR SCROLL & SCROLLBALK --- */
+      #app::-webkit-scrollbar {
+        display: none !important;
+      }
+      #app {
+        -ms-overflow-style: none !important; 
+        scrollbar-width: none !important;
+      }
+
+      /* Knoppen en Sliders Styling */
+      .press-btn-opt { background: rgba(255, 255, 255, 0.4); border: 1px solid rgba(15, 44, 90, 0.1); padding: 14px 10px; border-radius: 16px; font-size: 0.9rem; font-weight: 600; color: #0f2c5a; text-align: center; cursor: pointer; }
+      .press-btn-opt.active { background: #0f2c5a; color: white; }
+      input[type=range]::-webkit-slider-thumb { appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #0f2c5a; cursor: pointer; }
+    </style>
+
     <div class="pressure-page" style="
       position: relative;
       width: 100%;
-      padding: 10px 16px 110px;
+      padding: 10px 16px 150px; /* HIER ZIT DE FIX: Verhoogd naar 150px voor ademruimte boven het menu */
       box-sizing: border-box;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       color: #0f2c5a;
@@ -50,21 +66,13 @@ export const page = {
           <div style="font-size: 0.65rem; font-weight: 800; color: rgba(15,44,90,0.5); text-transform: uppercase;">Bar Achter</div>
         </div>
       </div>
-
-      <style>
-        .press-btn-opt { background: rgba(255, 255, 255, 0.4); border: 1px solid rgba(15, 44, 90, 0.1); padding: 14px 10px; border-radius: 16px; font-size: 0.9rem; font-weight: 600; color: #0f2c5a; text-align: center; cursor: pointer; }
-        .press-btn-opt.active { background: #0f2c5a; color: white; }
-        input[type=range]::-webkit-slider-thumb { appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #0f2c5a; cursor: pointer; }
-      </style>
     </div>
   `,
 
   init() {
-    // Interne state voor deze pagina
     let tireStyle = 1.0;
     let tireSurf = 1.0;
 
-    // DOM Elementen selecteren
     const weightSlider = document.getElementById('press-weightIn');
     const widthSlider = document.getElementById('press-brIn');
     const valWLabel = document.getElementById('press-valW');
@@ -75,7 +83,6 @@ export const page = {
     const styleButtons = document.querySelectorAll('#press-style-grid .press-btn-opt');
     const surfButtons = document.querySelectorAll('#press-surf-grid .press-btn-opt');
 
-    // 1. Oude opgeslagen waarden laden uit LocalStorage (indien aanwezig)
     const savedWeight = localStorage.getItem('weight');
     const savedWidth = localStorage.getItem('width');
     
@@ -86,12 +93,10 @@ export const page = {
       widthSlider.value = savedWidth;
     }
 
-    // 2. De Rekenkern-functie
     const updateTires = (saveToStorage = true) => {
       const w = parseInt(weightSlider.value);
       const b = parseInt(widthSlider.value);
       
-      // Update labels
       valWLabel.innerText = `${w} kg`;
       valBLabel.innerText = `${b} mm`;
       
@@ -100,10 +105,8 @@ export const page = {
         localStorage.setItem('width', b);
       }
 
-      // Berekening op basis van jouw formule
       let res = ((w / 16) * Math.pow(28 / b, 1.15) * tireStyle * tireSurf);
       
-      // Resultaten wegschrijven (minimaal 0.8 bar)
       const rearPressure = Math.max(res, 0.8);
       const frontPressure = rearPressure * 0.92;
 
@@ -111,7 +114,6 @@ export const page = {
       resVEl.innerText = frontPressure.toFixed(1);
     };
 
-    // 3. Klik-events toewijzen aan de Type Rit knoppen
     styleButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         styleButtons.forEach(b => b.classList.remove('active'));
@@ -121,7 +123,6 @@ export const page = {
       });
     });
 
-    // 4. Klik-events toewijzen aan de Condities knoppen
     surfButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         surfButtons.forEach(b => b.classList.remove('active'));
@@ -131,11 +132,9 @@ export const page = {
       });
     });
 
-    // 5. Input-events toewijzen aan de Sliders
     weightSlider.addEventListener('input', () => updateTires(true));
     widthSlider.addEventListener('input', () => updateTires(true));
 
-    // Initialiseer eerste berekening bij het openen van de pagina
     updateTires(false);
   }
 };

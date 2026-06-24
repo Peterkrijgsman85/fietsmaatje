@@ -1,9 +1,29 @@
 export const page = {
   html: `
+    <style>
+      /* --- FIX VOOR SCROLL & SCROLLBALK --- */
+      #app::-webkit-scrollbar {
+        display: none !important;
+      }
+      #app {
+        -ms-overflow-style: none !important; 
+        scrollbar-width: none !important;
+      }
+
+      /* Ridelog specifieke styling */
+      .log-btn-opt { background: rgba(255, 255, 255, 0.4); border: 1px solid rgba(15, 44, 90, 0.1); padding: 12px 10px; border-radius: 14px; font-size: 0.9rem; font-weight: 600; text-align: center; cursor: pointer; }
+      .log-btn-opt.active { background: #0f2c5a; color: white; }
+      
+      /* Suggestie box stijl */
+      .log-sug-box { position: absolute; top: 100%; left: 0; right: 0; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 99; margin-top: 5px; display: none; overflow: hidden; }
+      .log-sug-item { padding: 10px 14px; cursor: pointer; font-size: 0.9rem; border-bottom: 1px solid #eee; }
+      .log-sug-item:hover { background: #f0f0f0; }
+    </style>
+
     <div class="log-page" style="
       position: relative;
       width: 100%;
-      padding: 10px 16px 110px;
+      padding: 10px 16px 150px; /* HIER ZIT DE FIX: Verhoogd naar 150px voor ademruimte boven het menu */
       box-sizing: border-box;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       color: #0f2c5a;
@@ -51,15 +71,6 @@ export const page = {
           <span id="log-res2" class="log-copy-t" style="display: block; font-size: 0.95rem; line-height: 1.5;"></span>
         </div>
       </div>
-
-      <style>
-        .log-btn-opt { background: rgba(255, 255, 255, 0.4); border: 1px solid rgba(15, 44, 90, 0.1); padding: 12px 10px; border-radius: 14px; font-size: 0.9rem; font-weight: 600; text-align: center; cursor: pointer; }
-        .log-btn-opt.active { background: #0f2c5a; color: white; }
-        /* Suggestie box stijl */
-        .log-sug-box { position: absolute; top: 100%; left: 0; right: 0; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 99; margin-top: 5px; display: none; overflow: hidden; }
-        .log-sug-item { padding: 10px 14px; cursor: pointer; font-size: 0.9rem; border-bottom: 1px solid #eee; }
-        .log-sug-item:hover { background: #f0f0f0; }
-      </style>
     </div>
   `,
 
@@ -67,7 +78,6 @@ export const page = {
     let logMode = 'single';
     let typingTimer;
 
-    // Elementen
     const styleButtons = document.querySelectorAll('.log-grid-switch .log-btn-opt');
     const routeFields = document.getElementById('log-routeFields');
     const locAInput = document.getElementById('log-locA');
@@ -83,16 +93,13 @@ export const page = {
     const cardRes2 = document.getElementById('log-card-res2');
     const geoBtn = document.getElementById('log-geoBtn');
 
-    // Tijd setup
     const now = new Date();
     dateInput.value = now.toISOString().split('T')[0];
     timeInput.value = now.toTimeString().split(' ')[0].substring(0, 5);
 
-    // Helpers
     const getCondStr = c => (c === 0 ? "Onbewolkt" : c <= 3 ? "Licht bewolkt" : c <= 67 ? "Regenachtig" : "Bewolkt");
     const getCondIcon = c => (c === 0 ? "☀️" : c <= 3 ? "🌤️" : c <= 67 ? "🌧️" : "☁️");
 
-    // Autocomplete Logic
     const handleAutocomplete = (input, sugBox) => {
       clearTimeout(typingTimer);
       typingTimer = setTimeout(async () => {
@@ -119,14 +126,13 @@ export const page = {
     locAInput.oninput = () => handleAutocomplete(locAInput, document.getElementById('log-sugA'));
     locBInput.oninput = () => handleAutocomplete(locBInput, document.getElementById('log-sugB'));
 
-    // Auto-locatie (Geo) met foutafhandeling
     geoBtn.onclick = () => {
       if (!navigator.geolocation) {
         alert("Je browser ondersteunt helaas geen locatiebepaling.");
         return;
       }
 
-      geoBtn.innerText = "⏳"; // Visuele feedback
+      geoBtn.innerText = "⏳";
 
       navigator.geolocation.getCurrentPosition(async (pos) => {
         try {
@@ -134,7 +140,7 @@ export const page = {
           const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=nl`;
           
           const res = await fetch(url, {
-            headers: { 'User-Agent': 'WeatherApp/1.0' } // Vereist door OSM
+            headers: { 'User-Agent': 'WeatherApp/1.0' }
           });
           
           const data = await res.json();
@@ -155,7 +161,6 @@ export const page = {
       });
     };
 
-    // Copy Setup
     const setupCopy = (card, target) => {
       card.addEventListener('click', () => {
         navigator.clipboard.writeText(target.innerText);
@@ -167,7 +172,6 @@ export const page = {
     setupCopy(cardRes1, res1);
     setupCopy(cardRes2, res2);
 
-    // Modus switch
     styleButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         styleButtons.forEach(b => b.classList.remove('active'));

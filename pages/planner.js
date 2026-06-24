@@ -1,10 +1,21 @@
 export const page = {
   html: `
+    <style>
+      /* --- FIX VOOR SCROLL & SCROLLBALK --- */
+      #app::-webkit-scrollbar {
+        display: none !important;
+      }
+      #app {
+        -ms-overflow-style: none !important; 
+        scrollbar-width: none !important;
+      }
+    </style>
+
     <div class="fuel-page" style="
       position: relative;
       width: 100%;
       min-height: 100vh;
-      padding: 10px 16px 110px;
+      padding: 10px 16px 150px; /* HIER ZIT DE FIX: Verhoogd naar 150px voor ademruimte boven het menu */
       box-sizing: border-box;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       color: #0f2c5a;
@@ -33,13 +44,13 @@ export const page = {
             </div>
             <div style="flex:1; background:rgba(255,255,255,0.6); padding:16px; border-radius:18px; text-align:center; border: 1px solid rgba(15,44,90,0.05); position: relative;">
   
-  <span style="position: absolute; top: 10px; right: 10px; cursor: help; font-size: 0.6rem; border: 1px solid rgba(15,44,90,0.2); border-radius: 50%; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; color: rgba(15,44,90,0.4);" title="Berekening gebaseerd op een standaard bidon van 650ml">i</span>
+              <span style="position: absolute; top: 10px; right: 10px; cursor: help; font-size: 0.6rem; border: 1px solid rgba(15,44,90,0.2); border-radius: 50%; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; color: rgba(15,44,90,0.4);" title="Berekening gebaseerd op een standaard bidon van 650ml">i</span>
 
-  <div id="resBottles" style="font-weight:800; font-size: 1.4rem;">--</div>
-  <div style="display: flex; justify-content: center; align-items: center; gap: 4px;">
-    <div id="bottleSub" style="font-size: 0.65rem; font-weight: 700; color:rgba(15,44,90,0.5); letter-spacing: 0.5px;">BIDONS</div>
-  </div>
-</div>
+              <div id="resBottles" style="font-weight:800; font-size: 1.4rem;">--</div>
+              <div style="display: flex; justify-content: center; align-items: center; gap: 4px;">
+                <div id="bottleSub" style="font-size: 0.65rem; font-weight: 700; color:rgba(15,44,90,0.5); letter-spacing: 0.5px;">BIDONS</div>
+              </div>
+            </div>
           </div>
 
           <div style="margin-bottom: 20px;">
@@ -63,14 +74,13 @@ export const page = {
     const fuelTimeline = document.getElementById('fuelTimeline');
     const fuelBreakdown = document.getElementById('fuelBreakdown');
 
-    // === NIEUW: Temperatuur ophalen uit de cache van weer.js ===
-    let currentTemp = 20; // Standaardwaarde
+    // === Temperatuur ophalen uit de cache van weer.js ===
+    let currentTemp = 20; 
     const cachedWeather = localStorage.getItem('fietsmaatje_weather_cache');
     
     if (cachedWeather) {
       try {
         const parsed = JSON.parse(cachedWeather);
-        // We pakken de temperatuur uit de cached data
         if (parsed.weather && parsed.weather.current_weather) {
           currentTemp = Math.round(parsed.weather.current_weather.temperature);
           console.log(`Planner: Gebruik actuele temperatuur van ${currentTemp}°C`);
@@ -79,7 +89,6 @@ export const page = {
         console.warn('Kon cache niet lezen, standaard temp 20°C');
       }
     }
-    // === EINDE AANPASSING ===
 
     const getHydrationFactor = (temp) => {
       if (temp > 25) return 1.5;
@@ -91,7 +100,6 @@ export const page = {
       const dur = parseFloat(durIn.value);
       valDur.innerText = dur.toFixed(1);
       
-      // 1. Bereken koolhydraten (KH)
       let totalCarbs = 0;
       let timelineHtml = "";
 
@@ -106,20 +114,16 @@ export const page = {
         timelineHtml = "<b>0-60 min:</b> Water drinken.<br><b>60-120 min:</b> 30g koolhydraten (reep/krentenbol).<br><b>120 min+:</b> Verhoog naar 40g per uur (voeg gel toe indien nodig).";
       }
 
-      // 2. Bereken Hydratatie (650ml per bidon basis)
       const mlPerHour = 500;
       const factor = getHydrationFactor(currentTemp);
       const totalVolumeMl = dur * mlPerHour * factor;
       const bottles = Math.ceil(totalVolumeMl / 650);
 
-      // UI Updates
       resCarbs.innerText = totalCarbs;
       resBottles.innerText = bottles;
-      // We laten de actuele temperatuur subtiel zien in de UI
       bottleSub.innerText = `BIDONS (bij ${currentTemp}°C)`;
       fuelTimeline.innerHTML = timelineHtml;
 
-      // 3. Breakdown items
       if (totalCarbs > 0) {
         const bananen = Math.ceil(totalCarbs / 25);
         const krent = Math.ceil(totalCarbs / 25);
