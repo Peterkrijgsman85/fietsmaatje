@@ -337,19 +337,44 @@ export const page = {
       return { text: 'Beter binnen blijven', color: '#FF3B30' };
     };
 
+    // VERNIEUWDE, VEILIGE GETADVICE FUNCTIE
     const getAdvice = ({ temperature, feels_like, windspeed, weathercode, precipitation_probability }) => {
       const advice = [];
-      if (temperature <= 8) advice.push({ emoji: adviceEmojis.thermo, text: 'Lange thermo + winddichte jas' });
-      else if (temperature <= 14) advice.push({ emoji: adviceEmojis.long, text: 'Lange mouwen en een licht jack' });
-      else if (temperature <= 20) advice.push({ emoji: adviceEmojis.short, text: 'Korte mouwen met een licht vest' });
-      else advice.push({ emoji: adviceEmojis.short, text: 'Korte mouwen en korte broek' });
+      const bft = bftFromKmh(windspeed);
 
-      if (windspeed >= 30) advice.push({ emoji: adviceEmojis.wind, text: 'Let op wind: lagere versnelling kiezen' });
-      if (precipitation_probability >= 40) advice.push({ emoji: adviceEmojis.rain, text: 'Regenkleding of spatborden aan' });
-      if (feels_like < temperature - 3) advice.push({ emoji: adviceEmojis.windchill, text: 'Extra laag mee nemen' });
-      if ([95,96,99].includes(weathercode)) advice.push({ emoji: adviceEmojis.storm, text: 'Paarse flags: uitstel aanbevolen' });
+      // 1. Zomer/Temperatuur basislaag
+      if (temperature >= 22) {
+        advice.push({ emoji: '☀️', text: 'Heerlijk zomerweer: korte broek en korte mouwen!' });
+      } else if (temperature >= 18) {
+        advice.push({ emoji: '🌤', text: 'Mooie temperatuur voor korte mouwen.' });
+      } else if (temperature >= 14) {
+        advice.push({ emoji: '👕', text: 'Lange mouwen of armstukken aanbevolen.' });
+      } else {
+        advice.push({ emoji: '🧥', text: 'Fris! Een licht fietsjack of warme basislaag.' });
+      }
+
+      // 2. Windjack logica
+      if (bft >= 5) {
+        advice.push({ emoji: '💨', text: `Stevige wind (Bft ${bft}): strak windjack aanbevolen.` });
+      } else if (bft >= 3) {
+        advice.push({ emoji: '🌬️', text: `Matige bries (Bft ${bft}): bodywarmer of licht windjack is fijn.` });
+      }
+
+      // 3. Regen / Gevaren / Zon
+      if ([95,96,99].includes(weathercode)) {
+        advice.push({ emoji: adviceEmojis.storm, text: 'Kans op onweer: rit uitstellen aanbevolen.' });
+      } else if (precipitation_probability >= 40) {
+        advice.push({ emoji: adviceEmojis.rain, text: `Kans op nattigheid (${precipitation_probability}%): neem een regenjack mee.` });
+      } else if (temperature >= 20 && ![3, 45, 48].includes(weathercode)) {
+        advice.push({ emoji: '🕶️', text: 'Vergeet je zonnebril niet tegen de zon en vliegjes!' });
+      }
+
+      // 4. Afkoeling
+      if (feels_like < temperature - 3) {
+        advice.push({ emoji: adviceEmojis.windchill, text: 'Gevoelstemperatuur ligt een stuk lager, extra laag mee.' });
+      }
       
-      return advice.length ? advice : [{ emoji: adviceEmojis.default, text: 'Frisse rit! Let wel op het verkeer.' }];
+      return advice.length ? advice : [{ emoji: adviceEmojis.default, text: 'Frisse rit! Let goed op het verkeer.' }];
     };
 
     const formatTime = time => {
