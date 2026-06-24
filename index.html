@@ -12,39 +12,37 @@
   <link rel="manifest" href="manifest.json" />
   <title>Fietsmaatje</title>
   <style>
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
       --accent: #fc4c02;
+      --accent-dark: #c63f04;
+      --accent-rgb: 252, 76, 2;
+      --accent-soft: rgba(252, 76, 2, 0.14);
+      --surface: rgba(255, 255, 255, 0.16);
     }
 
+    /* HIER ZIT DE FIX: De gradiënt staat nu globaal vast op de achtergrond van de hele app */
     html, body {
       height: 100%;
       width: 100%;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
       background-color: #d8f1ff;
-      background-image: linear-gradient(160deg, #d8f1ff 0%, #d8f1ff 15%, #9edcff 45%, #67c7ff 100%);
+      background-image: linear-gradient(
+  160deg,
+  #d8f1ff 0%,
+  #d8f1ff 15%,
+  #9edcff 45%,
+  #67c7ff 100%
+);
+      /* background-image: linear-gradient(160deg, #d8f1ff 0%, #9edcff 40%, #67c7ff 100%);*/   
       background-attachment: fixed;
     }
 
-    /* Splash Screen Styling */
-    #splash-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: inherit; /* Neemt de gradiënt van de body over */
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      transition: opacity 0.5s ease;
-    }
-
-    #splash-screen img {
-      width: 250px; /* Pas dit aan naar de grootte van jouw logo */
-      height: auto;
+    body {
+      position: relative;
     }
 
     #app {
@@ -53,12 +51,13 @@
       left: 0;
       right: 0;
       bottom: 0;
+      /* Zorg dat de content netjes onder de notch begint */
       padding-top: env(safe-area-inset-top, 44px);
       padding-bottom: env(safe-area-inset-bottom);
       min-height: 100vh;
       box-sizing: border-box;
       z-index: 0;
-      overflow-y: auto;
+      overflow-y: auto; /* Zorgt dat de pagina's heerlijk soepel scrollen */
       -webkit-overflow-scrolling: touch;
     }
 
@@ -67,7 +66,7 @@
       bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
       left: 12px;
       right: 12px;
-      background: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.25); /* Iets meer contrast op het blauw */
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       border-radius: 100px;
@@ -88,14 +87,42 @@
       padding: 10px 8px;
       font-size: 13px;
       font-weight: 600;
-      color: #0f2c5a;
+      color: #0f2c5a; /* Donkerblauw voor betere leesbaarheid op de navbalk */
       display: inline-flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 4px;
+      line-height: 1.1;
       cursor: pointer;
       transition: background 0.2s, color 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .pill-nav button.active {
+      background: #ffffff;
+      color: #121212;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    }
+
+    /* Splash Screen Styling */
+    #splash-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: inherit; /* Neemt de gradiënt van de body over */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease;
+    }
+
+    #splash-screen img {
+      width: 250px; /* Pas dit aan naar de grootte van jouw logo */
+      height: auto;
     }
   </style>
 </head>
