@@ -68,6 +68,8 @@ export const page = {
     ">
       <div style="max-width: 420px; width: 100%; margin: 0 auto; display: grid; gap: 20px;">
         
+        
+
         <div style="
           display: inline-flex;
           align-items: center;
@@ -83,6 +85,17 @@ export const page = {
         ">
           <div style="font-size: 20px; line-height: 1;">≡</div>
           <div style="font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700;">Menu & Info</div>
+        </div>
+
+        <div style="
+          margin: 10px 0 -5px 5px; 
+          font-size: 12px; 
+          font-weight: 700; 
+          letter-spacing: 0.1em; 
+          text-transform: uppercase; 
+          color: rgba(15, 44, 90, 0.6);
+        ">
+          Overige functionaliteiten
         </div>
 
         <div id="menu-btn-pressure" style="
@@ -127,6 +140,17 @@ export const page = {
             </div>
           </div>
           <span style="font-size: 18px; color: rgba(15, 44, 90, 0.4);">›</span>
+        </div>
+
+        <div style="
+          margin: 10px 0 -5px 5px; 
+          font-size: 12px; 
+          font-weight: 700; 
+          letter-spacing: 0.1em; 
+          text-transform: uppercase; 
+          color: rgba(15, 44, 90, 0.6);
+        ">
+          Over Fietsmaatje
         </div>
 
         <div style="
