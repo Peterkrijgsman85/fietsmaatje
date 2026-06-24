@@ -9,13 +9,22 @@ export const page = {
         -ms-overflow-style: none !important; 
         scrollbar-width: none !important;
       }
+      
+      /* --- TOOLTIP ANIMATIE --- */
+      .tooltip-fade {
+        animation: fadeIn 0.2s ease-in-out;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
     </style>
 
     <div class="fuel-page" style="
       position: relative;
       width: 100%;
       min-height: 100vh;
-      padding: 10px 16px 150px; /* HIER ZIT DE FIX: Verhoogd naar 150px voor ademruimte boven het menu */
+      padding: 10px 16px 150px;
       box-sizing: border-box;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       color: #0f2c5a;
@@ -44,7 +53,13 @@ export const page = {
             </div>
             <div style="flex:1; background:rgba(255,255,255,0.6); padding:16px; border-radius:18px; text-align:center; border: 1px solid rgba(15,44,90,0.05); position: relative;">
   
-              <span style="position: absolute; top: 10px; right: 10px; cursor: help; font-size: 0.6rem; border: 1px solid rgba(15,44,90,0.2); border-radius: 50%; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; color: rgba(15,44,90,0.4);" title="Berekening gebaseerd op een standaard bidon van 650ml">i</span>
+              <div style="position: absolute; top: 10px; right: 10px;">
+                <span id="bottle-info-btn" style="cursor: pointer; font-size: 0.6rem; border: 1px solid rgba(15,44,90,0.2); border-radius: 50%; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; color: rgba(15,44,90,0.4); background: rgba(255,255,255,0.8);">i</span>
+                <div id="bottle-tooltip" class="tooltip-fade" style="display: none; position: absolute; top: 22px; right: -5px; width: 150px; background: rgba(15, 44, 90, 0.95); color: #fff; padding: 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 500; text-align: left; box-shadow: 0 8px 24px rgba(15, 44, 90, 0.2); z-index: 50; line-height: 1.4;">
+                  Berekening gebaseerd op een standaard bidon van 650ml
+                  <div style="content: ''; position: absolute; top: -4px; right: 8px; width: 8px; height: 8px; background: rgba(15, 44, 90, 0.95); transform: rotate(45deg);"></div>
+                </div>
+              </div>
 
               <div id="resBottles" style="font-weight:800; font-size: 1.4rem;">--</div>
               <div style="display: flex; justify-content: center; align-items: center; gap: 4px;">
@@ -73,6 +88,10 @@ export const page = {
     const bottleSub = document.getElementById('bottleSub');
     const fuelTimeline = document.getElementById('fuelTimeline');
     const fuelBreakdown = document.getElementById('fuelBreakdown');
+    
+    // Tooltip elementen
+    const tooltipBtn = document.getElementById('bottle-info-btn');
+    const tooltipBox = document.getElementById('bottle-tooltip');
 
     // === Temperatuur ophalen uit de cache van weer.js ===
     let currentTemp = 20; 
@@ -89,6 +108,23 @@ export const page = {
         console.warn('Kon cache niet lezen, standaard temp 20°C');
       }
     }
+
+    // --- TOOLTIP LOGICA ---
+    tooltipBtn.addEventListener('click', (e) => {
+      e.stopPropagation(); // Zorgt dat de klik niet direct doorgegeven wordt aan het document
+      if (tooltipBox.style.display === 'none') {
+        tooltipBox.style.display = 'block';
+      } else {
+        tooltipBox.style.display = 'none';
+      }
+    });
+
+    // Sluit de tooltip als je ergens anders op het scherm klikt/tikt
+    document.addEventListener('click', (e) => {
+      if (tooltipBox.style.display === 'block' && e.target !== tooltipBox) {
+        tooltipBox.style.display = 'none';
+      }
+    });
 
     const getHydrationFactor = (temp) => {
       if (temp > 25) return 1.5;
