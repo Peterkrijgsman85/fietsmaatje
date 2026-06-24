@@ -16,7 +16,7 @@ export const page = {
         background: rgba(15, 44, 90, 0.4);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
-        z-index: 10005;
+        z-index: 100005;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -33,7 +33,7 @@ export const page = {
         top: 24px;
         left: 50%;
         transform: translateX(-50%);
-        z-index: 10000;
+        z-index: 99999;
         background: rgba(255, 255, 255, 0.75);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
@@ -55,7 +55,7 @@ export const page = {
         position: absolute;
         top: 20px;
         left: 16px;
-        z-index: 10000;
+        z-index: 99999;
         width: 44px;
         height: 44px;
         border-radius: 50%;
@@ -75,7 +75,7 @@ export const page = {
         position: absolute;
         top: 20px;
         right: 16px;
-        z-index: 10000;
+        z-index: 99999;
         width: 44px;
         height: 44px;
         border-radius: 50%;
@@ -94,9 +94,9 @@ export const page = {
 
       <button id="water-btn-location" style="
         position: absolute;
-        bottom: 110px;
+        bottom: 110px; /* Pas dit aan als je basismenu hoger is */
         right: 16px;
-        z-index: 10000;
+        z-index: 99999;
         width: 44px;
         height: 44px;
         border-radius: 50%;
@@ -115,17 +115,17 @@ export const page = {
 
       <div id="water-details-sheet" style="
         position: absolute;
-        bottom: 110px;
+        bottom: 110px; /* Pas dit aan om de kaart hoger/lager boven je menu te plaatsen */
         left: 16px;
         right: 16px;
-        z-index: 10001;
+        z-index: 99999;
         background: rgba(255, 255, 255, 0.7);
         backdrop-filter: blur(30px);
         -webkit-backdrop-filter: blur(30px);
         border: 1px solid rgba(255, 255, 255, 0.5);
         border-radius: 24px;
         padding: 20px;
-        box-shadow: 0 12px 40px rgba(15, 44, 90, 0.15);
+        box-shadow: 0 12px 40px rgba(15, 44, 90, 0.25);
         display: none;
         flex-direction: column;
         gap: 12px;
@@ -152,7 +152,7 @@ export const page = {
           <h3 id="water-details-distance" style="margin: 0; font-size: 18px; font-weight: 800; color: #0f2c5a; display: flex; align-items: center; gap: 6px;">
             <span id="water-details-emoji">💧</span> <span id="water-details-dist-txt">0.0 km</span>
           </h3>
-          <span id="water-details-badge" style="margin-left: auto; font-size: 10px; font-weight: 800; uppercase; tracking-wider; padding: 4px 8px; border-radius: 8px;"></span>
+          <span id="water-details-badge" style="margin-left: auto; font-size: 10px; font-weight: 800; text-transform: uppercase; tracking-wider; padding: 4px 8px; border-radius: 8px;"></span>
         </div>
 
         <div id="water-details-city" style="font-size: 11px; font-weight: 700; color: #0f2c5a; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.05em;"></div>
@@ -184,7 +184,7 @@ export const page = {
         background: rgba(15, 44, 90, 0.3);
         backdrop-filter: blur(15px);
         -webkit-backdrop-filter: blur(15px);
-        z-index: 10006;
+        z-index: 100006;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -230,7 +230,7 @@ export const page = {
               </div>
             </div>
 
-            <div style="display: flex; gap: 12px; background: rgba(255,255,255,0.4); padding: 10px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.2);">
+            <div style="display: flex; gap: 12px; background: rgba(255, 255, 255, 0.4); padding: 10px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.2);">
               <span style="font-size: 24px;">🩸</span>
               <div>
                 <h5 style="margin: 0 0 2px 0; font-size: 13px; font-weight: 700; color: #0f2c5a; opacity: 0.6;">Storing / Buiten Gebruik</h5>
@@ -239,7 +239,7 @@ export const page = {
             </div>
           </div>
 
-          <div style="border-t: 1px solid rgba(15, 44, 90, 0.08); pt: 8px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="border-top: 1px solid rgba(15, 44, 90, 0.08); padding-top: 8px; display: flex; flex-direction: column; gap: 8px;">
             <h5 style="margin: 8px 0 2px 0; font-size: 10px; font-weight: 800; color: #0f2c5a; opacity: 0.5; text-transform: uppercase; letter-spacing: 0.05em;">Bediening</h5>
             <div style="display: flex; align-items: center; gap: 10px; font-size: 12px; color: #1C1C1E;"><span style="font-size: 16px;">🛰️</span> Kaart centreren op je GPS locatie.</div>
             <div style="display: flex; align-items: center; gap: 10px; font-size: 12px; color: #1C1C1E;"><span style="font-size: 16px;">🔎</span> Storingsfilter: tik om defecte kranen te verbergen.</div>
@@ -256,7 +256,6 @@ export const page = {
   `,
 
   init() {
-    // 1. Check of Leaflet geladen is, zo niet: dynamisch injecteren
     if (!window.L) {
       const link = document.createElement('link');
       link.rel = 'stylesheet';
@@ -273,7 +272,6 @@ export const page = {
   },
 
   setupWaterMap() {
-    // Elementen selecteren
     const loadingEl = document.getElementById('water-loading');
     const zoomWarningEl = document.getElementById('water-zoom-warning');
     const btnLegend = document.getElementById('water-btn-legend');
@@ -287,15 +285,14 @@ export const page = {
     const sheetBadge = document.getElementById('water-details-badge');
     const sheetCity = document.getElementById('water-details-city');
     const sheetDesc = document.getElementById('water-details-desc');
-    const sheetRoute = document.getElementById('water-details-route');
+    const scriptRoute = document.getElementById('water-details-route');
 
     const modalLegend = document.getElementById('water-legend-modal');
     const modalLegendClose = document.getElementById('water-legend-close');
 
-    // State variabelen
     let map = null;
     let userMarker = null;
-    let userCoords = [52.0907, 5.1214]; // Standaard Utrecht
+    let userCoords = [52.0907, 5.1214];
     let rawFeatures = [];
     let hideStorings = false;
     const activeMarkers = new Map();
@@ -304,7 +301,10 @@ export const page = {
     const CACHE_KEY = 'rivm_water_points_data_v2';
     const CACHE_TTL = 24 * 60 * 60 * 1000;
 
-    // Hulpcodes
+    // Dynamische hoogtes op basis van de basis bottom positie
+    const BASE_BOTTOM = 110; 
+    const OPEN_BOTTOM = BASE_BOTTOM + 170; // Verschuift de GPS knop exact mee tot boven de geopende card
+
     const calculateDistance = (lat1, lon1, lat2, lon2) => {
       const R = 6371;
       const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -327,7 +327,7 @@ export const page = {
       sheetDistTxt.innerText = point.distanceLabel;
       sheetCity.innerText = point.plaats;
       sheetDesc.innerText = point.beschrijving || 'Geen extra beschrijving beschikbaar.';
-      sheetRoute.href = getNavigationLink(point.lat, point.lon);
+      scriptRoute.href = getNavigationLink(point.lat, point.lon);
 
       if (point.isStoring) {
         sheetBadge.innerText = point.type;
@@ -340,7 +340,7 @@ export const page = {
       }
 
       sheetEl.style.display = 'flex';
-      btnLocation.style.bottom = '280px';
+      btnLocation.style.bottom = `${OPEN_BOTTOM}px`;
       setTimeout(() => {
         sheetEl.style.transform = 'translateY(0)';
         sheetEl.style.opacity = '1';
@@ -350,11 +350,10 @@ export const page = {
     const hideSheet = () => {
       sheetEl.style.transform = 'translateY(20px)';
       sheetEl.style.opacity = '0';
-      btnLocation.style.bottom = '110px';
+      btnLocation.style.bottom = `${BASE_BOTTOM}px`;
       setTimeout(() => { sheetEl.style.display = 'none'; }, 300);
     };
 
-    // Kaart updates
     const updateVisibleMarkers = () => {
       if (!map) return;
 
@@ -430,7 +429,6 @@ export const page = {
       });
     };
 
-    // Live data ophalen (RIVM WFS)
     const fetchWaterPoints = async () => {
       const cached = localStorage.getItem(CACHE_KEY);
       if (cached) {
@@ -444,7 +442,7 @@ export const page = {
             return;
           }
         } catch (e) {
-          console.warn('Cache defect, live download starten...');
+          console.warn('Cache defect, herstarten live download...');
         }
       }
 
@@ -466,7 +464,6 @@ export const page = {
       }
     };
 
-    // Geolocation & Kaart activatie
     const initMapInstance = () => {
       map = L.map('water-map', { zoomControl: false, maxZoom: 18, minZoom: 6 }).setView(userCoords, 13);
 
@@ -477,7 +474,7 @@ export const page = {
       userMarker = L.marker(userCoords, {
         icon: L.divIcon({
           className: 'water-user-marker',
-          html: `<div style="position: relative; flex; align-items: center; justify-content: center; width: 24px; height: 24px;">
+          html: `<div style="position: relative; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px;">
                   <div style="position: absolute; width: 100%; height: 100%; border-radius: 50%; background: #007AFF; animation: water-bounce 1s infinite alternate; opacity: 0.4;"></div>
                   <div style="position: relative; width: 12px; height: 12px; border-radius: 50%; background: #007AFF; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3); margin: 4px;"></div>
                  </div>`
@@ -506,7 +503,6 @@ export const page = {
       }
     };
 
-    // Event Listeners voor de UI knoppen
     btnLocation.addEventListener('click', () => {
       if (map) map.setView(userCoords, 14, { animate: true });
     });
@@ -535,7 +531,6 @@ export const page = {
 
     sheetClose.addEventListener('click', hideSheet);
 
-    // Bootstrap!
     initMapInstance();
   }
 };
