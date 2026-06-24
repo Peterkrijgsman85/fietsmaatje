@@ -1,235 +1,223 @@
 export const page = {
   html: `
+    <style>
+      /* --- FIX VOOR SCROLL & SCROLLBALK --- */
+      /* Verberg de scrollbalk op de hoofdcontainer zolang deze pagina actief is */
+      #app::-webkit-scrollbar {
+        display: none !important;
+      }
+      #app {
+        -ms-overflow-style: none !important; 
+        scrollbar-width: none !important;
+        overscroll-behavior-y: none; /* Voorkomt het native iOS 'elastiek' effect dat conflicteert met onze pull-to-refresh */
+      }
+
+      /* Basis Layout */
+      .weather-page {
+        position: relative;
+        width: 100%;
+        color: #1C1C1E;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        padding: 0px 16px 110px; /* Top padding naar 0 gezet ivm pull-to-refresh indicator */
+      }
+
+      /* --- PULL TO REFRESH STYLING --- */
+      .ptr-container {
+        width: 100%;
+        height: 0px;
+        overflow: hidden;
+        display: flex;
+        align-items: flex-end; /* Tekst blijft onderaan de uitrekkende div */
+        justify-content: center;
+        padding-bottom: 0;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: rgba(15, 44, 90, 0.6);
+        background-color: transparent;
+      }
+      .ptr-content {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding-bottom: 12px;
+      }
+      .ptr-icon {
+        font-size: 1.1rem;
+        display: inline-block;
+      }
+      .refresh-spin {
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin { 100% { transform: rotate(360deg); } }
+
+      /* Hero Sectie */
+      .hero-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin-top: 10px;
+        margin-bottom: 32px;
+      }
+
+      .score-badge {
+        background: #8E8E93;
+        color: white;
+        font-weight: 700;
+        font-size: 0.85rem;
+        padding: 6px 14px;
+        border-radius: 20px;
+        margin-bottom: 16px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        transition: background-color 0.3s ease;
+      }
+
+      .location-title {
+        font-size: 1.8rem;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+        color: #0f2c5a;
+        margin-bottom: 4px;
+      }
+
+      .hero-center {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .hero-icon {
+        font-size: 3.5rem;
+        line-height: 1;
+      }
+
+      .hero-temp {
+        font-size: 5.5rem;
+        font-weight: 200;
+        letter-spacing: -2px;
+        color: #0f2c5a;
+        margin-left: 4px;
+      }
+
+      .hero-desc {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: rgba(15, 44, 90, 0.7);
+        margin-top: -6px;
+      }
+
+      /* Horizontale Stats Rij */
+      .stats-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        margin-top: 24px;
+      }
+
+      .stat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .stat-divider {
+        width: 1px;
+        height: 24px;
+        background-color: rgba(15, 44, 90, 0.15);
+      }
+
+      .stat-label {
+        font-size: 0.7rem;
+        color: rgba(15, 44, 90, 0.6);
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+      }
+
+      .stat-val {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #0f2c5a;
+      }
+
+      /* NEXT LEVEL iOS: Glazen Kaart Containers */
+      .card-container {
+        background: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 24px;
+        padding: 18px;
+        box-shadow: 0 8px 32px rgba(15, 44, 90, 0.04);
+        margin-bottom: 20px;
+      }
+
+      .section-title {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: rgba(15, 44, 90, 0.5);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin: 0 0 14px 4px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      /* 24-uurs overzicht */
+      .hourly-scroll {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+      }
+      .hourly-scroll::-webkit-scrollbar { display: none; }
+
+      .hourly-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 58px;
+        gap: 6px;
+        background: rgba(255, 255, 255, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 12px 6px;
+        border-radius: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.01);
+      }
+
+      .hourly-time { font-size: 0.75rem; font-weight: 600; color: rgba(15, 44, 90, 0.7); }
+      .hourly-icon { font-size: 1.6rem; line-height: 1; margin: 2px 0; }
+      .hourly-temp { font-size: 1rem; font-weight: 700; color: #0f2c5a; }
+      .hourly-score-pill { font-weight: 800; color: #FFFFFF; font-size: 0.75rem; padding: 2px 8px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); }
+      .hourly-detail { font-size: 0.65rem; color: rgba(15, 44, 90, 0.6); font-weight: 700; letter-spacing: -0.01em; }
+
+      /* Advies overzicht */
+      .advice-list { display: flex; flex-direction: column; gap: 8px; }
+      .advice-item { display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: rgba(255, 255, 255, 0.35); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; }
+      .advice-emoji { font-size: 1.4rem; background: rgba(255, 255, 255, 0.6); padding: 6px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+      .advice-text { font-size: 0.9rem; font-weight: 600; color: #0f2c5a; }
+
+      /* Laders */
+      .loading-overlay { text-align: center; padding: 40px 20px; color: #8E8E93; font-weight: 500; }
+      .error-note { color: #FF453A; }
+    </style>
+
+    <div id="ptr-indicator" class="ptr-container">
+      <div class="ptr-content" id="ptr-content">
+        <span class="ptr-icon">⬇️</span> Trek om te vernieuwen
+      </div>
+    </div>
+
     <div class="weather-page">
-      <style>
-        /* Basis Layout */
-        .weather-page {
-          position: relative;
-          width: 100%;
-          color: #1C1C1E;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-          padding: 10px 16px 110px;
-        }
-
-        /* Hero Sectie */
-        .hero-section {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          margin-top: 10px;
-          margin-bottom: 32px;
-        }
-
-        .score-badge {
-          background: #8E8E93;
-          color: white;
-          font-weight: 700;
-          font-size: 0.85rem;
-          padding: 6px 14px;
-          border-radius: 20px;
-          margin-bottom: 16px;
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-          transition: background-color 0.3s ease;
-        }
-
-        .location-title {
-          font-size: 1.8rem;
-          font-weight: 500;
-          letter-spacing: -0.01em;
-          color: #0f2c5a;
-          margin-bottom: 4px;
-        }
-
-        .hero-center {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-        }
-
-        .hero-icon {
-          font-size: 3.5rem;
-          line-height: 1;
-        }
-
-        .hero-temp {
-          font-size: 5.5rem;
-          font-weight: 200;
-          letter-spacing: -2px;
-          color: #0f2c5a;
-          margin-left: 4px;
-        }
-
-        .hero-desc {
-          font-size: 1.1rem;
-          font-weight: 600;
-          color: rgba(15, 44, 90, 0.7);
-          margin-top: -6px;
-        }
-
-        /* Horizontale Stats Rij */
-        .stats-row {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 16px;
-          margin-top: 24px;
-        }
-
-        .stat-item {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 4px;
-        }
-
-        .stat-divider {
-          width: 1px;
-          height: 24px;
-          background-color: rgba(15, 44, 90, 0.15);
-        }
-
-        .stat-label {
-          font-size: 0.7rem;
-          color: rgba(15, 44, 90, 0.6);
-          text-transform: uppercase;
-          font-weight: 700;
-          letter-spacing: 0.05em;
-        }
-
-        .stat-val {
-          font-size: 1rem;
-          font-weight: 600;
-          color: #0f2c5a;
-        }
-
-        /* NEXT LEVEL iOS: Glazen Kaart Containers */
-        .card-container {
-          background: rgba(255, 255, 255, 0.45); /* Ultra-transparant wit */
-          backdrop-filter: blur(20px); /* De magische iOS blur effect */
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.4); /* Subtiele glanzende rand */
-          border-radius: 24px; /* Prachtige vloeiende hoeken */
-          padding: 18px;
-          box-shadow: 0 8px 32px rgba(15, 44, 90, 0.04); /* Zachte diepe schaduw */
-          margin-bottom: 20px;
-        }
-
-        .section-title {
-          font-size: 0.75rem;
-          font-weight: 700;
-          color: rgba(15, 44, 90, 0.5); /* Echte iOS-stijl muted header text */
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-          margin: 0 0 14px 4px;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        }
-
-        /* 24-uurs overzicht */
-        .hourly-scroll {
-          display: flex;
-          gap: 10px;
-          overflow-x: auto;
-          padding-bottom: 4px;
-          scrollbar-width: none;
-          -webkit-overflow-scrolling: touch;
-        }
-        .hourly-scroll::-webkit-scrollbar { display: none; }
-
-        /* Uur-items als losse glazen widgets */
-        .hourly-item {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          min-width: 58px;
-          gap: 6px;
-          background: rgba(255, 255, 255, 0.35);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          padding: 12px 6px;
-          border-radius: 16px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.01);
-        }
-
-        .hourly-time { 
-          font-size: 0.75rem; 
-          font-weight: 600; 
-          color: rgba(15, 44, 90, 0.7); 
-        }
-        
-        .hourly-icon { 
-          font-size: 1.6rem; 
-          line-height: 1; 
-          margin: 2px 0;
-        }
-        
-        .hourly-temp { 
-          font-size: 1rem; 
-          font-weight: 700; 
-          color: #0f2c5a; 
-        }
-        
-        .hourly-score-pill { 
-          font-weight: 800; 
-          color: #FFFFFF; 
-          font-size: 0.75rem; 
-          padding: 2px 8px;
-          border-radius: 6px;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-        }
-        
-        .hourly-detail { 
-          font-size: 0.65rem; 
-          color: rgba(15, 44, 90, 0.6); 
-          font-weight: 700; 
-          letter-spacing: -0.01em;
-        }
-
-        /* Advies overzicht */
-        .advice-list {
-          display: flex;
-          flex-direction: column;
-          gap: 8px; /* Ruimte tussen de widgets */
-        }
-
-        /* Kledingadvies omgetoverd naar strakke banners */
-        .advice-item {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          padding: 12px 14px;
-          background: rgba(255, 255, 255, 0.35);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          border-radius: 16px;
-        }
-
-        .advice-emoji { 
-          font-size: 1.4rem; 
-          background: rgba(255, 255, 255, 0.6);
-          padding: 6px;
-          border-radius: 10px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-        }
-        
-        .advice-text { 
-          font-size: 0.9rem; 
-          font-weight: 600; 
-          color: #0f2c5a; 
-        }
-
-        /* Laders */
-        .loading-overlay { text-align: center; padding: 40px 20px; color: #8E8E93; font-weight: 500; }
-        .error-note { color: #FF453A; }
-      </style>
-
       <div class="hero-section">
         <div class="score-badge" id="top-score-badge">
           🚴 Weer ophalen...
@@ -281,7 +269,82 @@ export const page = {
 
   init() {
     let isCancelled = false;
+    const appContainer = document.getElementById('app');
 
+    // ==========================================
+    // 1. PULL TO REFRESH LOGICA
+    // ==========================================
+    let startY = 0;
+    let isPulling = false;
+    const ptrIndicator = document.getElementById('ptr-indicator');
+    const ptrContent = document.getElementById('ptr-content');
+
+    const handleTouchStart = (e) => {
+      // Alleen pullen als we helemaal bovenaan staan
+      if (appContainer.scrollTop <= 0) {
+        startY = e.touches[0].clientY;
+        isPulling = true;
+        ptrIndicator.style.transition = 'none';
+      }
+    };
+
+    const handleTouchMove = (e) => {
+      if (!isPulling) return;
+      const currentY = e.touches[0].clientY;
+      const dy = currentY - startY;
+
+      // Als we naar beneden vegen en bovenaan staan
+      if (dy > 0 && appContainer.scrollTop <= 0) {
+        // Voorkom standaard scrollgedrag om horten en stoten te voorkomen
+        if (e.cancelable) e.preventDefault();
+        
+        const pullDistance = Math.min(dy * 0.4, 80); // Max 80px uittrekken
+        ptrIndicator.style.height = `${pullDistance}px`;
+        
+        if (pullDistance > 55) {
+          ptrContent.innerHTML = '<span class="ptr-icon">↻</span> Laat los om te vernieuwen';
+        } else {
+          ptrContent.innerHTML = '<span class="ptr-icon">⬇️</span> Trek om te vernieuwen';
+        }
+      } else {
+        // Gebruiker veegt omhoog, annuleer pull
+        isPulling = false;
+        ptrIndicator.style.height = '0px';
+      }
+    };
+
+    const handleTouchEnd = async () => {
+      if (!isPulling) return;
+      isPulling = false;
+      
+      const currentHeight = parseInt(ptrIndicator.style.height || '0', 10);
+      ptrIndicator.style.transition = 'height 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
+      
+      if (currentHeight > 55) {
+        // Blijf even open staan om aan te geven dat we laden
+        ptrIndicator.style.height = '50px';
+        ptrContent.innerHTML = '<span class="ptr-icon refresh-spin">↻</span> Weer updaten...';
+        
+        // Roep updateWeather aan met forceRefresh = true
+        await updateWeather(true);
+        
+        // Na laden dichtklappen
+        ptrIndicator.style.height = '0px';
+      } else {
+        // Niet ver genoeg getrokken, klap soepel dicht
+        ptrIndicator.style.height = '0px';
+      }
+    };
+
+    // Event listeners toevoegen aan de main container
+    appContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
+    appContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
+    appContainer.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+
+    // ==========================================
+    // 2. WEER LOGICA EN DATAVERWERKING
+    // ==========================================
     const icons = {
       0: ['☀️', 'Zonnig'], 1: ['🌤', 'Grotendeels zonnig'], 2: ['⛅️', 'Half bewolkt'],
       3: ['☁️', 'Bewolkt'], 45: ['🌫', 'Mistig'], 48: ['🌫', 'Dichte mist'],
@@ -313,15 +376,11 @@ export const page = {
 
     const getScore = ({ weathercode, temperature, windspeed, precipitation_probability }) => {
       let score = 10;
-      
       if ([51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99].includes(weathercode)) score -= 3;
       if ([71,73,75,85,86].includes(weathercode)) score -= 3;
 
-      if (temperature > 26) {
-        score -= (temperature - 26) / 3;
-      } else if (temperature < 19) {
-        score -= (19 - temperature) / 4;
-      }
+      if (temperature > 26) score -= (temperature - 26) / 3;
+      else if (temperature < 19) score -= (19 - temperature) / 4;
 
       score -= Math.min(4, windspeed / 12);
       score -= Math.min(3, precipitation_probability / 20);
@@ -337,61 +396,32 @@ export const page = {
       return { text: 'Beter binnen blijven', color: '#FF3B30' };
     };
 
-    // VERNIEUWDE, VEILIGE GETADVICE FUNCTIE
     const getAdvice = ({ temperature, feels_like, windspeed, weathercode, precipitation_probability }) => {
       const advice = [];
       const bft = bftFromKmh(windspeed);
 
-      // 1. Zomer/Temperatuur basislaag
-      if (temperature >= 22) {
-        advice.push({ emoji: '☀️', text: 'Heerlijk zomerweer: korte broek en korte mouwen!' });
-      } else if (temperature >= 18) {
-        advice.push({ emoji: '🌤', text: 'Mooie temperatuur voor korte mouwen.' });
-      } else if (temperature >= 14) {
-        advice.push({ emoji: '👕', text: 'Lange mouwen of armstukken aanbevolen.' });
-      } else {
-        advice.push({ emoji: '🧥', text: 'Fris! Een licht fietsjack of warme basislaag.' });
-      }
+      if (temperature >= 22) advice.push({ emoji: '☀️', text: 'Heerlijk zomerweer: korte broek en korte mouwen!' });
+      else if (temperature >= 18) advice.push({ emoji: '🌤', text: 'Mooie temperatuur voor korte mouwen.' });
+      else if (temperature >= 14) advice.push({ emoji: '👕', text: 'Lange mouwen of armstukken aanbevolen.' });
+      else advice.push({ emoji: '🧥', text: 'Fris! Een licht fietsjack of warme basislaag.' });
 
-      // 2. Windjack logica
-      if (bft >= 5) {
-        advice.push({ emoji: '💨', text: `Stevige wind (Bft ${bft}): strak windjack aanbevolen.` });
-      } else if (bft >= 3) {
-        advice.push({ emoji: '🌬️', text: `Matige bries (Bft ${bft}): bodywarmer of licht windjack is fijn.` });
-      }
+      if (bft >= 5) advice.push({ emoji: '💨', text: `Stevige wind (Bft ${bft}): strak windjack aanbevolen.` });
+      else if (bft >= 3) advice.push({ emoji: '🌬️', text: `Matige bries (Bft ${bft}): bodywarmer of licht windjack is fijn.` });
 
-      // 3. Regen / Gevaren / Zon
-      if ([95,96,99].includes(weathercode)) {
-        advice.push({ emoji: adviceEmojis.storm, text: 'Kans op onweer: rit uitstellen aanbevolen.' });
-      } else if (precipitation_probability >= 40) {
-        advice.push({ emoji: adviceEmojis.rain, text: `Kans op nattigheid (${precipitation_probability}%): neem een regenjack mee.` });
-      } else if (temperature >= 20 && ![3, 45, 48].includes(weathercode)) {
-        advice.push({ emoji: '🕶️', text: 'Vergeet je zonnebril niet tegen de zon en vliegjes!' });
-      }
+      if ([95,96,99].includes(weathercode)) advice.push({ emoji: adviceEmojis.storm, text: 'Kans op onweer: rit uitstellen aanbevolen.' });
+      else if (precipitation_probability >= 40) advice.push({ emoji: adviceEmojis.rain, text: `Kans op nattigheid (${precipitation_probability}%): neem een regenjack mee.` });
+      else if (temperature >= 20 && ![3, 45, 48].includes(weathercode)) advice.push({ emoji: '🕶️', text: 'Vergeet je zonnebril niet tegen de zon en vliegjes!' });
 
-      // 4. Afkoeling
-      if (feels_like < temperature - 3) {
-        advice.push({ emoji: adviceEmojis.windchill, text: 'Gevoelstemperatuur ligt een stuk lager, extra laag mee.' });
-      }
+      if (feels_like < temperature - 3) advice.push({ emoji: adviceEmojis.windchill, text: 'Gevoelstemperatuur ligt een stuk lager, extra laag mee.' });
       
       return advice.length ? advice : [{ emoji: adviceEmojis.default, text: 'Frisse rit! Let goed op het verkeer.' }];
     };
 
-    const formatTime = time => {
-      const date = new Date(time);
-      return date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
-    };
-
-    const setText = (selector, text) => {
-      const el = document.getElementById(selector);
-      if (el) el.textContent = text;
-    };
+    const formatTime = time => new Date(time).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+    const setText = (selector, text) => { const el = document.getElementById(selector); if (el) el.textContent = text; };
 
     const getLocation = () => new Promise(resolve => {
-      if (!navigator.geolocation) {
-        resolve({ latitude: 52.3676, longitude: 4.9041, label: 'Amsterdam' });
-        return;
-      }
+      if (!navigator.geolocation) { resolve({ latitude: 52.3676, longitude: 4.9041, label: 'Amsterdam' }); return; }
       navigator.geolocation.getCurrentPosition(
         pos => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
         () => resolve({ latitude: 52.3676, longitude: 4.9041, label: 'Amsterdam' }),
@@ -463,13 +493,7 @@ export const page = {
         const wind = weather.hourly.windspeed_10m[idx];
         const dir = windDirection(weather.hourly.winddirection_10m[idx]);
         const bft = bftFromKmh(wind);
-        const value = Math.max(1, getScore({
-          weathercode: code,
-          temperature: weather.hourly.temperature_2m[idx],
-          windspeed: wind,
-          precipitation_probability: weather.hourly.precipitation_probability[idx]
-        }));
-        
+        const value = Math.max(1, getScore({ weathercode: code, temperature: weather.hourly.temperature_2m[idx], windspeed: wind, precipitation_probability: weather.hourly.precipitation_probability[idx] }));
         const info = getScoreInfo(value);
         
         container.innerHTML += `
@@ -518,26 +542,29 @@ export const page = {
       }
     };
 
-    const updateWeather = async () => {
+    // UPDATEWEATHER: Nu met forceRefresh parameter
+    const updateWeather = async (forceRefresh = false) => {
       try {
+        const loader = document.getElementById('weather-loading');
+        // Laat de center loader alleen zien als we niet pull-to-refreshen
+        if (loader && !forceRefresh) loader.style.display = 'block';
+
         const location = await getLocation();
         if (isCancelled) return;
 
-        // === START CACHING LOGICA ===
         const CACHE_KEY = 'fietsmaatje_weather_cache';
-        const CACHE_TTL = 5 * 60 * 1000; // 5 minuten in milliseconden
+        const CACHE_TTL = 5 * 60 * 1000;
 
         let placeName;
         let weather;
         let useCache = false;
 
         const cachedData = localStorage.getItem(CACHE_KEY);
-        if (cachedData) {
+        // Controleer of we cache mogen gebruiken (forceRefresh = false)
+        if (!forceRefresh && cachedData) {
           try {
             const parsed = JSON.parse(cachedData);
             const isFresh = (Date.now() - parsed.timestamp) < CACHE_TTL;
-            
-            // Rond af op 2 decimalen (~1 km) om kleine GPS-schommelingen op te vangen
             const isSameLocation = Math.round(parsed.lat * 100) === Math.round(location.latitude * 100) &&
                                    Math.round(parsed.lon * 100) === Math.round(location.longitude * 100);
 
@@ -545,14 +572,12 @@ export const page = {
               placeName = parsed.placeName;
               weather = parsed.weather;
               useCache = true;
-              console.log('☀️ Weergegevens geladen uit cache (bespaart API request)');
             }
           } catch (e) {
             console.warn('Weercache defect, live gegevens ophalen...');
           }
         }
 
-        // Als er geen geldige cache is, halen we de gegevens live op
         if (!useCache) {
           console.log('🔄 Live weer en locatie ophalen via API...');
           placeName = location.label || await reverseGeo(location.latitude, location.longitude);
@@ -562,7 +587,6 @@ export const page = {
           weather = await fetchWeather(location.latitude, location.longitude, timezone);
           if (isCancelled) return;
 
-          // Sla de nieuwe gegevens direct op in de cache
           localStorage.setItem(CACHE_KEY, JSON.stringify({
             timestamp: Date.now(),
             lat: location.latitude,
@@ -571,9 +595,7 @@ export const page = {
             weather: weather
           }));
         }
-        // === EINDE CACHING LOGICA ===
 
-        // Vanaf hier blijft je originele render-code exact hetzelfde:
         setText('weather-location', placeName);
 
         const current = weather.current_weather;
@@ -620,15 +642,25 @@ export const page = {
         renderHourly(weather);
         renderAdvice(advice);
 
-        const loader = document.getElementById('weather-loading');
         if (loader) loader.style.display = 'none';
       } catch (error) {
         console.error(error);
         showFetchError('Kon het weer niet laden. Check je verbinding.');
       }
     };
+    
+    // Bij eerste keer inladen voeren we hem uit (gebruikt cache indien mogelijk)
     updateWeather();
 
-    return () => { isCancelled = true; };
+    // ==========================================
+    // 3. CLEANUP (Voorkomt bugs op andere pagina's)
+    // ==========================================
+    return () => { 
+      isCancelled = true; 
+      // Verwijder touch listeners wanneer je naar een andere tab (bijv. Planner) gaat
+      appContainer.removeEventListener('touchstart', handleTouchStart);
+      appContainer.removeEventListener('touchmove', handleTouchMove);
+      appContainer.removeEventListener('touchend', handleTouchEnd);
+    };
   }
 };
