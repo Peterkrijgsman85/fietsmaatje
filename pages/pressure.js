@@ -1,219 +1,61 @@
 export const page = {
   html: `
-    <div class="pressure-page">
-      <style>
-        .pressure-page {
-          position: relative;
-          width: 100%;
-          color: #1C1C1E;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-          padding: 10px 16px 110px;
-        }
-
-        /* Hero Header */
-        .press-hero {
-          text-align: center;
-          margin-top: 10px;
-          margin-bottom: 24px;
-        }
-
-        .press-hero h1 {
-          font-size: 1.8rem;
-          font-weight: 700;
-          color: #0f2c5a;
-          margin: 0 0 4px 0;
-        }
-
-        .press-hero .sub {
-          font-size: 0.95rem;
-          color: rgba(15, 44, 90, 0.6);
-          font-weight: 500;
-        }
-
-        /* iOS Glazen Kaart */
-        .press-card {
-          background: rgba(255, 255, 255, 0.45);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.4);
-          border-radius: 24px;
-          padding: 18px;
-          box-shadow: 0 8px 32px rgba(15, 44, 90, 0.04);
-          margin-bottom: 20px;
-        }
-
-        .press-section-title {
-          font-size: 0.75rem;
-          font-weight: 700;
-          color: rgba(15, 44, 90, 0.5);
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-          margin: 0 0 12px 4px;
-          display: block;
-        }
-
-        /* Knoppen & Grid */
-        .press-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 10px;
-          margin-bottom: 8px;
-        }
-
-        .press-btn-opt {
-          background: rgba(255, 255, 255, 0.4);
-          border: 1px solid rgba(15, 44, 90, 0.1);
-          padding: 14px 10px;
-          border-radius: 16px;
-          font-size: 0.9rem;
-          font-weight: 600;
-          color: #0f2c5a;
-          text-align: center;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 6px;
-        }
-
-        .press-btn-opt.active {
-          background: #0f2c5a;
-          color: white;
-          border-color: #0f2c5a;
-          box-shadow: 0 4px 12px rgba(15, 44, 90, 0.15);
-        }
-
-        /* Sliders */
-        .press-slider-box {
-          margin-bottom: 18px;
-        }
-        .press-slider-box:last-child {
-          margin-bottom: 4px;
-        }
-
-        .press-slider-header {
-          display: flex;
-          justify-content: space-between;
-          font-size: 0.9rem;
-          font-weight: 600;
-          color: #0f2c5a;
-          margin-bottom: 8px;
-          padding: 0 4px;
-        }
-
-        .press-slider-header span {
-          background: rgba(15, 44, 90, 0.08);
-          padding: 2px 8px;
-          border-radius: 8px;
-          font-weight: 700;
-        }
-
-        .press-input-range {
-          -webkit-appearance: none;
-          width: 100%;
-          height: 8px;
-          border-radius: 4px;
-          background: rgba(15, 44, 90, 0.1);
-          outline: none;
-        }
-
-        .press-input-range::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          background: #ffffff;
-          border: 1px solid rgba(0,0,0,0.1);
-          box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-          cursor: pointer;
-          transition: transform 0.1s;
-        }
-        .press-input-range::-webkit-slider-thumb:active {
-          transform: scale(1.15);
-        }
-
-        /* Resultaat Blokken */
-        .press-res-container {
-          display: flex;
-          gap: 12px;
-          margin-top: 4px;
-        }
-
-        .press-res-box {
-          flex: 1;
-          background: rgba(255, 255, 255, 0.6);
-          border: 1px solid rgba(255, 255, 255, 0.5);
-          box-shadow: 0 4px 16px rgba(15, 44, 90, 0.02);
-          border-radius: 20px;
-          padding: 16px 10px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          text-align: center;
-        }
-
-        .press-res-val {
-          font-size: 2.2rem;
-          font-weight: 800;
-          color: #0f2c5a;
-          line-height: 1.1;
-        }
-
-        .press-res-lbl-sub {
-          font-size: 0.65rem;
-          font-weight: 700;
-          color: rgba(15, 44, 90, 0.5);
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          margin-top: 4px;
-        }
-      </style>
-
-      <div class="press-hero">
-        <h1>Bandenspanning</h1>
-        <span class="sub">Optimale druk voor jouw banden</span>
+    <div class="pressure-page" style="
+      position: relative;
+      width: 100%;
+      padding: 10px 16px 110px;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #0f2c5a;
+    ">
+      <div style="text-align: center; margin: 10px 0 24px 0;">
+        <h1 style="font-size: 1.8rem; font-weight: 700; color: #0f2c5a; margin: 0 0 4px 0;">Bandenspanning</h1>
+        <p style="font-size: 0.95rem; color: rgba(15, 44, 90, 0.6); font-weight: 500;">Optimale druk voor jouw banden</p>
       </div>
 
-      <div class="press-card">
-        <span class="press-section-title">Type Rit</span>
-        <div class="press-grid" id="press-style-grid">
+      <div style="background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 24px; padding: 18px; box-shadow: 0 8px 32px rgba(15, 44, 90, 0.04); margin-bottom: 20px;">
+        <span style="font-size: 0.75rem; font-weight: 700; color: rgba(15, 44, 90, 0.5); text-transform: uppercase; margin-bottom: 12px; display: block;">Type Rit</span>
+        <div id="press-style-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px;">
           <div class="press-btn-opt active" data-value="1.0">🚲 Weg</div>
           <div class="press-btn-opt" data-value="0.92">🏜️ Gravel</div>
-          <div class="press-btn-opt" data-value="0.82">🌲 MTB Trail</div>
+          <div class="press-btn-opt" data-value="0.82">🌲 MTB</div>
           <div class="press-btn-opt" data-value="0.75">📉 Downhill</div>
         </div>
         
-        <span class="press-section-title" style="margin-top: 16px;">Condities</span>
-        <div class="press-grid" id="press-surf-grid">
+        <span style="font-size: 0.75rem; font-weight: 700; color: rgba(15, 44, 90, 0.5); text-transform: uppercase; margin-bottom: 12px; display: block;">Condities</span>
+        <div id="press-surf-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
           <div class="press-btn-opt active" data-value="1.0">☀️ Droog</div>
           <div class="press-btn-opt" data-value="0.92">🌧️ Nat</div>
         </div>
       </div>
 
-      <div class="press-card">
-        <div class="press-slider-box">
-          <div class="press-slider-header">Systeemgewicht <span id="press-valW">85 kg</span></div>
-          <input type="range" id="press-weightIn" class="press-input-range" min="40" max="140" value="85">
+      <div style="background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 24px; padding: 18px; box-shadow: 0 8px 32px rgba(15, 44, 90, 0.04); margin-bottom: 20px;">
+        <div style="margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 600; margin-bottom: 8px;">Systeemgewicht <span id="press-valW" style="background: rgba(15,44,90,0.08); padding: 2px 8px; border-radius: 8px;">85 kg</span></div>
+          <input type="range" id="press-weightIn" style="width: 100%; height: 6px; background: rgba(15,44,90,0.1); border-radius: 3px; appearance: none;" min="40" max="140" value="85">
         </div>
-        
-        <div class="press-slider-box">
-          <div class="press-slider-header">Bandbreedte <span id="press-valB">28 mm</span></div>
-          <input type="range" id="press-brIn" class="press-input-range" min="23" max="65" value="28">
+        <div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 600; margin-bottom: 8px;">Bandbreedte <span id="press-valB" style="background: rgba(15,44,90,0.08); padding: 2px 8px; border-radius: 8px;">28 mm</span></div>
+          <input type="range" id="press-brIn" style="width: 100%; height: 6px; background: rgba(15,44,90,0.1); border-radius: 3px; appearance: none;" min="23" max="65" value="28">
         </div>
       </div>
 
-      <div class="press-res-container">
-        <div class="press-res-box">
-          <span class="press-res-val" id="press-resV">--</span>
-          <span class="press-res-lbl-sub">Bar Voor</span>
+      <div style="display: flex; gap: 12px;">
+        <div style="flex: 1; background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 20px; padding: 16px; text-align: center;">
+          <div id="press-resV" style="font-size: 2rem; font-weight: 800;">--</div>
+          <div style="font-size: 0.65rem; font-weight: 800; color: rgba(15,44,90,0.5); text-transform: uppercase;">Bar Voor</div>
         </div>
-        <div class="press-res-box">
-          <span class="press-res-val" id="press-resA">--</span>
-          <span class="press-res-lbl-sub">Bar Achter</span>
+        <div style="flex: 1; background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 20px; padding: 16px; text-align: center;">
+          <div id="press-resA" style="font-size: 2rem; font-weight: 800;">--</div>
+          <div style="font-size: 0.65rem; font-weight: 800; color: rgba(15,44,90,0.5); text-transform: uppercase;">Bar Achter</div>
         </div>
       </div>
+
+      <style>
+        .press-btn-opt { background: rgba(255, 255, 255, 0.4); border: 1px solid rgba(15, 44, 90, 0.1); padding: 14px 10px; border-radius: 16px; font-size: 0.9rem; font-weight: 600; color: #0f2c5a; text-align: center; cursor: pointer; }
+        .press-btn-opt.active { background: #0f2c5a; color: white; }
+        input[type=range]::-webkit-slider-thumb { appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #0f2c5a; cursor: pointer; }
+      </style>
     </div>
   `,
 
