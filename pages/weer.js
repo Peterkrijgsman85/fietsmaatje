@@ -2,14 +2,13 @@ export const page = {
   html: `
     <style>
       /* --- FIX VOOR SCROLL & SCROLLBALK --- */
-      /* Verberg de scrollbalk op de hoofdcontainer zolang deze pagina actief is */
       #app::-webkit-scrollbar {
         display: none !important;
       }
       #app {
         -ms-overflow-style: none !important; 
         scrollbar-width: none !important;
-        overscroll-behavior-y: none; /* Voorkomt het native iOS 'elastiek' effect dat conflicteert met onze pull-to-refresh */
+        overscroll-behavior-y: none;
       }
 
       /* Basis Layout */
@@ -18,7 +17,8 @@ export const page = {
         width: 100%;
         color: #1C1C1E;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        padding: 0px 16px 110px; /* Top padding naar 0 gezet ivm pull-to-refresh indicator */
+        /* HIER ZIT DE FIX: padding-bottom verhoogd naar 150px voor extra witruimte boven het menu */
+        padding: 0px 16px 150px; 
       }
 
       /* --- PULL TO REFRESH STYLING --- */
@@ -27,7 +27,7 @@ export const page = {
         height: 0px;
         overflow: hidden;
         display: flex;
-        align-items: flex-end; /* Tekst blijft onderaan de uitrekkende div */
+        align-items: flex-end;
         justify-content: center;
         padding-bottom: 0;
         font-size: 0.85rem;
@@ -280,7 +280,6 @@ export const page = {
     const ptrContent = document.getElementById('ptr-content');
 
     const handleTouchStart = (e) => {
-      // Alleen pullen als we helemaal bovenaan staan
       if (appContainer.scrollTop <= 0) {
         startY = e.touches[0].clientY;
         isPulling = true;
@@ -293,12 +292,10 @@ export const page = {
       const currentY = e.touches[0].clientY;
       const dy = currentY - startY;
 
-      // Als we naar beneden vegen en bovenaan staan
       if (dy > 0 && appContainer.scrollTop <= 0) {
-        // Voorkom standaard scrollgedrag om horten en stoten te voorkomen
         if (e.cancelable) e.preventDefault();
         
-        const pullDistance = Math.min(dy * 0.4, 80); // Max 80px uittrekken
+        const pullDistance = Math.min(dy * 0.4, 80);
         ptrIndicator.style.height = `${pullDistance}px`;
         
         if (pullDistance > 55) {
@@ -307,7 +304,6 @@ export const page = {
           ptrContent.innerHTML = '<span class="ptr-icon">⬇️</span> Trek om te vernieuwen';
         }
       } else {
-        // Gebruiker veegt omhoog, annuleer pull
         isPulling = false;
         ptrIndicator.style.height = '0px';
       }
@@ -321,22 +317,16 @@ export const page = {
       ptrIndicator.style.transition = 'height 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
       
       if (currentHeight > 55) {
-        // Blijf even open staan om aan te geven dat we laden
         ptrIndicator.style.height = '50px';
         ptrContent.innerHTML = '<span class="ptr-icon refresh-spin">↻</span> Weer updaten...';
         
-        // Roep updateWeather aan met forceRefresh = true
         await updateWeather(true);
-        
-        // Na laden dichtklappen
         ptrIndicator.style.height = '0px';
       } else {
-        // Niet ver genoeg getrokken, klap soepel dicht
         ptrIndicator.style.height = '0px';
       }
     };
 
-    // Event listeners toevoegen aan de main container
     appContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
     appContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
     appContainer.addEventListener('touchend', handleTouchEnd, { passive: true });
@@ -542,11 +532,9 @@ export const page = {
       }
     };
 
-    // UPDATEWEATHER: Nu met forceRefresh parameter
     const updateWeather = async (forceRefresh = false) => {
       try {
         const loader = document.getElementById('weather-loading');
-        // Laat de center loader alleen zien als we niet pull-to-refreshen
         if (loader && !forceRefresh) loader.style.display = 'block';
 
         const location = await getLocation();
@@ -560,7 +548,6 @@ export const page = {
         let useCache = false;
 
         const cachedData = localStorage.getItem(CACHE_KEY);
-        // Controleer of we cache mogen gebruiken (forceRefresh = false)
         if (!forceRefresh && cachedData) {
           try {
             const parsed = JSON.parse(cachedData);
@@ -649,15 +636,13 @@ export const page = {
       }
     };
     
-    // Bij eerste keer inladen voeren we hem uit (gebruikt cache indien mogelijk)
     updateWeather();
 
     // ==========================================
-    // 3. CLEANUP (Voorkomt bugs op andere pagina's)
+    // 3. CLEANUP
     // ==========================================
     return () => { 
       isCancelled = true; 
-      // Verwijder touch listeners wanneer je naar een andere tab (bijv. Planner) gaat
       appContainer.removeEventListener('touchstart', handleTouchStart);
       appContainer.removeEventListener('touchmove', handleTouchMove);
       appContainer.removeEventListener('touchend', handleTouchEnd);
