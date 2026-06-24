@@ -20,15 +20,20 @@ export const page = {
           <div class="log-btn-opt" data-mode="route">🏁 A naar B</div>
         </div>
 
-        <input type="text" id="log-locA" placeholder="Startlocatie (bijv. Utrecht)..." style="width: 100%; box-sizing: border-box; background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(15, 44, 90, 0.15); padding: 14px; border-radius: 14px; margin-bottom: 12px; font-size: 1rem;">
+        <div style="position: relative; margin-bottom: 12px;">
+          <input type="text" id="log-locA" placeholder="Startlocatie (bijv. Utrecht)..." style="width: 100%; box-sizing: border-box; background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(15, 44, 90, 0.15); padding: 14px 40px 14px 14px; border-radius: 14px; font-size: 1rem;">
+          <button id="log-geoBtn" style="position: absolute; right: 10px; top: 12px; border: none; background: none; cursor: pointer; font-size: 1.2rem;">📍</button>
+          <div id="log-sugA" class="log-sug-box"></div>
+        </div>
         
-        <div id="log-routeFields" style="display:none;">
-          <input type="text" id="log-locB" placeholder="Eindlocatie (bijv. Arnhem)..." style="width: 100%; box-sizing: border-box; background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(15, 44, 90, 0.15); padding: 14px; border-radius: 14px; margin-bottom: 12px; font-size: 1rem;">
+        <div id="log-routeFields" style="display:none; position: relative; margin-bottom: 12px;">
+          <input type="text" id="log-locB" placeholder="Eindlocatie (bijv. Arnhem)..." style="width: 100%; box-sizing: border-box; background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(15, 44, 90, 0.15); padding: 14px; border-radius: 14px; font-size: 1rem;">
+          <div id="log-sugB" class="log-sug-box"></div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
-          <input type="date" id="log-dateIn" style="background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(15, 44, 90, 0.15); padding: 14px; border-radius: 14px; font-size: 1rem;">
-          <input type="time" id="log-timeIn" style="background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(15, 44, 90, 0.15); padding: 14px; border-radius: 14px; font-size: 1rem;">
+        <div style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
+          <input type="date" id="log-dateIn" style="flex: 1 1 140px; background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(15, 44, 90, 0.15); padding: 14px; border-radius: 14px; font-size: 1rem;">
+          <input type="time" id="log-timeIn" style="flex: 1 1 100px; background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(15, 44, 90, 0.15); padding: 14px; border-radius: 14px; font-size: 1rem;">
         </div>
 
         <button id="log-generateBtn" style="width: 100%; background: #0f2c5a; color: white; border: none; padding: 16px; border-radius: 16px; font-size: 1rem; font-weight: 700; cursor: pointer;">Genereer Bericht ✨</button>
@@ -50,12 +55,17 @@ export const page = {
       <style>
         .log-btn-opt { background: rgba(255, 255, 255, 0.4); border: 1px solid rgba(15, 44, 90, 0.1); padding: 12px 10px; border-radius: 14px; font-size: 0.9rem; font-weight: 600; text-align: center; cursor: pointer; }
         .log-btn-opt.active { background: #0f2c5a; color: white; }
+        /* Suggestie box stijl */
+        .log-sug-box { position: absolute; top: 100%; left: 0; right: 0; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 99; margin-top: 5px; display: none; overflow: hidden; }
+        .log-sug-item { padding: 10px 14px; cursor: pointer; font-size: 0.9rem; border-bottom: 1px solid #eee; }
+        .log-sug-item:hover { background: #f0f0f0; }
       </style>
     </div>
   `,
 
   init() {
     let logMode = 'single';
+    let typingTimer;
 
     // Elementen
     const styleButtons = document.querySelectorAll('.log-grid-switch .log-btn-opt');
@@ -71,46 +81,93 @@ export const page = {
     const res2 = document.getElementById('log-res2');
     const cardRes1 = document.getElementById('log-card-res1');
     const cardRes2 = document.getElementById('log-card-res2');
+    const geoBtn = document.getElementById('log-geoBtn');
 
-    // Sla automatische tijden op (Nu en Vandaag)
+    // Tijd setup
     const now = new Date();
     dateInput.value = now.toISOString().split('T')[0];
     timeInput.value = now.toTimeString().split(' ')[0].substring(0, 5);
 
     // Helpers
-    const getCondStr = c => {
-      if (c === 0) return "Onbewolkt";
-      if (c <= 3) return "Licht bewolkt";
-      if (c <= 67) return "Regenachtig";
-      return "Bewolkt";
+    const getCondStr = c => (c === 0 ? "Onbewolkt" : c <= 3 ? "Licht bewolkt" : c <= 67 ? "Regenachtig" : "Bewolkt");
+    const getCondIcon = c => (c === 0 ? "☀️" : c <= 3 ? "🌤️" : c <= 67 ? "🌧️" : "☁️");
+
+    // Autocomplete Logic
+    const handleAutocomplete = (input, sugBox) => {
+      clearTimeout(typingTimer);
+      typingTimer = setTimeout(async () => {
+        const query = input.value;
+        if (query.length < 3) { sugBox.style.display = 'none'; return; }
+        try {
+          const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=nl&format=json`);
+          const data = await res.json();
+          if (!data.results) { sugBox.style.display = 'none'; return; }
+          
+          sugBox.innerHTML = data.results.map(r => `<div class="log-sug-item" data-name="${r.name}">${r.name}, ${r.country}</div>`).join('');
+          sugBox.style.display = 'block';
+          
+          sugBox.querySelectorAll('.log-sug-item').forEach(item => {
+            item.onclick = () => {
+              input.value = item.getAttribute('data-name');
+              sugBox.style.display = 'none';
+            };
+          });
+        } catch (e) { console.error("Autocomplete error:", e); }
+      }, 500);
     };
 
-    const getCondIcon = c => {
-      if (c === 0) return "☀️";
-      if (c <= 3) return "🌤️";
-      if (c <= 67) return "🌧️";
-      return "☁️";
-    };
+    locAInput.oninput = () => handleAutocomplete(locAInput, document.getElementById('log-sugA'));
+    locBInput.oninput = () => handleAutocomplete(locBInput, document.getElementById('log-sugB'));
 
-    const setupCopy = card => {
-      card.addEventListener('click', () => {
-        const text = card.querySelector('.log-copy-t').innerText;
-        navigator.clipboard.writeText(text);
-        
-        // Strava Oranje visual flash effect
-        card.style.borderColor = "#fc4c02";
-        card.style.backgroundColor = "rgba(252, 76, 2, 0.05)";
-        setTimeout(() => {
-          card.style.borderColor = "rgba(255, 255, 255, 0.5)";
-          card.style.backgroundColor = "rgba(255, 255, 255, 0.6)";
-        }, 800);
+    // Auto-locatie (Geo) met foutafhandeling
+    geoBtn.onclick = () => {
+      if (!navigator.geolocation) {
+        alert("Je browser ondersteunt helaas geen locatiebepaling.");
+        return;
+      }
+
+      geoBtn.innerText = "⏳"; // Visuele feedback
+
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        try {
+          const { latitude, longitude } = pos.coords;
+          const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=nl`;
+          
+          const res = await fetch(url, {
+            headers: { 'User-Agent': 'WeatherApp/1.0' } // Vereist door OSM
+          });
+          
+          const data = await res.json();
+          const addr = data.address;
+          const location = addr.city || addr.town || addr.village || addr.municipality || "Onbekende locatie";
+          
+          locAInput.value = location;
+          geoBtn.innerText = "📍";
+        } catch (e) {
+          console.error("Geo fetch error:", e);
+          alert("Kon de locatie niet ophalen, probeer het handmatig.");
+          geoBtn.innerText = "📍";
+        }
+      }, (err) => {
+        console.error("Geo permission error:", err);
+        alert("Locatietoegang geweigerd. Zorg dat je pagina op HTTPS draait.");
+        geoBtn.innerText = "📍";
       });
     };
 
-    setupCopy(cardRes1);
-    setupCopy(cardRes2);
+    // Copy Setup
+    const setupCopy = (card, target) => {
+      card.addEventListener('click', () => {
+        navigator.clipboard.writeText(target.innerText);
+        card.style.borderColor = "#fc4c02";
+        card.style.backgroundColor = "rgba(252, 76, 2, 0.05)";
+        setTimeout(() => { card.style.borderColor = "rgba(255, 255, 255, 0.5)"; card.style.backgroundColor = "rgba(255, 255, 255, 0.6)"; }, 800);
+      });
+    };
+    setupCopy(cardRes1, res1);
+    setupCopy(cardRes2, res2);
 
-    // Modus switch (Rondje vs A naar B)
+    // Modus switch
     styleButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         styleButtons.forEach(b => b.classList.remove('active'));
@@ -139,9 +196,7 @@ export const page = {
         if (kmh < 50) return 6; if (kmh < 62) return 7; return 8;
       };
 
-      const calculateWBGT = (t, rh) => {
-        return Math.round(0.567 * t + 0.393 * (rh / 100 * 6.105 * Math.exp(17.27 * t / (237.7 + t))) + 3.94);
-      };
+      const calculateWBGT = (t, rh) => Math.round(0.567 * t + 0.393 * (rh / 100 * 6.105 * Math.exp(17.27 * t / (237.7 + t))) + 3.94);
 
       const temp = wd.hourly.temperature_2m[hour];
       const rh = wd.hourly.relative_humidity_2m[hour];
@@ -173,11 +228,9 @@ export const page = {
           const windDirFull = windMap[wA.wd] || wA.wd;
           r1 = `${getCondIcon(wA.c)} ${wA.t}°C (WBGT: ${wA.wbgt}°C) | 🌬️ Wind: ${wA.wd} ${wA.wKmh} km/u (${wA.bft} Bft)`;
           r2 = `📊 Ritverslag: ${getCondIcon(wA.c)} ${getCondStr(wA.c)}e rit bij ${wA.t}°C (gevoels/WBGT: ${wA.wbgt}°C). Er stond een windkracht van ${wA.bft} Bft uit ${windDirFull} (${wA.wKmh} km/u). 🚲`;
-        
         } else {
           const locBVal = locBInput.value.trim();
           if (!locBVal) throw new Error("Vul een eindlocatie in");
-          
           const wB = await fetchWeatherForLog(locBVal);
           const windDirFinish = windMap[wB.wd] || wB.wd;
           r1 = `${getCondIcon(wB.c)} ${locAVal} ➔ ${locBVal} | Temp: ${wA.t}°C ➔ ${wB.t}°C (WBGT: ${wB.wbgt}°C) | Wind: ${wB.wd} ${wB.wKmh} km/u (${wB.bft} Bft)`;
