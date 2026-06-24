@@ -4,17 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta id="theme-color-meta" name="theme-color" content="#d8f1ff" />
+  <meta name="theme-color" content="#d8f1ff" />
+  
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Fietsmaatje" />
   <meta name="application-name" content="Fietsmaatje" />
   <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-startup-image" href="splash.png" />
-  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" sizes="180x180" type="image/png" />
-  <link rel="apple-touch-icon-precomposed" href="icons/apple-touch-icon.png" sizes="180x180" />
-  <link rel="icon" href="icons/apple-touch-icon.png" type="image/png" sizes="180x180" />
-  <link rel="shortcut icon" href="icons/apple-touch-icon.png" />
   <title>Fietsmaatje</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -27,154 +24,52 @@
       --surface: rgba(255, 255, 255, 0.16);
     }
 
+    /* HIER ZIT DE FIX: De gradiënt staat nu globaal vast op de achtergrond van de hele app */
     html, body {
       height: 100%;
       width: 100%;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       -webkit-font-smoothing: antialiased;
-      background: #d8f1ff;
-    }
-
-    html.page-weer, body.page-weer {
       background-color: #d8f1ff;
       background-image: linear-gradient(160deg, #d8f1ff 0%, #9edcff 40%, #67c7ff 100%);
-    }
-
-    html.page-water, body.page-water {
-      background-color: #0a3d4a;
-      background-image: linear-gradient(160deg, #0a3d4a 0%, #0a3d4a 18%, #0e6b7c 100%);
-    }
-
-    html.page-planner, body.page-planner {
-      background-color: #2d1a4a;
-      background-image: linear-gradient(160deg, #2d1a4a 0%, #2d1a4a 18%, #4a1a8a 100%);
-    }
-
-    html.page-menu, body.page-menu {
-      background-color: #2d2f34;
-      background-image: linear-gradient(160deg, #2d2f34 0%, #2d2f34 18%, #202429 100%);
-    }
-
-    /* Wanneer de app als standalone gestart is, forceer volledige viewport
-       en verberg browser scrollbars/werkbalken. */
-    html.is-standalone, body.is-standalone {
-      height: 100vh;
-      min-height: 100vh;
-      width: 100%;
-      overflow: hidden;
-    }
-
-    /* Zorg dat standalone-modus de pagina-achtergrond behoudt achter de statusbar. */
-    html.is-standalone.page-weer, body.is-standalone.page-weer {
-      background-color: #d8f1ff;
-      background-image: linear-gradient(160deg, #d8f1ff 0%, #9edcff 40%, #67c7ff 100%);
-    }
-
-    html.is-standalone.page-water, body.is-standalone.page-water {
-      background-color: #0a3d4a;
-      background-image: linear-gradient(160deg, #0a3d4a 0%, #0a3d4a 18%, #0e6b7c 100%);
-    }
-
-    html.is-standalone.page-planner, body.is-standalone.page-planner {
-      background-color: #2d1a4a;
-      background-image: linear-gradient(160deg, #2d1a4a 0%, #2d1a4a 18%, #4a1a8a 100%);
-    }
-
-    html.is-standalone.page-menu, body.is-standalone.page-menu {
-      background-color: #2d2f34;
-      background-image: linear-gradient(160deg, #2d2f34 0%, #2d2f34 18%, #202429 100%);
+      background-attachment: fixed;
     }
 
     body {
       position: relative;
     }
 
-    html.is-standalone, body.is-standalone {
-      background-repeat: no-repeat;
-      background-size: cover;
-      background-position: center top;
-    }
-
     #app {
       position: fixed;
-      /* Vul het hele scherm inclusief onder de statusbalk en home indicator */
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      /* Zorg dat content niet achter notch of home-indicator valt */
-      padding-top: env(safe-area-inset-top);
+      /* Zorg dat de content netjes onder de notch begint */
+      padding-top: env(safe-area-inset-top, 44px);
       padding-bottom: env(safe-area-inset-bottom);
       min-height: 100vh;
       box-sizing: border-box;
       z-index: 0;
-    }
-
-    /* Extra zekerheid dat content het volledige scherm vult in standalone */
-    html.is-standalone #app, body.is-standalone #app {
-      min-height: calc(100vh + env(safe-area-inset-bottom));
+      overflow-y: auto; /* Zorgt dat de pagina's heerlijk soepel scrollen */
+      -webkit-overflow-scrolling: touch;
     }
 
     .pill-nav {
       position: fixed;
-      /* Plaats zo laag mogelijk, gebruik safe-area inset en kleine offset */
       bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
       left: 12px;
       right: 12px;
-      background: rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.25); /* Iets meer contrast op het blauw */
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       border-radius: 100px;
       padding: 6px;
       display: flex;
       gap: 4px;
-      border: 1px solid rgba(255, 255, 255, 0.24);
+      border: 1px solid rgba(255, 255, 255, 0.3);
       z-index: 100;
-      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.12);
-    }
-
-    .page-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 6px 12px;
-      border-radius: 999px;
-      background: rgba(var(--accent-rgb), 0.14);
-      color: white;
-      font-size: 12px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      font-weight: 700;
-      box-shadow: 0 12px 24px rgba(var(--accent-rgb), 0.1);
-      margin-bottom: 18px;
-    }
-
-    .page-splash {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      pointer-events: none;
-    }
-
-    .page-splash > div {
-      text-align: center;
-      opacity: 0.35;
-    }
-
-    .page-splash h1 {
-      margin-top: 10px;
-      font-size: 18px;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.95);
-    }
-
-    .page-splash-icon {
-      font-size: 72px;
-      line-height: 1;
+      box-shadow: 0 10px 30px rgba(15, 44, 90, 0.1);
     }
 
     .pill-nav button {
@@ -186,7 +81,7 @@
       padding: 10px 8px;
       font-size: 13px;
       font-weight: 600;
-      color: rgba(255, 255, 255, 0.88);
+      color: #0f2c5a; /* Donkerblauw voor betere leesbaarheid op de navbalk */
       display: inline-flex;
       flex-direction: column;
       align-items: center;
@@ -194,36 +89,14 @@
       gap: 4px;
       line-height: 1.1;
       cursor: pointer;
-      transition: background 0.2s, color 0.2s, transform 0.2s, border-color 0.2s;
+      transition: background 0.2s, color 0.2s;
       -webkit-tap-highlight-color: transparent;
     }
 
-    .pill-nav button span {
-      display: block;
-      font-size: 16px;
-      line-height: 1;
-    }
-
-    .pill-nav button strong {
-      display: block;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      opacity: 0.85;
-    }
-
-    .pill-nav button:hover,
-    .pill-nav button:focus {
-      transform: translateY(-1px);
-      background: rgba(255, 255, 255, 0.24);
-    }
-
     .pill-nav button.active {
-      background: rgba(255, 255, 255, 0.62);
+      background: #ffffff;
       color: #121212;
-      border-color: rgba(var(--accent-rgb), 0.7);
-      box-shadow: 0 0 0 1px rgba(var(--accent-rgb), 0.28);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
     }
   </style>
 </head>
@@ -239,14 +112,5 @@
   </nav>
 
   <script type="module" src="app.js"></script>
-  <script>
-    (function(){
-      var isStandalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-      if(isStandalone){
-        document.documentElement.classList.add('is-standalone');
-        document.body.classList.add('is-standalone');
-      }
-    })();
-  </script>
 </body>
 </html>

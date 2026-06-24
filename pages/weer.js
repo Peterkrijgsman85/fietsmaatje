@@ -1,23 +1,18 @@
 export const page = {
   html: `
-    <div class="weather-page" style="
-      position: fixed;
-      inset: 0;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      background-color: #d8f1ff;
-      background-image: linear-gradient(160deg, #d8f1ff 0%, #9edcff 40%, #67c7ff 100%);
-    ">
+    <div class="weather-page">
       <style>
         /* Basis Layout */
         .weather-page {
+          position: relative;
+          width: 100%;
+          /* GEEN achtergrondkleuren of gradients meer hier! */
           color: #1C1C1E;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-          /* Cruciaal: Omdat we nu achter de notch zitten, tellen we de notch-ruimte (env) op bij je originele 20px padding! */
-          padding: calc(env(safe-area-inset-top, 47px) + 20px) 16px 110px;
+          padding: 10px 16px 110px;
         }
 
-        /* Hero Sectie (Direct op de achtergrond) */
+        /* Hero Sectie */
         .hero-section {
           display: flex;
           flex-direction: column;
