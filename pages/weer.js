@@ -8,7 +8,7 @@ export const page = {
       #app {
         -ms-overflow-style: none !important; 
         scrollbar-width: none !important;
-        -webkit-overflow-scrolling: touch; 
+        -webkit-overflow-scrolling: touch; /* Zorgt voor die vloeiende momentum scroll */
       }
 
       /* Basis Layout */
@@ -58,33 +58,6 @@ export const page = {
         margin-top: 10px;
         margin-bottom: 32px;
       }
-
-      /* --- DYNAMISCHE WEATHER ALERT BANNER --- */
-      #weather-alert-banner {
-        display: none;
-        width: 100%;
-        border-radius: 16px;
-        padding: 12px 16px;
-        margin-bottom: 16px;
-        text-align: left;
-        animation: slideDown 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
-        /* Default fallback (rood), wordt overschreven via JS */
-        background: rgba(255, 59, 48, 0.15);
-        border: 1px solid rgba(255, 59, 48, 0.4);
-      }
-      @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-      .alert-header { 
-        display: flex; 
-        align-items: center; 
-        gap: 8px; 
-        font-weight: 800; 
-        font-size: 0.9rem; 
-        text-transform: uppercase; 
-        letter-spacing: 0.05em; 
-        margin-bottom: 4px; 
-        /* Wordt ook via JS overschreven qua kleur */
-      }
-      .alert-body { font-size: 0.85rem; font-weight: 600; color: #1C1C1E; line-height: 1.4; }
 
       .score-badge {
         background: #8E8E93;
@@ -235,7 +208,7 @@ export const page = {
       .daily-scroll::-webkit-scrollbar { display: none; }
 
       .daily-container {
-        min-width: 450px; 
+        min-width: 450px; /* Geoptimaliseerd voor 7 kolommen */
         display: flex;
         flex-direction: column;
         gap: 12px;
@@ -303,7 +276,7 @@ export const page = {
       .text-max { color: #0f2c5a; margin-top: -18px; }
       .text-min { color: rgba(15, 44, 90, 0.6); margin-top: 8px; }
 
-      /* Regenstaafjes (Onder grafiek) */
+      /* Nieuwe Verticale Regenstaafjes (Onder grafiek) */
       .daily-rain-container-v {
         display: flex;
         flex-direction: column;
@@ -339,17 +312,6 @@ export const page = {
 
     <div class="weather-page">
       <div class="hero-section">
-
-        <div id="install-container" style="margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 8px; display: none;">
-      <p style="margin: 0 0 10px 0;">Installeer deze app voor een betere ervaring!</p>
-      <button id="install-btn" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px;">Installeren</button>
-    </div>
-        
-        <div id="weather-alert-banner">
-          <div class="alert-header">⚠️ <span id="alert-title">Weeralarm</span></div>
-          <div class="alert-body" id="alert-desc">...</div>
-        </div>
-
         <div class="score-badge" id="top-score-badge">
           🚴 Weer ophalen...
         </div>
@@ -408,7 +370,6 @@ export const page = {
   init() {
     let isCancelled = false;
     const appContainer = document.getElementById('app');
-    let currentProvince = ""; 
 
     // ==========================================
     // 1. PULL TO REFRESH LOGICA
@@ -465,30 +426,6 @@ export const page = {
         ptrIndicator.style.height = '0px';
       }
     };
-
-    const container = document.getElementById('install-container');
-    const deferredPrompt = window.getInstallPrompt();
-    
-    // Check iOS (niet standalone)
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    const isInStandaloneMode = ('standalone' in window.navigator) && (window.navigator.standalone);
-
-    if (isIOS && !isInStandaloneMode) {
-      container.innerHTML = `<p>Tip: Tik op de deel-knop (onderaan) en kies 'Zet op beginscherm'!</p>`;
-    } 
-    // Check Android (deferredPrompt beschikbaar)
-    else if (deferredPrompt) {
-      const btn = document.createElement('button');
-      btn.innerText = "Installeer app";
-      btn.onclick = () => {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-          if (choiceResult.outcome === 'accepted') container.style.display = 'none';
-        });
-      };
-      container.appendChild(btn);
-    }
-  
 
     appContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
     appContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
@@ -586,29 +523,27 @@ export const page = {
 
     const reverseGeo = async (lat, lon) => {
       try {
-        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=nl`;
-        const res = await fetch(url, { headers: { 'User-Agent': 'Fietsmaatje/1.0' } });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.address) {
-            currentProvince = data.address.state || ""; 
-            const town = data.address.city || data.address.town || data.address.village || data.address.municipality;
-            if (town) return cleanName(town);
-          }
-          return cleanName((data.display_name || '').split(',')[0]);
-        }
-      } catch (e) {}
-      
-      try {
         const res = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&count=1&language=nl`);
         if (res.ok) {
           const data = await res.json();
           if (data.results && data.results.length) {
             const place = data.results[0];
-            currentProvince = place.admin1 || ""; 
             const name = place.name || place.address?.city || place.address?.town || place.address?.village || place.address?.county;
             if (name && isNaN(name)) return cleanName(name);
           }
+        }
+      } catch (e) {}
+
+      try {
+        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=nl`;
+        const res = await fetch(url, { headers: { 'User-Agent': 'Fietsmaatje/1.0' } });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.address) {
+            const town = data.address.city || data.address.town || data.address.village || data.address.municipality;
+            if (town) return cleanName(town);
+          }
+          return cleanName((data.display_name || '').split(',')[0]);
         }
       } catch (e) {}
 
@@ -623,123 +558,12 @@ export const page = {
       url.searchParams.set('daily', 'weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max,winddirection_10m_dominant');
       url.searchParams.set('current_weather', 'true');
       url.searchParams.set('timezone', timezone);
-      url.searchParams.set('forecast_days', '7'); 
+      url.searchParams.set('forecast_days', '7'); // TERUGGESCHROEFD NAAR 7 DAGEN
       url.searchParams.set('model', 'knmi_seamless');
       const response = await fetch(url.toString());
       if (!response.ok) throw new Error('Weather fetch failed');
       return response.json();
     };
-
-    // ==========================================
-    // 3. METEOALARM 2-STAPS VERWERKING
-    // ==========================================
-    const fetchMeteoAlarm = async () => {
-      if (!currentProvince || isCancelled) return;
-      
-      const banner = document.getElementById('weather-alert-banner');
-      const titleEl = document.getElementById('alert-title');
-      const descEl = document.getElementById('alert-desc');
-      const headerEl = document.querySelector('.alert-header');
-      
-      try {
-        const proxyUrl = 'https://api.allorigins.win/raw?url=';
-        const targetUrl = encodeURIComponent('https://feeds.meteoalarm.org/feeds/meteoalarm-legacy-atom-netherlands');
-        const response = await fetch(proxyUrl + targetUrl);
-        
-        if (!response.ok) return;
-        const xmlText = await response.text();
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-        const entries = xmlDoc.getElementsByTagName("entry");
-
-        let detailsUrl = null;
-
-        // Stap 1: Zoek in de hoofd-feed naar de actuele provincie
-        for (let i = 0; i < entries.length; i++) {
-          const entry = entries[i];
-          const title = entry.getElementsByTagName("title")[0]?.textContent || "";
-          const areaDescEls = entry.getElementsByTagNameNS("*", "areaDesc");
-          const areaDesc = areaDescEls.length ? areaDescEls[0].textContent : "";
-          
-          if (title.toLowerCase().includes(currentProvince.toLowerCase()) || 
-              areaDesc.toLowerCase().includes(currentProvince.toLowerCase())) {
-             detailsUrl = entry.getElementsByTagName("id")[0]?.textContent;
-             break;
-          }
-        }
-
-        if (detailsUrl && !isCancelled) {
-          // Stap 2: Haal de specifieke XML op voor de details
-          const detailsTarget = encodeURIComponent(detailsUrl);
-          const detailsResponse = await fetch(proxyUrl + detailsTarget);
-          if (!detailsResponse.ok) return;
-          
-          const detailsText = await detailsResponse.text();
-          const detailsDoc = parser.parseFromString(detailsText, "text/xml");
-          
-          const infos = detailsDoc.getElementsByTagName("info");
-          let nlInfo = null;
-          
-          // Zoek het Nederlandse taalblok
-          for (let i = 0; i < infos.length; i++) {
-            const lang = infos[i].getElementsByTagName("language")[0]?.textContent || "";
-            if (lang.includes("nl")) {
-              nlInfo = infos[i];
-              break;
-            }
-          }
-          
-          if (nlInfo) {
-            const headline = nlInfo.getElementsByTagName("headline")[0]?.textContent || "Weeralarm";
-            const description = nlInfo.getElementsByTagName("description")[0]?.textContent || "";
-            
-            // Bepaal de kleur op basis van het awareness_level parameter
-            let alertColor = "red"; 
-            const params = nlInfo.getElementsByTagName("parameter");
-            for (let i = 0; i < params.length; i++) {
-              const vName = params[i].getElementsByTagName("valueName")[0]?.textContent;
-              const vVal = params[i].getElementsByTagName("value")[0]?.textContent || "";
-              if (vName === "awareness_level") {
-                const valLower = vVal.toLowerCase();
-                if (valLower.includes("yellow")) alertColor = "yellow";
-                else if (valLower.includes("orange")) alertColor = "orange";
-                else if (valLower.includes("red")) alertColor = "red";
-              }
-            }
-
-            // Styling injecteren op de banner
-            if (alertColor === "yellow") {
-              banner.style.background = "rgba(255, 204, 0, 0.15)";
-              banner.style.border = "1px solid rgba(255, 204, 0, 0.4)";
-              headerEl.style.color = "#997A00";
-            } else if (alertColor === "orange") {
-              banner.style.background = "rgba(255, 149, 0, 0.15)";
-              banner.style.border = "1px solid rgba(255, 149, 0, 0.4)";
-              headerEl.style.color = "#CC7700";
-            } else {
-              banner.style.background = "rgba(255, 59, 48, 0.15)";
-              banner.style.border = "1px solid rgba(255, 59, 48, 0.4)";
-              headerEl.style.color = "#D70015";
-            }
-
-            // Maak de titel mooi en pak alleen de eerste, complete zin van de omschrijving
-            let cleanTitle = headline.split(' voor ')[0];
-            if (cleanTitle.length > 35) cleanTitle = "Weeralarm";
-
-            titleEl.textContent = cleanTitle;
-            let shortDesc = description.split(/\.\s/)[0]; // Split op een punt gevolgd door een spatie
-            if (shortDesc && !shortDesc.endsWith('.')) shortDesc += '.';
-            descEl.textContent = shortDesc || description;
-            
-            banner.style.display = 'block';
-          }
-        }
-
-      } catch (error) {
-        console.warn("Meteoalarm ophalen mislukt (timeout of proxy issues)", error);
-      }
-    };
-
 
     const renderHourly = (weather) => {
       const container = document.getElementById('hourly-scroll');
@@ -776,6 +600,9 @@ export const page = {
       });
     };
 
+    // ==========================================
+    // BIJGEWERKT: 7-DAAGSE VERWACHTING
+    // ==========================================
     const renderDaily = (weather) => {
       const container = document.getElementById('daily-list');
       if (!container || !weather.daily) return;
@@ -784,13 +611,14 @@ export const page = {
       if (section) section.style.display = 'block';
 
       const daysOfWeek = ['Zo', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za'];
-      const totalRows = 7; 
+      const totalRows = 7; // AANGEPAST NAAR 7 DAGEN
 
       const times = weather.daily.time.slice(0, totalRows);
       const maxs = weather.daily.temperature_2m_max.slice(0, totalRows);
       const mins = weather.daily.temperature_2m_min.slice(0, totalRows);
       const rainSums = weather.daily.precipitation_sum.slice(0, totalRows);
 
+      // Schaalberekeningen voor de temperatuurgrafiek
       const graphHeight = 90;
       const padding = 20; 
       const drawHeight = graphHeight - (padding * 2);
@@ -802,7 +630,7 @@ export const page = {
 
       let headersHtml = '<div class="daily-flex-row">';
       let graphColsHtml = '';
-      let rainHtml = '<div class="daily-flex-row" style="margin-top: 8px;">'; 
+      let rainHtml = '<div class="daily-flex-row" style="margin-top: 8px;">'; // NIEUWE RIJ VOOR REGEN
       let footersHtml = '<div class="daily-flex-row" style="align-items: flex-start; margin-top: 8px;">';
       
       let maxPath = '';
@@ -819,6 +647,7 @@ export const page = {
         const rainStr = rain > 0 ? `${rain.toFixed(1)} mm` : '0 mm';
         const rainPercent = Math.min(100, (rain / maxRain) * 100);
 
+        // 1. Header (Alleen Dag, Datum, Icoon)
         headersHtml += `
           <div class="daily-col">
             <span class="daily-name">${dayName}</span>
@@ -827,14 +656,17 @@ export const page = {
           </div>
         `;
 
+        // Y-coördinaten berekenen
         const yMax = padding + ((globalMax - maxs[i]) / (globalMax - globalMin)) * drawHeight;
         const yMin = padding + ((globalMax - mins[i]) / (globalMax - globalMin)) * drawHeight;
         
+        // X-coördinaten berekenen (nu gebaseerd op 7 stappen in plaats van 10)
         const stepWidth = 100 / totalRows;
         const xPercent = (i * stepWidth) + (stepWidth / 2);
         maxPath += `${i === 0 ? 'M' : 'L'} ${xPercent} ${yMax} `;
         minPath += `${i === 0 ? 'M' : 'L'} ${xPercent} ${yMin} `;
 
+        // 2. Grafiek Kolom (Stippen en Tekst)
         graphColsHtml += `
           <div class="daily-col" style="position: relative;">
             <div class="temp-dot dot-max" style="top: ${yMax}px;"></div>
@@ -844,6 +676,7 @@ export const page = {
           </div>
         `;
 
+        // 3. Verticale Regenstaafjes (Onder de grafiek)
         rainHtml += `
           <div class="daily-col">
             <div class="daily-rain-container-v">
@@ -855,6 +688,7 @@ export const page = {
           </div>
         `;
 
+        // 4. Footer (Windrichting en bft)
         const windSpeed = weather.daily.windspeed_10m_max[i] ?? 0;
         const windDirDeg = weather.daily.winddirection_10m_dominant[i] ?? 0;
         
@@ -948,7 +782,6 @@ export const page = {
 
             if (isFresh && isSameLocation) {
               placeName = parsed.placeName;
-              currentProvince = parsed.province || ""; 
               weather = parsed.weather;
               useCache = true;
             }
@@ -956,8 +789,6 @@ export const page = {
             console.warn('Weercache defect, live gegevens ophalen...');
           }
         }
-
-        document.getElementById('weather-alert-banner').style.display = 'none';
 
         if (!useCache) {
           console.log('🔄 Live weer en locatie ophalen via API...');
@@ -973,7 +804,6 @@ export const page = {
             lat: location.latitude,
             lon: location.longitude,
             placeName: placeName,
-            province: currentProvince,
             weather: weather
           }));
         }
@@ -1026,12 +856,6 @@ export const page = {
         renderAdvice(advice);
 
         if (loader) loader.style.display = 'none';
-
-        // 5 seconden wachten, en dan kijken of er wat aan de hand is in de lucht
-        setTimeout(() => {
-          fetchMeteoAlarm();
-        }, 5000);
-
       } catch (error) {
         console.error(error);
         showFetchError('Kon het weer niet laden. Check je internetverbinding of locatie-instellingen.');
@@ -1040,7 +864,4 @@ export const page = {
 
     updateWeather();
   }
-
-  
-
 };
