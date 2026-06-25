@@ -6,11 +6,10 @@ export const page = {
         display: none !important;
       }
       #app {
-  -ms-overflow-style: none !important; 
-  scrollbar-width: none !important;
-  /* overscroll-behavior-y: none; <-- WEGGEHAALD */
-  -webkit-overflow-scrolling: touch; /* Zorgt voor die vloeiende momentum scroll */
-}
+        -ms-overflow-style: none !important; 
+        scrollbar-width: none !important;
+        -webkit-overflow-scrolling: touch;
+      }
 
       /* Basis Layout */
       .weather-page {
@@ -18,8 +17,41 @@ export const page = {
         width: 100%;
         color: #1C1C1E;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        /* HIER ZIT DE FIX: padding-bottom verhoogd naar 150px voor extra witruimte boven het menu */
         padding: 0px 16px 150px; 
+      }
+
+      /* --- KNMI WEERWAARSCHUWING BANNER --- */
+      .alert-banner {
+        background: rgba(255, 149, 0, 0.15); /* Fallback */
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 149, 0, 0.4);
+        border-radius: 20px;
+        padding: 14px 16px;
+        margin-top: 14px;
+        margin-bottom: -4px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        animation: fadeInAlert 0.4s ease-out;
+      }
+      @keyframes fadeInAlert {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .alert-heading {
+        font-size: 0.95rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .alert-body {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #0f2c5a;
+        line-height: 1.4;
       }
 
       /* --- PULL TO REFRESH STYLING --- */
@@ -147,7 +179,7 @@ export const page = {
         color: #0f2c5a;
       }
 
-      /* NEXT LEVEL iOS: Glazen Kaart Containers */
+      /* Containers */
       .card-container {
         background: rgba(255, 255, 255, 0.45);
         backdrop-filter: blur(20px);
@@ -219,6 +251,8 @@ export const page = {
     </div>
 
     <div class="weather-page">
+      <div id="alert-container"></div>
+
       <div class="hero-section">
         <div class="score-badge" id="top-score-badge">
           🚴 Weer ophalen...
@@ -321,7 +355,10 @@ export const page = {
         ptrIndicator.style.height = '50px';
         ptrContent.innerHTML = '<span class="ptr-icon refresh-spin">↻</span> Weer updaten...';
         
+        // Alleen wachten op het hoofdweer (gaat super snel), waarschuwing loopt mee op de achtergrond
         await updateWeather(true);
+        getWeerWaarschuwing(true);
+        
         ptrIndicator.style.height = '0px';
       } else {
         ptrIndicator.style.height = '0px';
@@ -412,10 +449,10 @@ export const page = {
     const setText = (selector, text) => { const el = document.getElementById(selector); if (el) el.textContent = text; };
 
     const getLocation = () => new Promise(resolve => {
-      if (!navigator.geolocation) { resolve({ latitude: 52.3676, longitude: 4.9041, label: 'Amsterdam' }); return; }
+      if (!navigator.geolocation) { resolve({ latitude: 51.9125, longitude: 4.3417, label: 'Vlaardingen' }); return; }
       navigator.geolocation.getCurrentPosition(
         pos => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
-        () => resolve({ latitude: 52.3676, longitude: 4.9041, label: 'Amsterdam' }),
+        () => resolve({ latitude: 51.9125, longitude: 4.3417, label: 'Vlaardingen' }),
         { timeout: 7000 }
       );
     });
@@ -458,10 +495,112 @@ export const page = {
       url.searchParams.set('hourly', 'temperature_2m,apparent_temperature,weathercode,windspeed_10m,winddirection_10m,relativehumidity_2m,precipitation_probability');
       url.searchParams.set('current_weather', 'true');
       url.searchParams.set('timezone', timezone);
-      url.searchParams.set('model', 'ecmwf_ifs');
+      url.searchParams.set('model', 'knmi_seamless');
       const response = await fetch(url.toString());
       if (!response.ok) throw new Error('Weather fetch failed');
       return response.json();
+    };
+
+    // ==========================================
+    // DYNAMISCH EN ROBUUST WEERWAARSCHUWING PARSEN
+    // ==========================================
+    const renderAlert = (alert) => {
+      const container = document.getElementById('alert-container');
+      if (!container) return;
+      
+      if (alert && alert.heading) {
+        const headingLower = alert.heading.toLowerCase();
+        let bg = 'rgba(255, 149, 0, 0.15)'; // Oranje standaard
+        let border = 'rgba(255, 149, 0, 0.4)';
+        let text = '#D57A00';
+        
+        // Dynamische kleurafstemming gebaseerd op KNMI kleurcode
+        if (headingLower.includes('geel')) {
+          bg = 'rgba(255, 204, 0, 0.15)';
+          border = 'rgba(255, 204, 0, 0.4)';
+          text = '#A08000';
+        } else if (headingLower.includes('oranje')) {
+          bg = 'rgba(255, 149, 0, 0.15)';
+          border = 'rgba(255, 149, 0, 0.4)';
+          text = '#D57A00';
+        } else if (headingLower.includes('rood') || headingLower.includes('weeralarm')) {
+          bg = 'rgba(255, 59, 48, 0.15)';
+          border = 'rgba(255, 59, 48, 0.4)';
+          text = '#FF3B30';
+        }
+
+        container.innerHTML = `
+          <div class="alert-banner" style="background: ${bg}; border-color: ${border};">
+            <div class="alert-heading" style="color: ${text};">⚠️ ${alert.heading}</div>
+            <div class="alert-body">${alert.body || 'Zie KNMI website voor details.'}</div>
+          </div>
+        `;
+      } else {
+        container.innerHTML = '';
+      }
+    };
+
+    const getWeerWaarschuwing = async (forceRefresh = false) => {
+      const CACHE_KEY = 'knmi_alert';
+      const CACHE_TIME_KEY = 'knmi_alert_time';
+      const CACHE_DURATION = 15 * 60 * 1000;
+
+      const cachedData = localStorage.getItem(CACHE_KEY);
+      const lastFetch = localStorage.getItem(CACHE_TIME_KEY);
+      
+      if (!forceRefresh && cachedData && lastFetch && (Date.now() - lastFetch < CACHE_DURATION)) {
+        const parsed = JSON.parse(cachedData);
+        if (parsed && !parsed.noAlert) {
+          renderAlert(parsed);
+        } else {
+          renderAlert(null);
+        }
+        return;
+      }
+
+      try {
+        const url = 'https://www.knmi.nl/nederland-nu/weer/waarschuwingen';
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+        
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error('Proxy error');
+        const data = await response.json();
+        if (isCancelled) return;
+        
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(data.contents, 'text/html');
+        
+        // RECHTSTREEKSE SELECTIE (Zonder afhankelijkheid van .wrapper--alert)
+        const headingEl = doc.querySelector('.alert__heading, .alert_heading, [class*="alert__heading"]');
+        const bodyEl = doc.querySelector('.alert__description, .alert_description, [class*="alert__description"]');
+        
+        if (headingEl) {
+          const headingText = headingEl.innerText.trim();
+          const bodyText = bodyEl ? bodyEl.innerText.trim() : '';
+          
+          // Filter uit als het 'Code Groen' of 'Geen waarschuwingen' is
+          if (headingText.toLowerCase().includes('groen') || headingText.toLowerCase().includes('geen waarschuwing')) {
+            localStorage.setItem(CACHE_KEY, JSON.stringify({ noAlert: true }));
+            localStorage.setItem(CACHE_TIME_KEY, Date.now());
+            renderAlert(null);
+          } else {
+            const alertData = { heading: headingText, body: bodyText };
+            localStorage.setItem(CACHE_KEY, JSON.stringify(alertData));
+            localStorage.setItem(CACHE_TIME_KEY, Date.now());
+            renderAlert(alertData);
+          }
+        } else {
+          localStorage.setItem(CACHE_KEY, JSON.stringify({ noAlert: true }));
+          localStorage.setItem(CACHE_TIME_KEY, Date.now());
+          renderAlert(null);
+        }
+      } catch (error) {
+        console.error("Kon waarschuwing niet ophalen:", error);
+        if (cachedData) {
+          const parsed = JSON.parse(cachedData);
+          if (!parsed.noAlert) renderAlert(parsed);
+        }
+      }
     };
 
     const renderHourly = (weather) => {
@@ -538,6 +677,12 @@ export const page = {
         const loader = document.getElementById('weather-loading');
         if (loader && !forceRefresh) loader.style.display = 'block';
 
+        // ASYNCHROON: weerswaarschuwing wordt nu parallel aangeroepen (en niet ge-awaited)
+        // Hierdoor laadt Open-Meteo direct zonder te wachten op de allorigins proxy.
+        if (!forceRefresh) {
+          getWeerWaarschuwing(false);
+        }
+
         const location = await getLocation();
         if (isCancelled) return;
 
@@ -567,7 +712,6 @@ export const page = {
         }
 
         if (!useCache) {
-          console.log('🔄 Live weer en locatie ophalen via API...');
           placeName = location.label || await reverseGeo(location.latitude, location.longitude);
           if (isCancelled) return;
 
@@ -637,7 +781,9 @@ export const page = {
       }
     };
     
+    // Beide onafhankelijk starten bij initialisatie
     updateWeather();
+    getWeerWaarschuwing();
 
     // ==========================================
     // 3. CLEANUP
