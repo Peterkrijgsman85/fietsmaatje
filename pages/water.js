@@ -272,11 +272,9 @@ export const page = {
   },
 
   setupWaterMap() {
-    // === HOOGTE-INSTELLINGEN (Pas hier aan indien nodig!) ===
-    const BASE_BOTTOM = 180;      // Hoeveel pixels boven de schermrand starten de elementen (was 110)
-    const GPS_OPEN_OFFSET = 220;  // Hoeveel pixels de GPS-knop EXTRA omhoog schiet als de card opent
+    const BASE_BOTTOM = 180;      
+    const GPS_OPEN_OFFSET = 220;  
 
-    // Elementen selecteren
     const loadingEl = document.getElementById('water-loading');
     const zoomWarningEl = document.getElementById('water-zoom-warning');
     const btnLegend = document.getElementById('water-btn-legend');
@@ -295,7 +293,6 @@ export const page = {
     const modalLegend = document.getElementById('water-legend-modal');
     const modalLegendClose = document.getElementById('water-legend-close');
 
-    // Zet de initiële CSS hoogtes op basis van de JS variabelen
     sheetEl.style.bottom = `${BASE_BOTTOM}px`;
     btnLocation.style.bottom = `${BASE_BOTTOM}px`;
 
@@ -324,7 +321,7 @@ export const page = {
     const getNavigationLink = (lat, lon) => {
       const isApple = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
                       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-      return isApple ? `maps://?q=Drinkwaterpunt&ll=${lat},${lon}` : `http://googleusercontent.com/maps.google.com/?q=${lat},${lon}&nav=1`;
+      return isApple ? `maps://?q=Drinkwaterpunt&ll=${lat},${lon}` : `http://maps.google.com/?q=${lat},${lon}&nav=1`;
     };
 
     const showSheet = (point) => {
@@ -345,7 +342,7 @@ export const page = {
       }
 
       sheetEl.style.display = 'flex';
-      btnLocation.style.bottom = `${BASE_BOTTOM + GPS_OPEN_OFFSET}px`; // GPS knop schiet nu flink omhoog
+      btnLocation.style.bottom = `${BASE_BOTTOM + GPS_OPEN_OFFSET}px`; 
       setTimeout(() => {
         sheetEl.style.transform = 'translateY(0)';
         sheetEl.style.opacity = '1';
@@ -355,10 +352,11 @@ export const page = {
     const hideSheet = () => {
       sheetEl.style.transform = 'translateY(20px)';
       sheetEl.style.opacity = '0';
-      btnLocation.style.bottom = `${BASE_BOTTOM}px`; // Reset naar de rustpositie
+      btnLocation.style.bottom = `${BASE_BOTTOM}px`; 
       setTimeout(() => { sheetEl.style.display = 'none'; }, 300);
     };
 
+    // === HIER ZIT DE INVESTERING IN COORDINAAT-FILTERING (OPTIE A) ===
     const updateVisibleMarkers = () => {
       if (!map) return;
 
@@ -374,8 +372,37 @@ export const page = {
       if (rawFeatures.length === 0) return;
 
       const mapCenter = map.getCenter();
+      const bounds = map.getBounds();
       
-      const filtered = rawFeatures
+      const south = bounds.getSouth();
+      const north = bounds.getNorth();
+      const west = bounds.getWest();
+      const east = bounds.getEast();
+
+      // STAP 1: Filter direct op de Bounding Box (Alleen simpele getalvergelijkingen, geen wiskunde!)
+      const visibleFeatures = rawFeatures.filter(feature => {
+        const props = feature.properties;
+        const lat = props.latitude;
+        const lon = props.longitude;
+
+        if (!lat || !lon) return false;
+
+        // Valt het punt buiten het scherm? Gooi meteen weg.
+        if (lat < south || lat > north || lon < west || lon > east) return false;
+
+        // Filter eventueel ook de storingen eruit op basis van de knop
+        if (hideStorings) {
+          const typeText = props.type || 'Regulier';
+          if (typeText.toLowerCase().includes('storing') || typeText.toLowerCase().includes('buiten gebruik')) {
+            return false;
+          }
+        }
+
+        return true;
+      });
+
+      // STAP 2: Bereken NU PAS de zware goniometrische afstand voor de kleine subset op het scherm
+      const pointsToDisplay = visibleFeatures
         .map(feature => {
           const props = feature.properties;
           const typeText = props.type || 'Regulier';
@@ -384,18 +411,12 @@ export const page = {
           const id = `${props.latitude}_${props.longitude}_${props.plaats || ''}`;
           return { feature, id, isStoring, distToCenter, props };
         })
-        .filter(item => {
-          if (!item.props.latitude || !item.props.longitude) return false;
-          if (hideStorings && item.isStoring) return false;
-          return true;
-        });
-
-      const pointsToDisplay = filtered
         .sort((a, b) => a.distToCenter - b.distToCenter)
-        .slice(0, 65);
+        .slice(0, 65); // Cap op max 65 markers tegelijk in beeld tegen DOM-vervuiling
 
       const targetIds = new Set(pointsToDisplay.map(p => p.id));
 
+      // Verwijder oude markers die uit beeld zijn gefietst
       activeMarkers.forEach((marker, id) => {
         if (!targetIds.has(id)) {
           map.removeLayer(marker);
@@ -403,6 +424,7 @@ export const page = {
         }
       });
 
+      // Teken de nieuwe markers op het scherm
       pointsToDisplay.forEach((item) => {
         if (activeMarkers.has(item.id)) return; 
 
@@ -488,7 +510,7 @@ export const page = {
 
       const handleMapMove = () => {
         clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(updateVisibleMarkers, 200);
+        debounceTimer = setTimeout(updateVisibleMarkers, 150); // Iets scherper gezet (150ms debounce)
       };
 
       map.on('moveend', handleMapMove);
