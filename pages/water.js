@@ -25,7 +25,7 @@ export const page = {
         transition: opacity 0.3s ease;
       ">
         <div style="font-size: 56px; margin-bottom: 12px; animation: water-bounce 1s infinite alternate;">💧</div>
-        <p style="font-size: 14px; font-weight: 600; letter-spacing: 0.05em; text-align: center; padding: 0 20px;">Dichtstbijzijnde waterpunten zoeken...</p>
+        <p style="font-size: 14px; font-weight: 600; letter-spacing: 0.05em; text-align: center; padding: 0 20px;">Waterpunten inladen...</p>
       </div>
 
       <div id="water-zoom-warning" style="
@@ -299,12 +299,15 @@ export const page = {
     let map = null;
     let userMarker = null;
     let userCoords = [52.0907, 5.1214];
-    let rawFeatures = [];
+    
+    // rawData bevat nu de AFGESLANKTE objecten, geen logge GeoJSON meer
+    let rawData = []; 
     let hideStorings = false;
     const activeMarkers = new Map();
     let debounceTimer = null;
 
-    const CACHE_KEY = 'rivm_water_points_data_v2';
+    // v3 is extreem belangrijk: hiermee negeren we de oude, zware cache van de gebruiker!
+    const CACHE_KEY = 'rivm_water_points_data_v3';
     const CACHE_TTL = 24 * 60 * 60 * 1000;
 
     const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -327,8 +330,8 @@ export const page = {
     const showSheet = (point) => {
       sheetEmoji.innerText = point.isStoring ? '🩸' : '💧';
       sheetDistTxt.innerText = point.distanceLabel;
-      sheetCity.innerText = point.plaats;
-      sheetDesc.innerText = point.beschrijving || 'Geen extra beschrijving beschikbaar.';
+      sheetCity.innerText = point.city;
+      sheetDesc.innerText = point.desc;
       sheetRoute.href = getNavigationLink(point.lat, point.lon);
 
       if (point.isStoring) {
@@ -356,7 +359,6 @@ export const page = {
       setTimeout(() => { sheetEl.style.display = 'none'; }, 300);
     };
 
-    // === HIER ZIT DE INVESTERING IN COORDINAAT-FILTERING (OPTIE A) ===
     const updateVisibleMarkers = () => {
       if (!map) return;
 
@@ -369,7 +371,7 @@ export const page = {
       }
       zoomWarningEl.style.display = 'none';
 
-      if (rawFeatures.length === 0) return;
+      if (rawData.length === 0) return;
 
       const mapCenter = map.getCenter();
       const bounds = map.getBounds();
@@ -379,44 +381,31 @@ export const page = {
       const west = bounds.getWest();
       const east = bounds.getEast();
 
-      // STAP 1: Filter direct op de Bounding Box (Alleen simpele getalvergelijkingen, geen wiskunde!)
-      const visibleFeatures = rawFeatures.filter(feature => {
-        const props = feature.properties;
-        const lat = props.latitude;
-        const lon = props.longitude;
+      // Filteren op de schone 'point' objecten in plaats van complexe GeoJSON features
+      const visiblePoints = rawData.filter(point => {
+        if (point.lat < south || point.lat > north || point.lon < west || point.lon > east) return false;
 
-        if (!lat || !lon) return false;
-
-        // Valt het punt buiten het scherm? Gooi meteen weg.
-        if (lat < south || lat > north || lon < west || lon > east) return false;
-
-        // Filter eventueel ook de storingen eruit op basis van de knop
         if (hideStorings) {
-          const typeText = props.type || 'Regulier';
-          if (typeText.toLowerCase().includes('storing') || typeText.toLowerCase().includes('buiten gebruik')) {
+          const typeLower = point.type.toLowerCase();
+          if (typeLower.includes('storing') || typeLower.includes('buiten gebruik')) {
             return false;
           }
         }
-
         return true;
       });
 
-      // STAP 2: Bereken NU PAS de zware goniometrische afstand voor de kleine subset op het scherm
-      const pointsToDisplay = visibleFeatures
-        .map(feature => {
-          const props = feature.properties;
-          const typeText = props.type || 'Regulier';
-          const isStoring = typeText.toLowerCase().includes('storing') || typeText.toLowerCase().includes('buiten gebruik');
-          const distToCenter = calculateDistance(mapCenter.lat, mapCenter.lng, props.latitude, props.longitude);
-          const id = `${props.latitude}_${props.longitude}_${props.plaats || ''}`;
-          return { feature, id, isStoring, distToCenter, props };
+      const pointsToDisplay = visiblePoints
+        .map(point => {
+          const isStoring = point.type.toLowerCase().includes('storing') || point.type.toLowerCase().includes('buiten gebruik');
+          const distToCenter = calculateDistance(mapCenter.lat, mapCenter.lng, point.lat, point.lon);
+          const id = `${point.lat}_${point.lon}`;
+          return { point, id, isStoring, distToCenter };
         })
         .sort((a, b) => a.distToCenter - b.distToCenter)
-        .slice(0, 65); // Cap op max 65 markers tegelijk in beeld tegen DOM-vervuiling
+        .slice(0, 65); 
 
       const targetIds = new Set(pointsToDisplay.map(p => p.id));
 
-      // Verwijder oude markers die uit beeld zijn gefietst
       activeMarkers.forEach((marker, id) => {
         if (!targetIds.has(id)) {
           map.removeLayer(marker);
@@ -424,12 +413,11 @@ export const page = {
         }
       });
 
-      // Teken de nieuwe markers op het scherm
       pointsToDisplay.forEach((item) => {
         if (activeMarkers.has(item.id)) return; 
 
         const markerEmoji = item.isStoring ? '🩸' : '💧';
-        const marker = L.marker([item.props.latitude, item.props.longitude], {
+        const marker = L.marker([item.point.lat, item.point.lon], {
           icon: L.divIcon({
             className: 'water-emoji-icon',
             html: `<div style="font-size: 26px; text-align: center; line-height: 32px; filter: drop-shadow(0 2px 5px rgba(15,44,90,0.25));">${markerEmoji}</div>`,
@@ -439,17 +427,17 @@ export const page = {
         }).addTo(map);
 
         marker.on('click', () => {
-          const distanceToUser = calculateDistance(userCoords[0], userCoords[1], item.props.latitude, item.props.longitude);
+          const distanceToUser = calculateDistance(userCoords[0], userCoords[1], item.point.lat, item.point.lon);
           showSheet({
-            plaats: item.props.plaats || 'Onbekende locatie',
-            beschrijving: item.props.beschrijvi || item.props.beschrijving,
-            type: item.props.type || 'Regulier',
+            city: item.point.city,
+            desc: item.point.desc,
+            type: item.point.type,
             isStoring: item.isStoring,
-            lat: item.props.latitude,
-            lon: item.props.longitude,
+            lat: item.point.lat,
+            lon: item.point.lon,
             distanceLabel: `${distanceToUser.toFixed(1)} km`
           });
-          map.panTo([item.props.latitude, item.props.longitude]);
+          map.panTo([item.point.lat, item.point.lon]);
         });
 
         activeMarkers.set(item.id, marker);
@@ -461,26 +449,37 @@ export const page = {
       if (cached) {
         try {
           const parsed = JSON.parse(cached);
-          if (Date.now() - parsed.timestamp < CACHE_TTL && parsed.features?.length > 0) {
-            rawFeatures = parsed.features;
+          if (Date.now() - parsed.timestamp < CACHE_TTL && parsed.data?.length > 0) {
+            rawData = parsed.data;
             loadingEl.style.opacity = '0';
             setTimeout(() => { loadingEl.style.display = 'none'; }, 300);
             updateVisibleMarkers();
             return;
           }
         } catch (e) {
-          console.warn('Cache defect, herstarten live download...');
+          console.warn('Cache defect of oude versie, herstarten live download...');
         }
       }
 
       try {
         const response = await fetch('https://data.rivm.nl/geo/alo/wfs?request=GetFeature&service=WFS&version=1.1.0&outputFormat=application%2Fjson&typeName=alo:rivm_drinkwaterkranen_actueel');
-        const data = await response.json();
-        rawFeatures = data.features || [];
+        const rawJson = await response.json();
+        
+        // HET DATA DIEET: Meteen fileren voordat het de opslag in gaat
+        rawData = (rawJson.features || []).map(f => {
+          const props = f.properties || {};
+          return {
+            lat: props.latitude,
+            lon: props.longitude,
+            city: props.plaats || 'Onbekende locatie',
+            desc: props.beschrijvi || props.beschrijving || 'Geen beschrijving beschikbaar',
+            type: props.type || 'Regulier'
+          };
+        }).filter(p => p.lat && p.lon); // Zorg dat we geen lege coördinaten opslaan
         
         localStorage.setItem(CACHE_KEY, JSON.stringify({
           timestamp: Date.now(),
-          features: rawFeatures
+          data: rawData
         }));
       } catch (err) {
         console.error('RIVM data laden mislukt:', err);
@@ -510,7 +509,7 @@ export const page = {
 
       const handleMapMove = () => {
         clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(updateVisibleMarkers, 150); // Iets scherper gezet (150ms debounce)
+        debounceTimer = setTimeout(updateVisibleMarkers, 150);
       };
 
       map.on('moveend', handleMapMove);
