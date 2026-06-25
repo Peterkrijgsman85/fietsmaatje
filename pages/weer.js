@@ -59,6 +59,23 @@ export const page = {
         margin-bottom: 32px;
       }
 
+      /* --- WEATHER ALERT BANNER --- */
+      #weather-alert-banner {
+        display: none;
+        width: 100%;
+        background: rgba(255, 59, 48, 0.15);
+        border: 1px solid rgba(255, 59, 48, 0.4);
+        border-radius: 16px;
+        padding: 12px 16px;
+        margin-bottom: 16px;
+        text-align: left;
+        box-shadow: 0 4px 12px rgba(255, 59, 48, 0.1);
+        animation: slideDown 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+      }
+      @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+      .alert-header { display: flex; align-items: center; gap: 8px; font-weight: 800; color: #D70015; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+      .alert-body { font-size: 0.85rem; font-weight: 600; color: #1C1C1E; line-height: 1.4; }
+
       .score-badge {
         background: #8E8E93;
         color: white;
@@ -199,8 +216,16 @@ export const page = {
       .hourly-score-pill { font-weight: 800; color: #FFFFFF; font-size: 0.75rem; padding: 2px 8px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); }
       .hourly-detail { font-size: 0.65rem; color: rgba(15, 44, 90, 0.6); font-weight: 700; letter-spacing: -0.01em; }
 
-      /* --- 5-DAAGSE VERWACHTING HORIZONTAAL --- */
-      .daily-list {
+      /* --- MEERDAAGSE VERWACHTING HORIZONTAAL SCROLLBAAR --- */
+      .daily-scroll {
+        overflow-x: auto;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+      }
+      .daily-scroll::-webkit-scrollbar { display: none; }
+
+      .daily-container {
+        min-width: 450px; /* Geoptimaliseerd voor 7 kolommen */
         display: flex;
         flex-direction: column;
         gap: 12px;
@@ -219,11 +244,12 @@ export const page = {
         flex-direction: column;
         align-items: center;
         z-index: 1;
+        text-align: center;
       }
 
       /* Headers: Dag, Datum, Icon */
       .daily-name { font-size: 0.85rem; font-weight: 700; color: #0f2c5a; line-height: 1.2; }
-      .daily-date { font-size: 0.65rem; color: rgba(15, 44, 90, 0.6); font-weight: 600; margin-bottom: 4px; }
+      .daily-date { font-size: 0.65rem; color: rgba(15, 44, 90, 0.6); font-weight: 600; margin-bottom: 2px; }
       .daily-icon { font-size: 1.5rem; line-height: 1; }
 
       /* Grafiek Sectie */
@@ -231,6 +257,7 @@ export const page = {
         position: relative;
         width: 100%;
         height: 90px;
+        margin-top: 8px;
       }
       
       .daily-svg {
@@ -266,18 +293,22 @@ export const page = {
       .text-max { color: #0f2c5a; margin-top: -18px; }
       .text-min { color: rgba(15, 44, 90, 0.6); margin-top: 8px; }
 
-      /* Regen en Wind Sectie */
-      .daily-rain-container {
+      /* Nieuwe Verticale Regenstaafjes (Onder grafiek) */
+      .daily-rain-container-v {
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: flex-end;
         gap: 3px;
         width: 100%;
+        height: 38px;
       }
-      .daily-rain-text { font-size: 0.65rem; font-weight: 600; color: #007AFF; }
-      .rain-bar-bg { width: 24px; height: 3px; background: rgba(0, 122, 255, 0.15); border-radius: 2px; overflow: hidden; }
-      .rain-bar-fill { height: 100%; background: #007AFF; border-radius: 2px; transition: width 0.3s ease; }
-      .daily-wind { font-size: 0.65rem; font-weight: 600; color: rgba(15, 44, 90, 0.7); margin-top: 6px; white-space: nowrap; }
+      .daily-rain-text { font-size: 0.6rem; font-weight: 700; color: #007AFF; line-height: 1; }
+      .rain-bar-bg-v { width: 6px; height: 18px; background: rgba(0, 122, 255, 0.1); border-radius: 3px; display: flex; align-items: flex-end; }
+      .rain-bar-fill-v { width: 100%; background: #007AFF; border-radius: 3px; transition: height 0.3s ease; }
+
+      /* Wind onderaan de footer */
+      .daily-wind { font-size: 0.65rem; font-weight: 600; color: rgba(15, 44, 90, 0.7); margin-top: 2px; white-space: nowrap; }
 
       /* Advies overzicht */
       .advice-list { display: flex; flex-direction: column; gap: 8px; }
@@ -298,6 +329,12 @@ export const page = {
 
     <div class="weather-page">
       <div class="hero-section">
+        
+        <div id="weather-alert-banner">
+          <div class="alert-header">⚠️ <span id="alert-title">Weeralarm</span></div>
+          <div class="alert-body" id="alert-desc">...</div>
+        </div>
+
         <div class="score-badge" id="top-score-badge">
           🚴 Weer ophalen...
         </div>
@@ -339,8 +376,10 @@ export const page = {
       </div>
 
       <div id="daily-section" class="card-container" style="display: none;">
-        <div class="section-title">📅 5-daagse verwachting</div>
-        <div class="daily-list" id="daily-list"></div>
+        <div class="section-title">📅 7-daagse verwachting</div>
+        <div class="daily-scroll">
+          <div class="daily-container" id="daily-list"></div>
+        </div>
       </div>
 
       <div id="advice-section" class="card-container" style="display: none;">
@@ -354,6 +393,7 @@ export const page = {
   init() {
     let isCancelled = false;
     const appContainer = document.getElementById('app');
+    let currentProvince = ""; // Slaat de provincie op voor MeteoAlarm
 
     // ==========================================
     // 1. PULL TO REFRESH LOGICA
@@ -505,29 +545,33 @@ export const page = {
 
     const cleanName = name => (name || 'Onbekende locatie').replace(/,\s*[A-Z]{2,3}$/i, '').trim();
 
+    // AANGEPAST: Haalt nu ook de provincie (state) op via OpenStreetMap voor de weeralarm check
     const reverseGeo = async (lat, lon) => {
-      try {
-        const res = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&count=1&language=nl`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.results && data.results.length) {
-            const place = data.results[0];
-            const name = place.name || place.address?.city || place.address?.town || place.address?.village || place.address?.county;
-            if (name && isNaN(name)) return cleanName(name);
-          }
-        }
-      } catch (e) {}
-
       try {
         const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=nl`;
         const res = await fetch(url, { headers: { 'User-Agent': 'Fietsmaatje/1.0' } });
         if (res.ok) {
           const data = await res.json();
           if (data.address) {
+            currentProvince = data.address.state || ""; // Bewaar provincie voor MeteoAlarm
             const town = data.address.city || data.address.town || data.address.village || data.address.municipality;
             if (town) return cleanName(town);
           }
           return cleanName((data.display_name || '').split(',')[0]);
+        }
+      } catch (e) {}
+      
+      // Fallback
+      try {
+        const res = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&count=1&language=nl`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.results && data.results.length) {
+            const place = data.results[0];
+            currentProvince = place.admin1 || ""; // admin1 is vaak de provincie in OpenMeteo
+            const name = place.name || place.address?.city || place.address?.town || place.address?.village || place.address?.county;
+            if (name && isNaN(name)) return cleanName(name);
+          }
         }
       } catch (e) {}
 
@@ -539,15 +583,73 @@ export const page = {
       url.searchParams.set('latitude', lat);
       url.searchParams.set('longitude', lon);
       url.searchParams.set('hourly', 'temperature_2m,apparent_temperature,weathercode,windspeed_10m,winddirection_10m,relativehumidity_2m,precipitation_probability');
-      // TOEGEVOEGD: Daily parameters voor de 5-daagse verwachting
       url.searchParams.set('daily', 'weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max,winddirection_10m_dominant');
       url.searchParams.set('current_weather', 'true');
       url.searchParams.set('timezone', timezone);
+      url.searchParams.set('forecast_days', '7'); 
       url.searchParams.set('model', 'knmi_seamless');
       const response = await fetch(url.toString());
       if (!response.ok) throw new Error('Weather fetch failed');
       return response.json();
     };
+
+    // ==========================================
+    // NIEUW: METEOALARM LOGICA
+    // ==========================================
+    const fetchMeteoAlarm = async () => {
+      if (!currentProvince || isCancelled) return;
+      
+      const banner = document.getElementById('weather-alert-banner');
+      const titleEl = document.getElementById('alert-title');
+      const descEl = document.getElementById('alert-desc');
+      
+      try {
+        // Gebruik een betrouwbare, gratis CORS proxy omdat de MeteoAlarm server direct ophalen blokkeert.
+        const proxyUrl = 'https://corsproxy.io/?';
+        const targetUrl = encodeURIComponent('https://feeds.meteoalarm.org/feeds/meteoalarm-legacy-atom-netherlands');
+        const response = await fetch(proxyUrl + targetUrl);
+        
+        if (!response.ok) return;
+        const xmlText = await response.text();
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+        const entries = xmlDoc.getElementsByTagName("entry");
+
+        let activeAlert = null;
+
+        // Loop door alle alerts heen
+        for (let i = 0; i < entries.length; i++) {
+          const entry = entries[i];
+          const summary = entry.getElementsByTagName("summary")[0]?.textContent || "";
+          const title = entry.getElementsByTagName("title")[0]?.textContent || "";
+          
+          // Check of de waarschuwing in het Nederlands is geformuleerd ("Waarschuwing", "Code Geel", "Code Oranje")
+          // En of onze provincie in de tekst of area beschrijving voorkomt.
+          if (title.toLowerCase().includes("waarschuwing") || summary.toLowerCase().includes("code")) {
+             // Zoek in de summary naar de huidige provincie (case insensitive)
+             if (summary.toLowerCase().includes(currentProvince.toLowerCase())) {
+                activeAlert = { title, summary };
+                break;
+             }
+          }
+        }
+
+        if (activeAlert && !isCancelled) {
+          // Schoon de tekst een beetje op als het een hele lap is
+          let cleanTitle = activeAlert.title.split(' voor ')[0]; // Bv "Waarschuwing voor onweersbuien" -> "Waarschuwing"
+          if (cleanTitle.length > 30) cleanTitle = "Weeralarm";
+
+          titleEl.textContent = cleanTitle;
+          descEl.textContent = activeAlert.summary.split('.')[0] + '.'; // Pak alleen de eerste zin voor beknoptheid
+          banner.style.display = 'block';
+        }
+
+      } catch (error) {
+        console.warn("Meteoalarm ophalen mislukt (mogelijk door proxy of timeout)", error);
+        // We tonen bewust geen error aan de gebruiker, we laten de banner gewoon verborgen.
+      }
+    };
+
 
     const renderHourly = (weather) => {
       const container = document.getElementById('hourly-scroll');
@@ -584,9 +686,6 @@ export const page = {
       });
     };
 
-    // ==========================================
-    // NIEUW: 5-DAAGSE VERWACHTING RENDER LOGICA
-    // ==========================================
     const renderDaily = (weather) => {
       const container = document.getElementById('daily-list');
       if (!container || !weather.daily) return;
@@ -595,27 +694,26 @@ export const page = {
       if (section) section.style.display = 'block';
 
       const daysOfWeek = ['Zo', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za'];
-      const totalRows = 5;
+      const totalRows = 7; 
 
       const times = weather.daily.time.slice(0, totalRows);
       const maxs = weather.daily.temperature_2m_max.slice(0, totalRows);
       const mins = weather.daily.temperature_2m_min.slice(0, totalRows);
       const rainSums = weather.daily.precipitation_sum.slice(0, totalRows);
 
-      // Schaalberekeningen voor de grafiek
       const graphHeight = 90;
-      const padding = 20; // Ruimte boven en onder in de grafiek
+      const padding = 20; 
       const drawHeight = graphHeight - (padding * 2);
 
       let globalMin = Math.min(...mins);
       let globalMax = Math.max(...maxs);
       if (globalMin === globalMax) { globalMin -= 1; globalMax += 1; }
-      const maxRain = Math.max(...rainSums) || 1; // Voorkom delen door nul
+      const maxRain = Math.max(...rainSums) || 1;
 
-      // Variabelen voor de HTML structuur
       let headersHtml = '<div class="daily-flex-row">';
       let graphColsHtml = '';
-      let footersHtml = '<div class="daily-flex-row" style="align-items: flex-start;">';
+      let rainHtml = '<div class="daily-flex-row" style="margin-top: 8px;">'; 
+      let footersHtml = '<div class="daily-flex-row" style="align-items: flex-start; margin-top: 8px;">';
       
       let maxPath = '';
       let minPath = '';
@@ -627,7 +725,10 @@ export const page = {
         const code = weather.daily.weathercode[i];
         const icon = icons[code] ? icons[code][0] : '❔';
         
-        // 1. Bouw de Header (Bovenkant)
+        const rain = rainSums[i] ?? 0;
+        const rainStr = rain > 0 ? `${rain.toFixed(1)} mm` : '0 mm';
+        const rainPercent = Math.min(100, (rain / maxRain) * 100);
+
         headersHtml += `
           <div class="daily-col">
             <span class="daily-name">${dayName}</span>
@@ -636,16 +737,14 @@ export const page = {
           </div>
         `;
 
-        // Y-coördinaten berekenen (0 is top, dus omkeren)
         const yMax = padding + ((globalMax - maxs[i]) / (globalMax - globalMin)) * drawHeight;
         const yMin = padding + ((globalMax - mins[i]) / (globalMax - globalMin)) * drawHeight;
         
-        // X-coördinaten in percentages (10, 30, 50, 70, 90) passend bij 'flex: 1'
-        const xPercent = (i * 20) + 10;
+        const stepWidth = 100 / totalRows;
+        const xPercent = (i * stepWidth) + (stepWidth / 2);
         maxPath += `${i === 0 ? 'M' : 'L'} ${xPercent} ${yMax} `;
         minPath += `${i === 0 ? 'M' : 'L'} ${xPercent} ${yMin} `;
 
-        // 2. Bouw de Grafiek Kolom (Stippen en Tekst)
         graphColsHtml += `
           <div class="daily-col" style="position: relative;">
             <div class="temp-dot dot-max" style="top: ${yMax}px;"></div>
@@ -655,31 +754,31 @@ export const page = {
           </div>
         `;
 
-        // 3. Bouw de Footer (Regen diagram en Wind)
-        const rain = rainSums[i] ?? 0;
-        const rainStr = rain > 0 ? `${rain.toFixed(1)} mm` : '0 mm';
-        const rainPercent = (rain / maxRain) * 100;
-        
+        rainHtml += `
+          <div class="daily-col">
+            <div class="daily-rain-container-v">
+              <div class="daily-rain-text" style="opacity: ${rain > 0 ? 1 : 0.4};">${rainStr}</div>
+              <div class="rain-bar-bg-v">
+                <div class="rain-bar-fill-v" style="height: ${rainPercent}%;"></div>
+              </div>
+            </div>
+          </div>
+        `;
+
         const windSpeed = weather.daily.windspeed_10m_max[i] ?? 0;
         const windDirDeg = weather.daily.winddirection_10m_dominant[i] ?? 0;
         
         footersHtml += `
           <div class="daily-col">
-            <div class="daily-rain-container">
-              <div class="daily-rain-text">${rainStr}</div>
-              <div class="rain-bar-bg">
-                <div class="rain-bar-fill" style="width: ${rainPercent}%;"></div>
-              </div>
-            </div>
             <div class="daily-wind">${windDirection(windDirDeg)} ${bftFromKmh(windSpeed)}</div>
           </div>
         `;
       }
       
       headersHtml += '</div>';
+      rainHtml += '</div>';
       footersHtml += '</div>';
       
-      // Teken de vectorlijnen op de achtergrond. 'non-scaling-stroke' zorgt dat de lijn dikte intact blijft
       const svgHtml = `
         <svg class="daily-svg" viewBox="0 0 100 ${graphHeight}" preserveAspectRatio="none">
           <path d="${maxPath}" fill="none" stroke="#FF9500" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
@@ -687,7 +786,6 @@ export const page = {
         </svg>
       `;
 
-      // Injecteer het geheel
       container.innerHTML = `
         ${headersHtml}
         <div class="daily-graph-container">
@@ -696,6 +794,7 @@ export const page = {
             ${graphColsHtml}
           </div>
         </div>
+        ${rainHtml}
         ${footersHtml}
       `;
     };
@@ -759,6 +858,7 @@ export const page = {
 
             if (isFresh && isSameLocation) {
               placeName = parsed.placeName;
+              currentProvince = parsed.province || ""; 
               weather = parsed.weather;
               useCache = true;
             }
@@ -766,6 +866,9 @@ export const page = {
             console.warn('Weercache defect, live gegevens ophalen...');
           }
         }
+
+        // Zorg dat de alert banner altijd eerst weg is bij een nieuwe fetch
+        document.getElementById('weather-alert-banner').style.display = 'none';
 
         if (!useCache) {
           console.log('🔄 Live weer en locatie ophalen via API...');
@@ -781,6 +884,7 @@ export const page = {
             lat: location.latitude,
             lon: location.longitude,
             placeName: placeName,
+            province: currentProvince,
             weather: weather
           }));
         }
@@ -829,26 +933,22 @@ export const page = {
         setText('wind-info', `${Math.round(current.windspeed)} km/u · ${bft} Bft`);
 
         renderHourly(weather);
-        renderDaily(weather); // HIER WORDT DE 5-DAAGSE AANGESTUURD
+        renderDaily(weather);
         renderAdvice(advice);
 
         if (loader) loader.style.display = 'none';
+
+        // 5 seconden na het inladen van de pagina, check de MeteoAlarm feed
+        setTimeout(() => {
+          fetchMeteoAlarm();
+        }, 5000);
+
       } catch (error) {
         console.error(error);
-        showFetchError('Kon het weer niet laden. Check je verbinding.');
+        showFetchError('Kon het weer niet laden. Check je internetverbinding of locatie-instellingen.');
       }
     };
-    
-    updateWeather();
 
-    // ==========================================
-    // 3. CLEANUP
-    // ==========================================
-    return () => { 
-      isCancelled = true; 
-      appContainer.removeEventListener('touchstart', handleTouchStart);
-      appContainer.removeEventListener('touchmove', handleTouchMove);
-      appContainer.removeEventListener('touchend', handleTouchEnd);
-    };
+    updateWeather();
   }
 };
