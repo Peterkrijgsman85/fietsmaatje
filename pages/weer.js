@@ -6,11 +6,10 @@ export const page = {
         display: none !important;
       }
       #app {
-  -ms-overflow-style: none !important; 
-  scrollbar-width: none !important;
-  /* overscroll-behavior-y: none; <-- WEGGEHAALD */
-  -webkit-overflow-scrolling: touch; /* Zorgt voor die vloeiende momentum scroll */
-}
+        -ms-overflow-style: none !important; 
+        scrollbar-width: none !important;
+        -webkit-overflow-scrolling: touch; /* Zorgt voor die vloeiende momentum scroll */
+      }
 
       /* Basis Layout */
       .weather-page {
@@ -18,7 +17,6 @@ export const page = {
         width: 100%;
         color: #1C1C1E;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        /* HIER ZIT DE FIX: padding-bottom verhoogd naar 150px voor extra witruimte boven het menu */
         padding: 0px 16px 150px; 
       }
 
@@ -147,7 +145,7 @@ export const page = {
         color: #0f2c5a;
       }
 
-      /* NEXT LEVEL iOS: Glazen Kaart Containers */
+      /* Glazen Kaart Containers */
       .card-container {
         background: rgba(255, 255, 255, 0.45);
         backdrop-filter: blur(20px);
@@ -200,6 +198,86 @@ export const page = {
       .hourly-temp { font-size: 1rem; font-weight: 700; color: #0f2c5a; }
       .hourly-score-pill { font-weight: 800; color: #FFFFFF; font-size: 0.75rem; padding: 2px 8px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); }
       .hourly-detail { font-size: 0.65rem; color: rgba(15, 44, 90, 0.6); font-weight: 700; letter-spacing: -0.01em; }
+
+      /* --- 5-DAAGSE VERWACHTING HORIZONTAAL --- */
+      .daily-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .daily-flex-row {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+      }
+
+      .daily-col {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        z-index: 1;
+      }
+
+      /* Headers: Dag, Datum, Icon */
+      .daily-name { font-size: 0.85rem; font-weight: 700; color: #0f2c5a; line-height: 1.2; }
+      .daily-date { font-size: 0.65rem; color: rgba(15, 44, 90, 0.6); font-weight: 600; margin-bottom: 4px; }
+      .daily-icon { font-size: 1.5rem; line-height: 1; }
+
+      /* Grafiek Sectie */
+      .daily-graph-container {
+        position: relative;
+        width: 100%;
+        height: 90px;
+      }
+      
+      .daily-svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .temp-dot {
+        position: absolute;
+        left: 50%;
+        width: 6px;
+        height: 6px;
+        background: #FFF;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      }
+      .dot-max { border: 2px solid #FF9500; }
+      .dot-min { border: 2px solid #007AFF; }
+      
+      .temp-text {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.65rem;
+        font-weight: 700;
+      }
+      .text-max { color: #0f2c5a; margin-top: -18px; }
+      .text-min { color: rgba(15, 44, 90, 0.6); margin-top: 8px; }
+
+      /* Regen en Wind Sectie */
+      .daily-rain-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        width: 100%;
+      }
+      .daily-rain-text { font-size: 0.65rem; font-weight: 600; color: #007AFF; }
+      .rain-bar-bg { width: 24px; height: 3px; background: rgba(0, 122, 255, 0.15); border-radius: 2px; overflow: hidden; }
+      .rain-bar-fill { height: 100%; background: #007AFF; border-radius: 2px; transition: width 0.3s ease; }
+      .daily-wind { font-size: 0.65rem; font-weight: 600; color: rgba(15, 44, 90, 0.7); margin-top: 6px; white-space: nowrap; }
 
       /* Advies overzicht */
       .advice-list { display: flex; flex-direction: column; gap: 8px; }
@@ -258,6 +336,11 @@ export const page = {
       <div id="hourly-section" class="card-container" style="display: none;">
         <div class="section-title">⏰ Komende 24 uur</div>
         <div class="hourly-scroll" id="hourly-scroll"></div>
+      </div>
+
+      <div id="daily-section" class="card-container" style="display: none;">
+        <div class="section-title">📅 5-daagse verwachting</div>
+        <div class="daily-list" id="daily-list"></div>
       </div>
 
       <div id="advice-section" class="card-container" style="display: none;">
@@ -456,6 +539,8 @@ export const page = {
       url.searchParams.set('latitude', lat);
       url.searchParams.set('longitude', lon);
       url.searchParams.set('hourly', 'temperature_2m,apparent_temperature,weathercode,windspeed_10m,winddirection_10m,relativehumidity_2m,precipitation_probability');
+      // TOEGEVOEGD: Daily parameters voor de 5-daagse verwachting
+      url.searchParams.set('daily', 'weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max,winddirection_10m_dominant');
       url.searchParams.set('current_weather', 'true');
       url.searchParams.set('timezone', timezone);
       url.searchParams.set('model', 'knmi_seamless');
@@ -497,6 +582,122 @@ export const page = {
           </div>
         `;
       });
+    };
+
+    // ==========================================
+    // NIEUW: 5-DAAGSE VERWACHTING RENDER LOGICA
+    // ==========================================
+    const renderDaily = (weather) => {
+      const container = document.getElementById('daily-list');
+      if (!container || !weather.daily) return;
+      container.innerHTML = '';
+      const section = document.getElementById('daily-section');
+      if (section) section.style.display = 'block';
+
+      const daysOfWeek = ['Zo', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za'];
+      const totalRows = 5;
+
+      const times = weather.daily.time.slice(0, totalRows);
+      const maxs = weather.daily.temperature_2m_max.slice(0, totalRows);
+      const mins = weather.daily.temperature_2m_min.slice(0, totalRows);
+      const rainSums = weather.daily.precipitation_sum.slice(0, totalRows);
+
+      // Schaalberekeningen voor de grafiek
+      const graphHeight = 90;
+      const padding = 20; // Ruimte boven en onder in de grafiek
+      const drawHeight = graphHeight - (padding * 2);
+
+      let globalMin = Math.min(...mins);
+      let globalMax = Math.max(...maxs);
+      if (globalMin === globalMax) { globalMin -= 1; globalMax += 1; }
+      const maxRain = Math.max(...rainSums) || 1; // Voorkom delen door nul
+
+      // Variabelen voor de HTML structuur
+      let headersHtml = '<div class="daily-flex-row">';
+      let graphColsHtml = '';
+      let footersHtml = '<div class="daily-flex-row" style="align-items: flex-start;">';
+      
+      let maxPath = '';
+      let minPath = '';
+
+      for (let i = 0; i < totalRows; i++) {
+        const dateObj = new Date(times[i]);
+        const dayName = daysOfWeek[dateObj.getDay()];
+        const dateStr = `${dateObj.getDate()}-${dateObj.getMonth() + 1}`;
+        const code = weather.daily.weathercode[i];
+        const icon = icons[code] ? icons[code][0] : '❔';
+        
+        // 1. Bouw de Header (Bovenkant)
+        headersHtml += `
+          <div class="daily-col">
+            <span class="daily-name">${dayName}</span>
+            <span class="daily-date">${dateStr}</span>
+            <span class="daily-icon">${icon}</span>
+          </div>
+        `;
+
+        // Y-coördinaten berekenen (0 is top, dus omkeren)
+        const yMax = padding + ((globalMax - maxs[i]) / (globalMax - globalMin)) * drawHeight;
+        const yMin = padding + ((globalMax - mins[i]) / (globalMax - globalMin)) * drawHeight;
+        
+        // X-coördinaten in percentages (10, 30, 50, 70, 90) passend bij 'flex: 1'
+        const xPercent = (i * 20) + 10;
+        maxPath += `${i === 0 ? 'M' : 'L'} ${xPercent} ${yMax} `;
+        minPath += `${i === 0 ? 'M' : 'L'} ${xPercent} ${yMin} `;
+
+        // 2. Bouw de Grafiek Kolom (Stippen en Tekst)
+        graphColsHtml += `
+          <div class="daily-col" style="position: relative;">
+            <div class="temp-dot dot-max" style="top: ${yMax}px;"></div>
+            <div class="temp-text text-max" style="top: ${yMax}px;">${Math.round(maxs[i])}°</div>
+            <div class="temp-dot dot-min" style="top: ${yMin}px;"></div>
+            <div class="temp-text text-min" style="top: ${yMin}px;">${Math.round(mins[i])}°</div>
+          </div>
+        `;
+
+        // 3. Bouw de Footer (Regen diagram en Wind)
+        const rain = rainSums[i] ?? 0;
+        const rainStr = rain > 0 ? `${rain.toFixed(1)} mm` : '0 mm';
+        const rainPercent = (rain / maxRain) * 100;
+        
+        const windSpeed = weather.daily.windspeed_10m_max[i] ?? 0;
+        const windDirDeg = weather.daily.winddirection_10m_dominant[i] ?? 0;
+        
+        footersHtml += `
+          <div class="daily-col">
+            <div class="daily-rain-container">
+              <div class="daily-rain-text">${rainStr}</div>
+              <div class="rain-bar-bg">
+                <div class="rain-bar-fill" style="width: ${rainPercent}%;"></div>
+              </div>
+            </div>
+            <div class="daily-wind">${windDirection(windDirDeg)} ${bftFromKmh(windSpeed)}</div>
+          </div>
+        `;
+      }
+      
+      headersHtml += '</div>';
+      footersHtml += '</div>';
+      
+      // Teken de vectorlijnen op de achtergrond. 'non-scaling-stroke' zorgt dat de lijn dikte intact blijft
+      const svgHtml = `
+        <svg class="daily-svg" viewBox="0 0 100 ${graphHeight}" preserveAspectRatio="none">
+          <path d="${maxPath}" fill="none" stroke="#FF9500" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+          <path d="${minPath}" fill="none" stroke="#007AFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+        </svg>
+      `;
+
+      // Injecteer het geheel
+      container.innerHTML = `
+        ${headersHtml}
+        <div class="daily-graph-container">
+          ${svgHtml}
+          <div class="daily-flex-row" style="height: 100%;">
+            ${graphColsHtml}
+          </div>
+        </div>
+        ${footersHtml}
+      `;
     };
 
     const renderAdvice = advice => {
@@ -628,6 +829,7 @@ export const page = {
         setText('wind-info', `${Math.round(current.windspeed)} km/u · ${bft} Bft`);
 
         renderHourly(weather);
+        renderDaily(weather); // HIER WORDT DE 5-DAAGSE AANGESTUURD
         renderAdvice(advice);
 
         if (loader) loader.style.display = 'none';
