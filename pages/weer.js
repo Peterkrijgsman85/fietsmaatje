@@ -642,7 +642,7 @@ export const page = {
       const headerEl = document.querySelector('.alert-header');
       
       try {
-        const proxyUrl = 'https://corsproxy.io/?';
+        const proxyUrl = 'https://api.allorigins.win/raw?url=';
         const targetUrl = encodeURIComponent('https://feeds.meteoalarm.org/feeds/meteoalarm-legacy-atom-netherlands');
         const response = await fetch(proxyUrl + targetUrl);
         
