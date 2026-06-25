@@ -543,7 +543,7 @@ export const page = {
     const getWeerWaarschuwing = async (forceRefresh = false) => {
       const CACHE_KEY = 'knmi_alert';
       const CACHE_TIME_KEY = 'knmi_alert_time';
-      const CACHE_DURATION = 15 * 60 * 1000;
+      const CACHE_DURATION = 15 * 60 * 1000; // 15 minuten cache
 
       const cachedData = localStorage.getItem(CACHE_KEY);
       const lastFetch = localStorage.getItem(CACHE_TIME_KEY);
@@ -559,18 +559,55 @@ export const page = {
       }
 
       try {
-        const url = 'https://www.knmi.nl/nederland-nu/weer/waarschuwingen';
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-        
-        const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error('Proxy error');
-        const data = await response.json();
+        const targetUrl = 'https://www.knmi.nl/nederland-nu/weer/waarschuwingen';
+        let htmlContent = null;
+
+        // --- PROXY POGING 1: Corsproxy.io (Snelle, directe HTML stream) ---
+        try {
+          const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`);
+          if (res.ok) {
+            htmlContent = await res.text();
+          }
+        } catch (e) {
+          console.warn("Proxy 1 (corsproxy.io) geblokkeerd of offline, proberen volgende...");
+        }
+
+        // --- PROXY POGING 2: Codetabs (Directe HTML fallback) ---
+        if (!htmlContent) {
+          try {
+            const res = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`);
+            if (res.ok) {
+              htmlContent = await res.text();
+            }
+          } catch (e) {
+            console.warn("Proxy 2 (codetabs) geblokkeerd of offline, proberen volgende...");
+          }
+        }
+
+        // --- PROXY POGING 3: AllOrigins (Oude fallback via JSON wrapper) ---
+        if (!htmlContent) {
+          try {
+            const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
+            if (res.ok) {
+              const data = await res.json();
+              htmlContent = data.contents;
+            }
+          } catch (e) {
+            console.warn("Proxy 3 (allorigins) ook gefaald.");
+          }
+        }
+
+        // Als alle drie de wegen doodlopen, gooien we een error op de achtergrond
+        if (!htmlContent) {
+          throw new Error('Alle beschikbare CORS-proxies zijn momenteel geblokkeerd door KNMI/Cloudflare.');
+        }
+
         if (isCancelled) return;
         
         const parser = new DOMParser();
-        const doc = parser.parseFromString(data.contents, 'text/html');
+        const doc = parser.parseFromString(htmlContent, 'text/html');
         
-        // RECHTSTREEKSE SELECTIE (Zonder afhankelijkheid van .wrapper--alert)
+        // Selecteer de waarschuwingselementen
         const headingEl = doc.querySelector('.alert__heading, .alert_heading, [class*="alert__heading"]');
         const bodyEl = doc.querySelector('.alert__description, .alert_description, [class*="alert__description"]');
         
@@ -578,7 +615,7 @@ export const page = {
           const headingText = headingEl.innerText.trim();
           const bodyText = bodyEl ? bodyEl.innerText.trim() : '';
           
-          // Filter uit als het 'Code Groen' of 'Geen waarschuwingen' is
+          // Filter 'Code Groen' of 'Geen waarschuwingen' eruit
           if (headingText.toLowerCase().includes('groen') || headingText.toLowerCase().includes('geen waarschuwing')) {
             localStorage.setItem(CACHE_KEY, JSON.stringify({ noAlert: true }));
             localStorage.setItem(CACHE_TIME_KEY, Date.now());
@@ -590,12 +627,14 @@ export const page = {
             renderAlert(alertData);
           }
         } else {
+          // Geen elementen gevonden betekent momenteel geen weeralarm actief
           localStorage.setItem(CACHE_KEY, JSON.stringify({ noAlert: true }));
           localStorage.setItem(CACHE_TIME_KEY, Date.now());
           renderAlert(null);
         }
       } catch (error) {
         console.error("Kon waarschuwing niet ophalen:", error);
+        // Bij een fout vallen we terug op wat we nog in de cache hadden staan
         if (cachedData) {
           const parsed = JSON.parse(cachedData);
           if (!parsed.noAlert) renderAlert(parsed);
