@@ -6,10 +6,11 @@ export const page = {
         display: none !important;
       }
       #app {
-        -ms-overflow-style: none !important; 
-        scrollbar-width: none !important;
-        overscroll-behavior-y: none;
-      }
+  -ms-overflow-style: none !important; 
+  scrollbar-width: none !important;
+  /* overscroll-behavior-y: none; <-- WEGGEHAALD */
+  -webkit-overflow-scrolling: touch; /* Zorgt voor die vloeiende momentum scroll */
+}
 
       /* Basis Layout */
       .weather-page {
