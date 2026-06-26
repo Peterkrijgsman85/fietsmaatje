@@ -56,52 +56,51 @@ navigate(startPage);
 
 
 // --- PWA INSTALLATIE BANNER LOGICA ---
-// We wachten tot de DOM volledig geladen is, zodat de elementen 'install-banner' en 'install-btn' bestaan
 document.addEventListener('DOMContentLoaded', () => {
   const installBanner = document.getElementById('install-banner');
   const installBtn = document.getElementById('install-btn');
+  const bannerText = document.querySelector('.banner-text p');
   
-  // Controleer of de app al standalone draait (geïnstalleerd is op homescreen)
   const isInstalled = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
-  // Maak deze functie ook eventueel beschikbaar voor losse pagina's
-  window.getInstallPrompt = () => deferredPrompt;
+  // Check of de gebruiker op een iOS apparaat zit (iPhone/iPad)
+  const isApple = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-  // Alleen als de app NOG NIET geïnstalleerd is, gaan we luisteren naar het installatie-event
   if (!isInstalled) {
-    
+
+    // 1. ANDROID / DESKTOP LOGICA
     window.addEventListener('beforeinstallprompt', (e) => {
-      // Voorkom dat de browser zelf al met een native pop-up komt
       e.preventDefault();
-      // Sla het event op zodat we het later kunnen triggeren via onze eigen knop
       deferredPrompt = e;
       
-      console.log('PWA: Installatie event opgevangen. Banner wordt getoond.');
-      
-      // Toon onze eigen aangepaste installatiebanner
-      if (installBanner) {
-        installBanner.style.display = 'block';
-      }
+      console.log('PWA: Android/Chrome installatie event opgevangen.');
+      if (installBanner) installBanner.style.display = 'block';
     });
 
-    // Koppel de klik-actie aan onze installatieknop
     installBtn?.addEventListener('click', async () => {
       if (!deferredPrompt) return;
-      
-      // Toon de officiële browser installatie-dialoog
       deferredPrompt.prompt();
-      
-      // Wacht op de keuze van de gebruiker
       const { outcome } = await deferredPrompt.userChoice;
-      console.log(`Gebruiker koos voor installatie: ${outcome}`);
-      
-      // Wis de opgeslagen prompt, deze kan maar één keer gebruikt worden
       deferredPrompt = null;
-      
-      // Verberg onze banner weer
-      if (installBanner) {
-        installBanner.style.display = 'none';
-      }
+      if (installBanner) installBanner.style.display = 'none';
     });
+
+    // 2. iOS DETECTIE & WORKAROUND
+    // Als het Apple is, en de app draait in de browser, toon dan een instructie-banner
+    if (isApple && installBanner) {
+      console.log('PWA: iOS gedetecteerd. Toon handmatige instructie.');
+      
+      // Pas de tekst aan naar iOS-specifieke instructies
+      if (bannerText) {
+        bannerText.innerHTML = 'Tik op de <strong>Deel-knop</strong> (pijltje omhoog) onderin en kies <strong>"Zet op beginscherm"</strong>.';
+      }
+      // Verberg de grote oranje knop, want die doet niks op iOS
+      if (installBtn) {
+        installBtn.style.display = 'none'; 
+      }
+      
+      // Toon de banner direct (aangezien beforeinstallprompt op iOS niet bestaat)
+      installBanner.style.display = 'block';
+    }
   }
 });
