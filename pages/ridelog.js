@@ -190,7 +190,8 @@ export const page = {
       const date = dateInput.value;
       const time = timeInput.value;
       
-      const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m&start_date=${date}&end_date=${date}&timezone=auto`);
+      // 1. AANGEPAST: shortwave_radiation en model=knmi_seamless toegevoegd
+      const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,shortwave_radiation&start_date=${date}&end_date=${date}&timezone=auto&model=knmi_seamless`);
       const wd = await weatherRes.json();
       const hour = parseInt(time.split(':')[0]);
       
@@ -200,15 +201,30 @@ export const page = {
         if (kmh < 50) return 6; if (kmh < 62) return 7; return 8;
       };
 
-      const calculateWBGT = (t, rh) => Math.round(0.567 * t + 0.393 * (rh / 100 * 6.105 * Math.exp(17.27 * t / (237.7 + t))) + 3.94);
+      // 2. AANGEPAST: De nieuwe, correcte fysieke WBGT formule
+      const formatWbgt = (temperature, humidity, windspeed, radiation) => {
+        const T = temperature;
+        const RH = Math.max(0, Math.min(100, humidity));
+        const v = Math.max(0.5, windspeed / 3.6); 
+
+        const Tw = T * Math.atan(0.151977 * Math.pow(RH + 8.313659, 0.5)) + 
+                   Math.atan(T + RH) - Math.atan(RH - 1.676331) + 
+                   (0.00391838 * Math.pow(RH, 1.5)) * Math.atan(0.023101 * RH) - 4.686035;
+
+        const Tg = T + (radiation * 0.04) / Math.sqrt(v); 
+
+        const wbgt = 0.7 * Tw + 0.2 * Tg + 0.1 * T;
+        return wbgt.toFixed(1); // Retourneert nu bijv "25.4" i.p.v. afronding zonder decimalen
+      };
 
       const temp = wd.hourly.temperature_2m[hour];
       const rh = wd.hourly.relative_humidity_2m[hour];
       const kmh = Math.round(wd.hourly.wind_speed_10m[hour]);
+      const rad = wd.hourly.shortwave_radiation[hour] || 0; // 3. AANGEPAST: Straling ophalen
 
       return {
         t: Math.round(temp),
-        wbgt: calculateWBGT(temp, rh),
+        wbgt: formatWbgt(temp, rh, kmh, rad), // 4. AANGEPAST: Nieuwe functie aanroepen met straling
         c: wd.hourly.weather_code[hour],
         wKmh: kmh,
         bft: getBft(kmh),
