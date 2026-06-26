@@ -554,11 +554,12 @@ export const page = {
       const url = new URL('https://api.open-meteo.com/v1/forecast');
       url.searchParams.set('latitude', lat);
       url.searchParams.set('longitude', lon);
-      url.searchParams.set('hourly', 'temperature_2m,apparent_temperature,weathercode,windspeed_10m,winddirection_10m,relativehumidity_2m,precipitation_probability');
+      // TOEGEVOEGD: shortwave_radiation
+      url.searchParams.set('hourly', 'temperature_2m,apparent_temperature,weathercode,windspeed_10m,winddirection_10m,relativehumidity_2m,precipitation_probability,shortwave_radiation');
       url.searchParams.set('daily', 'weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max,winddirection_10m_dominant');
       url.searchParams.set('current_weather', 'true');
       url.searchParams.set('timezone', timezone);
-      url.searchParams.set('forecast_days', '7'); // TERUGGESCHROEFD NAAR 7 DAGEN
+      url.searchParams.set('forecast_days', '7');
       url.searchParams.set('model', 'knmi_seamless');
       const response = await fetch(url.toString());
       if (!response.ok) throw new Error('Weather fetch failed');
@@ -736,17 +737,25 @@ export const page = {
       if (section) section.style.display = 'block';
     };
 
-    const formatWbgt = (temperature, humidity, windspeed, activity = 'cycling') => {
+    const formatWbgt = (temperature, humidity, windspeed, radiation) => {
       const T = temperature;
       const RH = Math.max(0, Math.min(100, humidity));
-      const v = Math.max(0.5, windspeed / 3.6);
-      const activityMultiplier = { 'rest': 0.4, 'light': 0.8, 'moderate': 1.0, 'cycling': 1.2, 'vigorous': 1.5 }[activity] || 1.0;
-      const dewPointSimple = T - ((100 - RH) / 5);
-      const Tw = dewPointSimple * 0.6 + T * 0.4;
-      const Tg = T + 14 * Math.sqrt(v) * (RH / 100 - 0.5);
+      // Wind km/u naar m/s. Minimum 0.5 m/s om delen door (bijna) nul te voorkomen
+      const v = Math.max(0.5, windspeed / 3.6); 
+
+      // 1. Wet Bulb (Tw) - Zeer nauwkeurige empirische formule (Stull, 2011)
+      const Tw = T * Math.atan(0.151977 * Math.pow(RH + 8.313659, 0.5)) + 
+                 Math.atan(T + RH) - Math.atan(RH - 1.676331) + 
+                 (0.00391838 * Math.pow(RH, 1.5)) * Math.atan(0.023101 * RH) - 4.686035;
+
+      // 2. Globe Temperature (Tg) - Nu mét zonnestraling (W/m2)
+      // De straling verwarmt de bol, de wind zorgt voor convectieve afkoeling
+      const Tg = T + (radiation * 0.04) / Math.sqrt(v); 
+
+      // 3. Officiële WBGT Formule (0.7 Tw + 0.2 Tg + 0.1 T)
       const wbgt = 0.7 * Tw + 0.2 * Tg + 0.1 * T;
-      const adjustedWbgt = wbgt + (activityMultiplier - 1.0) * 3;
-      return (Math.max(T - 10, adjustedWbgt)).toFixed(1);
+      
+      return wbgt.toFixed(1);
     };
 
     const showFetchError = message => {
@@ -834,7 +843,10 @@ export const page = {
 
         const feelsLike = weather.hourly.apparent_temperature[currentIndex] ?? current.temperature;
         const humidity = weather.hourly.relativehumidity_2m[currentIndex] ?? 0;
-        const wbgtValue = formatWbgt(current.temperature, humidity, current.windspeed, 'cycling');
+        const radiation = weather.hourly.shortwave_radiation[currentIndex] ?? 0; // NIEUW
+        
+        // Geef de straling mee in plaats van de oude 'cycling' string
+        const wbgtValue = formatWbgt(current.temperature, humidity, current.windspeed, radiation);
         
         const advice = getAdvice({
           temperature: current.temperature,
