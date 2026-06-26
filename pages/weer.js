@@ -571,7 +571,7 @@ export const page = {
       url.searchParams.set('latitude', lat);
       url.searchParams.set('longitude', lon);
       // TOEGEVOEGD: shortwave_radiation
-      url.searchParams.set('hourly', 'temperature_2m,apparent_temperature,weathercode,windspeed_10m,winddirection_10m,relativehumidity_2m,precipitation_probability,shortwave_radiation');
+      url.searchParams.set('hourly', 'temperature_2m,apparent_temperature,weathercode,windspeed_10m,winddirection_10m,relative_humidity_2m,precipitation_probability,shortwave_radiation');
       url.searchParams.set('daily', 'weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max,winddirection_10m_dominant');
       url.searchParams.set('current_weather', 'true');
       url.searchParams.set('timezone', timezone);
@@ -858,7 +858,7 @@ export const page = {
         }
 
         const feelsLike = weather.hourly.apparent_temperature[currentIndex] ?? current.temperature;
-        const humidity = weather.hourly.relativehumidity_2m[currentIndex] ?? 0;
+        const humidity = weather.hourly.relative_humidity_2m[currentIndex] ?? 0;
         const radiation = weather.hourly.shortwave_radiation[currentIndex] ?? 0; // NIEUW
         console.log('Data:', current.temperature, humidity, current.windspeed, radiation);
         // Geef de straling mee in plaats van de oude 'cycling' string
