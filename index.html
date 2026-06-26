@@ -31,12 +31,12 @@
       -webkit-font-smoothing: antialiased;
       background-color: #d8f1ff;
       background-image: linear-gradient(
-  160deg,
-  #d8f1ff 0%,
-  #d8f1ff 15%,
-  #9edcff 45%,
-  #67c7ff 100%
-);
+        160deg,
+        #d8f1ff 0%,
+        #d8f1ff 15%,
+        #9edcff 45%,
+        #67c7ff 100%
+      );
       /* background-image: linear-gradient(160deg, #d8f1ff 0%, #9edcff 40%, #67c7ff 100%);*/   
       background-attachment: fixed;
     }
@@ -124,6 +124,75 @@
       width: 250px; /* Pas dit aan naar de grootte van jouw logo */
       height: auto;
     }
+
+    /* --- PWA INSTALLATIE BANNER STYLING --- */
+    #install-banner {
+      display: none; /* Wordt aangestuurd via app.js */
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 78px); /* Zweeft perfect boven de pill-nav */
+      left: 12px;
+      right: 12px;
+      background: rgba(255, 255, 255, 0.75); /* Matcht met de navigatiebalk vibe */
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      z-index: 99;
+      box-shadow: 0 10px 30px rgba(15, 44, 90, 0.15);
+    }
+
+    .banner-content {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .banner-icon {
+      font-size: 2rem;
+      background: rgba(255, 255, 255, 0.6);
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .banner-text h4 {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #0f2c5a;
+    }
+
+    .banner-text p {
+      margin: 2px 0 0 0;
+      font-size: 0.8rem;
+      color: #3a537d;
+      line-height: 1.2;
+    }
+
+    #install-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      background: var(--accent); /* Gebruikt je eigen oranje accentkleur */
+      color: white;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border-radius: 100px; /* Mooi rond net als de buttons */
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(252, 76, 2, 0.25);
+      transition: background 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    #install-btn:active {
+      background: var(--accent-dark);
+    }
   </style>
 </head>
 <body>
@@ -133,6 +202,17 @@
   </div>
 
   <div id="app"></div>
+
+  <div id="install-banner">
+    <div class="banner-content">
+      <div class="banner-icon">🚴</div>
+      <div class="banner-text">
+        <h4>Zet Fietsmaatje op je beginscherm</h4>
+        <p>Installeer de app voor snelle toegang en een optimale schermervaring.</p>
+      </div>
+    </div>
+    <button id="install-btn">Voeg toe aan beginscherm</button>
+  </div>
 
   <nav class="pill-nav">
     <button data-page="weer"><span>🌤</span><strong>Weer</strong></button>
