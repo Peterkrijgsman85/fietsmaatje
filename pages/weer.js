@@ -860,7 +860,7 @@ export const page = {
         const feelsLike = weather.hourly.apparent_temperature[currentIndex] ?? current.temperature;
         const humidity = weather.hourly.relativehumidity_2m[currentIndex] ?? 0;
         const radiation = weather.hourly.shortwave_radiation[currentIndex] ?? 0; // NIEUW
-        
+        console.log('Data:', current.temperature, humidity, current.windspeed, radiation);
         // Geef de straling mee in plaats van de oude 'cycling' string
         const wbgtValue = formatWbgt(current.temperature, humidity, current.windspeed, radiation);
         
