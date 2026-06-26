@@ -106,7 +106,7 @@ export const page = {
         const query = input.value;
         if (query.length < 3) { sugBox.style.display = 'none'; return; }
         try {
-          const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=nl&format=json`);
+          const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,shortwave_radiation&start_date=${date}&end_date=${date}&timezone=auto&model=knmi_seamless`);
           const data = await res.json();
           if (!data.results) { sugBox.style.display = 'none'; return; }
           
