@@ -331,10 +331,18 @@ export const page = {
             <span class="stat-val" id="feels-like">–</span>
           </div>
           <div class="stat-divider"></div>
-          <div class="stat-item">
-            <span class="stat-label">WBGT</span>
-            <span class="stat-val" id="wbgt">–</span>
-          </div>
+          <div class="stat-item" style="position: relative;">
+  <span class="stat-label" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+    WBGT
+    <span id="wbgt-info-btn" style="cursor: pointer; font-size: 0.6rem; border: 1px solid rgba(15,44,90,0.2); border-radius: 50%; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; color: rgba(15,44,90,0.4); background: rgba(255,255,255,0.8);">i</span>
+  </span>
+  <span class="stat-val" id="wbgt">–</span>
+  
+  <div id="wbgt-tooltip" class="tooltip-fade" style="display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 8px; width: 190px; background: rgba(15, 44, 90, 0.95); color: #fff; padding: 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 500; text-align: left; box-shadow: 0 8px 24px rgba(15, 44, 90, 0.2); z-index: 50; line-height: 1.4;">
+    <div id="wbgt-tooltip-text">Laden...</div>
+    <div style="content: ''; position: absolute; bottom: -4px; left: 50%; margin-left: -4px; width: 8px; height: 8px; background: rgba(15, 44, 90, 0.95); transform: rotate(45deg);"></div>
+  </div>
+</div>
           <div class="stat-divider"></div>
           <div class="stat-item">
             <span class="stat-label">Wind</span>
@@ -370,6 +378,14 @@ export const page = {
   init() {
     let isCancelled = false;
     const appContainer = document.getElementById('app');
+
+    const getWbgtAdviceText = (wbgt) => {
+  if (wbgt < 18) return '<b style="color: #34C759;">🟢 Laag risico</b><br>Geen restricties.';
+  if (wbgt < 23) return '<b style="color: #FFCC00;">🟡 Matig risico</b><br>Let op bij intensieve, langdurige inspanning; extra hydratatie.';
+  if (wbgt < 28) return '<b style="color: #FF9500;">🟠 Hoog risico</b><br>Risico stijgt. Verkort trainingsduur, frequente pauzes, meer drinken.';
+  if (wbgt <= 30) return '<b style="color: #FF3B30;">🔴 Zeer hoog risico</b><br>Groot risico. Zeer intensieve inspanning beperken. Risicogroepen stoppen.';
+  return '<b style="color: #A200FF;">🟣 Extreem risico</b><br>Advies: Sportactiviteiten staken/afgelasten.';
+};
 
     // ==========================================
     // 1. PULL TO REFRESH LOGICA
@@ -863,6 +879,12 @@ export const page = {
         setText('wbgt', `${wbgtValue}°C`);
         setText('wind-info', `${Math.round(current.windspeed)} km/u · ${bft} Bft`);
 
+        // VOEG DIT TOE: Update de tooltip tekst
+const tooltipTextEl = document.getElementById('wbgt-tooltip-text');
+if (tooltipTextEl) {
+  tooltipTextEl.innerHTML = getWbgtAdviceText(parseFloat(wbgtValue));
+}
+
         renderHourly(weather);
         renderDaily(weather);
         renderAdvice(advice);
@@ -873,6 +895,29 @@ export const page = {
         showFetchError('Kon het weer niet laden. Check je internetverbinding of locatie-instellingen.');
       }
     };
+
+    // WBGT Tooltip klik logica
+const wbgtBtn = document.getElementById('wbgt-info-btn');
+const wbgtTooltip = document.getElementById('wbgt-tooltip');
+
+if (wbgtBtn && wbgtTooltip) {
+  wbgtBtn.addEventListener('click', (e) => {
+    e.stopPropagation(); // Voorkom dat de klik direct wordt opgevangen door het window
+    const isVisible = wbgtTooltip.style.display === 'block';
+    
+    // Optioneel: verberg andere open tooltips als je er meerdere hebt
+    document.querySelectorAll('.tooltip-fade').forEach(el => el.style.display = 'none');
+    
+    wbgtTooltip.style.display = isVisible ? 'none' : 'block';
+  });
+
+  // Zorg dat de tooltip sluit als je ergens anders op het scherm klikt
+  document.addEventListener('click', (e) => {
+    if (!wbgtTooltip.contains(e.target) && e.target !== wbgtBtn) {
+      wbgtTooltip.style.display = 'none';
+    }
+  });
+}
 
     updateWeather();
   }

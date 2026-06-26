@@ -132,7 +132,7 @@ export const page = {
         return;
       }
 
-      geoBtn.innerText = "⏳";
+      geoBtn.innerText = "🔎";
 
       navigator.geolocation.getCurrentPosition(async (pos) => {
         try {
@@ -246,7 +246,7 @@ export const page = {
         let r1, r2;
         if (logMode === 'single') {
           const windDirFull = windMap[wA.wd] || wA.wd;
-          r1 = `${getCondIcon(wA.c)} ${wA.t}°C (WBGT: ${wA.wbgt}°C) | 🌬️ Wind: ${wA.wd} ${wA.wKmh} km/u (${wA.bft} Bft)`;
+          r1 = `${getCondIcon(wA.c)} ${wA.t}°C (WBGT: ${wA.wbgt}°C) | 💨 Wind: ${wA.wd} ${wA.wKmh} km/u (${wA.bft} Bft) #fietsmaatje`;
           r2 = `📊 Ritverslag: ${getCondIcon(wA.c)} ${getCondStr(wA.c)}e rit bij ${wA.t}°C (gevoels/WBGT: ${wA.wbgt}°C). Er stond een windkracht van ${wA.bft} Bft uit ${windDirFull} (${wA.wKmh} km/u). 🚲`;
         } else {
           const locBVal = locBInput.value.trim();
