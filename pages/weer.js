@@ -841,8 +841,10 @@ export const page = {
         const description = icons[code] ? icons[code][1] : 'Onbekend weer';
         const bft = bftFromKmh(current.windspeed);
         
-        const currentIndex = weather.hourly.time.indexOf(weather.current_weather.time);
-        
+        const currentTargetTime = new Date(weather.current_weather.time).getTime();
+let currentIndex = weather.hourly.time.findIndex(t => new Date(t).getTime() === currentTargetTime);
+if (currentIndex === -1) currentIndex = 0; // Fallback
+
         const score = getScore({
           weathercode: code,
           temperature: current.temperature,
