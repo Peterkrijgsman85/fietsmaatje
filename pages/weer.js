@@ -630,45 +630,49 @@ export const page = {
         const icon = icons[code] ? icons[code][0] : '❔';
         const hourlyTemp = Math.round(weather.hourly.temperature_2m[idx]);
         
-        // --- WIND LOGICA INCLUSIEF ROTATIE ---
+        // --- WIND LOGICA ---
         const wind = weather.hourly.windspeed_10m[idx];
         const windDirDeg = weather.hourly.winddirection_10m[idx];
-        const windRotation = windDirDeg + 180; // +180 graden zodat de pijl met de wind méé wijst
+        const windRotation = windDirDeg + 180;
         const bft = bftFromKmh(wind);
         const dir = windDirection(weather.hourly.winddirection_10m[idx]);
+        
         const value = Math.max(1, getScore({ weathercode: code, temperature: weather.hourly.temperature_2m[idx], windspeed: wind, precipitation_probability: weather.hourly.precipitation_probability[idx] }));
         const info = getScoreInfo(value);
         
-        // --- REGEN LOGICA ---
+        // --- REGEN LOGICA (MET <0.1MM EN KANS%) ---
         const rainMm = weather.hourly.precipitation[idx] ?? 0;
         const rainProb = weather.hourly.precipitation_probability[idx] ?? 0;
         
-        let rainHtml = '<div class="hourly-rain-container"></div>'; // Lege placeholder voor uitlijning
-        
-        if (rainProb > 0 || rainMm > 0.1) {
-          const rainHeightPct = Math.min(100, (rainMm / 3) * 100); 
-          const opacity = Math.max(0.3, rainProb / 100); 
-          
-          let mmText = '';
-          if (rainMm >= 0.1) {
-            mmText = `${rainMm.toFixed(1)} mm`;
-          } else if (rainProb > 0) {
-            mmText = '<0.1 mm';
-          }
-          
-          rainHtml = `
-            <div class="hourly-rain-container" style="opacity: ${opacity};">
-              <div class="hourly-rain-text" style="font-size: 0.55rem; color: rgba(0, 122, 255, 0.8); margin-bottom: 2px; min-height: 10px; display: flex; align-items: flex-end;">
-                ${mmText}
-              </div>
-              <div class="hourly-rain-bg">
-                <div class="hourly-rain-fill" style="height: ${rainHeightPct}%;"></div>
-              </div>
-              <div class="hourly-rain-text" style="margin-top: 3px;">${rainProb}%</div>
-            </div>
-          `;
+        // Bepaal de tekst en opacity
+        let mmText = '0 mm';
+        let textOpacity = 0.4; // Standaard gedimd
+
+        if (rainMm >= 0.1) {
+          mmText = `${rainMm.toFixed(1)} mm`;
+          textOpacity = 1;
+        } else if (rainProb > 0) {
+          mmText = '< 0.1 mm';
+          textOpacity = 1; // Zichtbaar maken als er een kans is
         }
-        // ---------------------------
+        
+        // Vaste schaal: 10mm is de max hoogte voor de balk
+        const rainPercent = Math.min(100, (rainMm / 10) * 100); 
+        
+        const rainHtml = `
+          <div class="hourly-rain-container">
+            <div class="hourly-rain-text" style="font-size: 0.55rem; color: rgba(0, 122, 255, 0.8); margin-bottom: 2px; min-height: 10px; display: flex; align-items: flex-end; opacity: ${textOpacity};">
+              ${mmText}
+            </div>
+            <div class="hourly-rain-bg">
+              <div class="hourly-rain-fill" style="height: ${rainPercent}%;"></div>
+            </div>
+            <div class="hourly-rain-text" style="margin-top: 3px; font-size: 0.55rem; color: rgba(0, 122, 255, 0.8); opacity: ${textOpacity};">
+              ${rainProb}%
+            </div>
+          </div>
+        `;
+        // ------------------------------------------------
 
         container.innerHTML += `
           <div class="hourly-item">
