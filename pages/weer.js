@@ -199,6 +199,37 @@ export const page = {
       .hourly-score-pill { font-weight: 800; color: #FFFFFF; font-size: 0.75rem; padding: 2px 8px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); }
       .hourly-detail { font-size: 0.65rem; color: rgba(15, 44, 90, 0.6); font-weight: 700; letter-spacing: -0.01em; }
 
+      /* Nieuwe Regenstaafjes voor Hourly */
+      .hourly-rain-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        height: 44px;
+        width: 100%;
+        margin-top: 2px;
+      }
+      .hourly-rain-text { 
+        font-size: 0.6rem; 
+        font-weight: 700; 
+        color: #007AFF; 
+        line-height: 1; 
+        margin-bottom: 2px; 
+      }
+      .hourly-rain-bg { 
+        width: 6px; 
+        height: 16px; 
+        background: rgba(0, 122, 255, 0.1); 
+        border-radius: 3px; 
+        display: flex; 
+        align-items: flex-end; 
+      }
+      .hourly-rain-fill { 
+        width: 100%; 
+        background: #007AFF; 
+        border-radius: 3px; 
+      }
+      
       /* --- MEERDAAGSE VERWACHTING HORIZONTAAL SCROLLBAAR --- */
       .daily-scroll {
         overflow-x: auto;
@@ -570,8 +601,8 @@ export const page = {
       const url = new URL('https://api.open-meteo.com/v1/forecast');
       url.searchParams.set('latitude', lat);
       url.searchParams.set('longitude', lon);
-      // TOEGEVOEGD: shortwave_radiation
-      url.searchParams.set('hourly', 'temperature_2m,apparent_temperature,weathercode,windspeed_10m,winddirection_10m,relative_humidity_2m,precipitation_probability,shortwave_radiation');
+      // 'precipitation' toegevoegd voor de millimeters
+      url.searchParams.set('hourly', 'temperature_2m,apparent_temperature,weathercode,windspeed_10m,winddirection_10m,relative_humidity_2m,precipitation_probability,precipitation,shortwave_radiation');
       url.searchParams.set('daily', 'weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max,winddirection_10m_dominant');
       url.searchParams.set('current_weather', 'true');
       url.searchParams.set('timezone', timezone);
@@ -605,13 +636,48 @@ export const page = {
         const value = Math.max(1, getScore({ weathercode: code, temperature: weather.hourly.temperature_2m[idx], windspeed: wind, precipitation_probability: weather.hourly.precipitation_probability[idx] }));
         const info = getScoreInfo(value);
         
+        // --- NIEUWE REGEN LOGICA ---
+        const rainMm = weather.hourly.precipitation[idx] ?? 0;
+        const rainProb = weather.hourly.precipitation_probability[idx] ?? 0;
+        
+        let rainHtml = '<div class="hourly-rain-container"></div>'; // Lege placeholder voor uitlijning
+        
+        if (rainProb > 0 || rainMm > 0.1) {
+          // Schaal: 3mm/uur is 100% hoogte
+          const rainHeightPct = Math.min(100, (rainMm / 3) * 100); 
+          // Opacity basis op kans, minimaal 30% zichtbaar als er íets van kans is
+          const opacity = Math.max(0.3, rainProb / 100); 
+          
+          // Bepaal de tekst: Echte millimeters, óf '<0.1 mm' bij hele lichte spetters
+          let mmText = '';
+          if (rainMm >= 0.1) {
+            mmText = `${rainMm.toFixed(1)} mm`;
+          } else if (rainProb > 0) {
+            mmText = '<0.1 mm';
+          }
+          
+          rainHtml = `
+            <div class="hourly-rain-container" style="opacity: ${opacity};">
+              <div class="hourly-rain-text" style="font-size: 0.55rem; color: rgba(0, 122, 255, 0.8); margin-bottom: 2px; min-height: 10px; display: flex; align-items: flex-end;">
+                ${mmText}
+              </div>
+              <div class="hourly-rain-bg">
+                <div class="hourly-rain-fill" style="height: ${rainHeightPct}%;"></div>
+              </div>
+              <div class="hourly-rain-text" style="margin-top: 3px;">${rainProb}%</div>
+            </div>
+          `;
+        }
+        // ---------------------------
+
         container.innerHTML += `
           <div class="hourly-item">
             <div class="hourly-time">${formatTime(time)}</div>
             <div class="hourly-icon">${icon}</div>
             <div class="hourly-temp">${hourlyTemp}°</div>
             <div class="hourly-score-pill" style="background-color: ${info.color};">${value}</div>
-            <div class="hourly-detail">${dir} ${bft}Bft</div>
+            ${rainHtml}
+            <div class="hourly-detail">${dir} ${bft}</div>
           </div>
         `;
       });
