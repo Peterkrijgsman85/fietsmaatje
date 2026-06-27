@@ -601,10 +601,9 @@ export const page = {
       const url = new URL('https://api.open-meteo.com/v1/forecast');
       url.searchParams.set('latitude', lat);
       url.searchParams.set('longitude', lon);
-      // 'precipitation' toegevoegd voor de millimeters
       url.searchParams.set('hourly', 'temperature_2m,apparent_temperature,weathercode,windspeed_10m,winddirection_10m,relative_humidity_2m,precipitation_probability,precipitation,shortwave_radiation');
       url.searchParams.set('daily', 'weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max,winddirection_10m_dominant');
-      url.searchParams.set('current_weather', 'true');
+      // current_weather is hier nu netjes verwijderd!
       url.searchParams.set('timezone', timezone);
       url.searchParams.set('forecast_days', '7');
       url.searchParams.set('model', 'knmi_seamless');
@@ -630,25 +629,26 @@ export const page = {
         const code = weather.hourly.weathercode[idx];
         const icon = icons[code] ? icons[code][0] : '❔';
         const hourlyTemp = Math.round(weather.hourly.temperature_2m[idx]);
+        
+        // --- WIND LOGICA INCLUSIEF ROTATIE ---
         const wind = weather.hourly.windspeed_10m[idx];
-        const dir = windDirection(weather.hourly.winddirection_10m[idx]);
+        const windDirDeg = weather.hourly.winddirection_10m[idx];
+        const windRotation = windDirDeg + 180; // +180 graden zodat de pijl met de wind méé wijst
         const bft = bftFromKmh(wind);
+        const dir = windDirection(weather.hourly.winddirection_10m[idx]);
         const value = Math.max(1, getScore({ weathercode: code, temperature: weather.hourly.temperature_2m[idx], windspeed: wind, precipitation_probability: weather.hourly.precipitation_probability[idx] }));
         const info = getScoreInfo(value);
         
-        // --- NIEUWE REGEN LOGICA ---
+        // --- REGEN LOGICA ---
         const rainMm = weather.hourly.precipitation[idx] ?? 0;
         const rainProb = weather.hourly.precipitation_probability[idx] ?? 0;
         
         let rainHtml = '<div class="hourly-rain-container"></div>'; // Lege placeholder voor uitlijning
         
         if (rainProb > 0 || rainMm > 0.1) {
-          // Schaal: 3mm/uur is 100% hoogte
           const rainHeightPct = Math.min(100, (rainMm / 3) * 100); 
-          // Opacity basis op kans, minimaal 30% zichtbaar als er íets van kans is
           const opacity = Math.max(0.3, rainProb / 100); 
           
-          // Bepaal de tekst: Echte millimeters, óf '<0.1 mm' bij hele lichte spetters
           let mmText = '';
           if (rainMm >= 0.1) {
             mmText = `${rainMm.toFixed(1)} mm`;
@@ -677,7 +677,12 @@ export const page = {
             <div class="hourly-temp">${hourlyTemp}°</div>
             <div class="hourly-score-pill" style="background-color: ${info.color};">${value}</div>
             ${rainHtml}
-            <div class="hourly-detail">${dir} ${bft}</div>
+            <div class="hourly-detail" style="display: flex; align-items: center; justify-content: center; gap: 3px;">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="transform: rotate(${windRotation}deg); opacity: 0.8;">
+                <path d="M12 2L22 22L12 18L2 22L12 2Z" />
+              </svg>
+              ${dir} ${bft}
+            </div>
           </div>
         `;
       });
@@ -694,7 +699,7 @@ export const page = {
       if (section) section.style.display = 'block';
 
       const daysOfWeek = ['Zo', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za'];
-      const totalRows = 7; // AANGEPAST NAAR 7 DAGEN
+      const totalRows = 7; 
 
       const times = weather.daily.time.slice(0, totalRows);
       const maxs = weather.daily.temperature_2m_max.slice(0, totalRows);
@@ -713,7 +718,7 @@ export const page = {
 
       let headersHtml = '<div class="daily-flex-row">';
       let graphColsHtml = '';
-      let rainHtml = '<div class="daily-flex-row" style="margin-top: 8px;">'; // NIEUWE RIJ VOOR REGEN
+      let rainHtml = '<div class="daily-flex-row" style="margin-top: 8px;">'; 
       let footersHtml = '<div class="daily-flex-row" style="align-items: flex-start; margin-top: 8px;">';
       
       let maxPath = '';
@@ -771,13 +776,21 @@ export const page = {
           </div>
         `;
 
-        // 4. Footer (Windrichting en bft)
+        // 4. Footer (Windrichting-tekst, bft en Pijltje)
         const windSpeed = weather.daily.windspeed_10m_max[i] ?? 0;
         const windDirDeg = weather.daily.winddirection_10m_dominant[i] ?? 0;
+        const windRotation = windDirDeg + 180;
+        const bft = bftFromKmh(windSpeed);
+        const dirText = windDirection(windDirDeg); // Dit geeft 'NO', 'ZW', etc.
         
         footersHtml += `
           <div class="daily-col">
-            <div class="daily-wind">${windDirection(windDirDeg)} ${bftFromKmh(windSpeed)}</div>
+            <div class="daily-wind" style="display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 0.75rem;">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="transform: rotate(${windRotation}deg); opacity: 0.8;">
+                <path d="M12 2L22 22L12 18L2 22L12 2Z" />
+              </svg>
+              ${dirText} ${bft}
+            </div>
           </div>
         `;
       }
@@ -901,21 +914,36 @@ export const page = {
 
         setText('weather-location', placeName);
 
-        const current = weather.current_weather;
-        const code = current.weathercode;
+        // --- NIEUWE LOGICA: Alles centraal uit hourly halen ---
+        const nowTime = Date.now();
+        
+        // 1. Zoek het eerste uur in de reeks dat in de toekomst ligt...
+        let currentIndex = weather.hourly.time.findIndex(t => new Date(t).getTime() > nowTime);
+        // 2. ...en pak dan exact 1 uur daarvoor (dat is namelijk het huidige uur waar we nu in leven)
+        if (currentIndex > 0) {
+          currentIndex -= 1; 
+        } else if (currentIndex === -1) {
+          currentIndex = 0; // Fallback voor de zekerheid
+        }
+
+        // Haal alle variabelen uit exact dezelfde index!
+        const currentTemp = weather.hourly.temperature_2m[currentIndex];
+        const currentWindspeed = weather.hourly.windspeed_10m[currentIndex];
+        const code = weather.hourly.weathercode[currentIndex];
+        const feelsLike = weather.hourly.apparent_temperature[currentIndex] ?? currentTemp;
+        const humidity = weather.hourly.relative_humidity_2m[currentIndex] ?? 0;
+        const radiation = weather.hourly.shortwave_radiation[currentIndex] ?? 0;
+        const precipProb = weather.hourly.precipitation_probability[currentIndex] ?? 0;
+
         const icon = icons[code] ? icons[code][0] : '❔';
         const description = icons[code] ? icons[code][1] : 'Onbekend weer';
-        const bft = bftFromKmh(current.windspeed);
-        
-        const currentTargetTime = new Date(weather.current_weather.time).getTime();
-let currentIndex = weather.hourly.time.findIndex(t => new Date(t).getTime() === currentTargetTime);
-if (currentIndex === -1) currentIndex = 0; // Fallback
+        const bft = bftFromKmh(currentWindspeed);
 
         const score = getScore({
           weathercode: code,
-          temperature: current.temperature,
-          windspeed: current.windspeed,
-          precipitation_probability: weather.hourly.precipitation_probability[currentIndex] ?? 0
+          temperature: currentTemp,
+          windspeed: currentWindspeed,
+          precipitation_probability: precipProb
         });
 
         const scoreInfo = getScoreInfo(score);
@@ -925,27 +953,24 @@ if (currentIndex === -1) currentIndex = 0; // Fallback
           topBadge.style.backgroundColor = scoreInfo.color;
         }
 
-        const feelsLike = weather.hourly.apparent_temperature[currentIndex] ?? current.temperature;
-        const humidity = weather.hourly.relative_humidity_2m[currentIndex] ?? 0;
-        const radiation = weather.hourly.shortwave_radiation[currentIndex] ?? 0; // NIEUW
-        console.log('Data:', current.temperature, humidity, current.windspeed, radiation);
-        // Geef de straling mee in plaats van de oude 'cycling' string
-        const wbgtValue = formatWbgt(current.temperature, humidity, current.windspeed, radiation);
+        console.log('Huidige data (uit Hourly model):', currentTemp, humidity, currentWindspeed, radiation);
+        const wbgtValue = formatWbgt(currentTemp, humidity, currentWindspeed, radiation);
         
         const advice = getAdvice({
-          temperature: current.temperature,
+          temperature: currentTemp,
           feels_like: feelsLike,
-          windspeed: current.windspeed,
+          windspeed: currentWindspeed,
           weathercode: code,
-          precipitation_probability: weather.hourly.precipitation_probability[currentIndex] ?? 0
+          precipitation_probability: precipProb
         });
 
         setText('weather-icon', icon);
         setText('weather-caption', description);
-        setText('temperature', `${Math.round(current.temperature)}°`);
+        setText('temperature', `${Math.round(currentTemp)}°`);
         setText('feels-like', `${Math.round(feelsLike)}°`);
         setText('wbgt', `${wbgtValue}°C`);
-        setText('wind-info', `${Math.round(current.windspeed)} km/u · ${bft} Bft`);
+        setText('wind-info', `${Math.round(currentWindspeed)} km/u · ${bft} Bft`);
+        // ------------------------------------------------------
 
         // VOEG DIT TOE: Update de tooltip tekst
 const tooltipTextEl = document.getElementById('wbgt-tooltip-text');
