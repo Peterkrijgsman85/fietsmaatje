@@ -4,8 +4,17 @@ import { page as planner } from './pages/planner.js';
 import { page as menu } from './pages/menu.js';
 import { page as pressure } from './pages/pressure.js';
 import { page as ridelog } from './pages/ridelog.js';
+import { page as weatherLocations } from './pages/weer-locaties.js';
 
-const pages = { weer, water, planner, menu, pressure, ridelog };
+const pages = { 
+  weer, 
+  water, 
+  planner, 
+  menu, 
+  pressure, 
+  ridelog, 
+  'weer-locaties': weatherLocations // De key hier bepaalt wat je in navigate() invult
+};
 const app = document.getElementById('app');
 const buttons = document.querySelectorAll('.pill-nav button');
 

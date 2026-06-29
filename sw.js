@@ -15,6 +15,7 @@ const ASSETS_TO_CACHE = [
   './icons/icon-192x192.png',
   './icons/icon-512x512.png',
   './icons/apple-touch-icon.png',
+  './pages/weer-locaties.js',
 ];
 
 // Installatie: Cache de basisbestanden en activeer direct
