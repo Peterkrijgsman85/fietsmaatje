@@ -662,13 +662,19 @@ export const page = {
         let mmText = '0 mm';
         let textOpacity = 0.4;
 
+        // Bepaal de tekstinhoud (exact zoals je die had)
         if (rainMm >= 0.1) {
-          mmText = `${rainMm.toFixed(1)} mm`; textOpacity = 1;
+          mmText = `${rainMm.toFixed(1)} mm`;
         } else if (rainProb > 0) {
-          mmText = '< 0.1 mm'; textOpacity = 1; 
+          mmText = '< 0.1 mm';
+        }
+
+        // Bepaal de opacity: als er neerslag is (gemeten of kans), dan volle zichtbaarheid
+        if (rainMm >= 0.1 || rainProb > 0) {
+          textOpacity = 1;
         }
         
-        const rainPercent = Math.min(100, (rainMm / 10) * 100); 
+        const rainPercent = Math.min(100, (rainMm / 10) * 100);
         
         const rainHtml = `
           <div class="hourly-rain-container">
