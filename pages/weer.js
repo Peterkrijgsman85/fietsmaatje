@@ -666,7 +666,7 @@ export const page = {
         if (rainMm >= 0.1) {
           mmText = `${rainMm.toFixed(1)} mm`;
         } else if (rainProb > 0) {
-          mmText = '< 0.1 mm';
+          mmText = '<0.1 mm';
         }
 
         // Bepaal de opacity: als er neerslag is (gemeten of kans), dan volle zichtbaarheid
@@ -678,11 +678,11 @@ export const page = {
         
         const rainHtml = `
           <div class="hourly-rain-container">
-            <div style="font-size: 0.55rem; color: rgba(0, 122, 255, 0.8); margin-bottom: 2px; min-height: 10px; display: flex; align-items: flex-end; opacity: ${textOpacity};">${mmText}</div>
+            <div style="font-size: 0.6rem; font-weight: 700; color: rgba(0, 122, 255, 0.8); margin-bottom: 2px; min-height: 10px; display: flex; align-items: flex-end; opacity: ${textOpacity};">${mmText}</div>
             <div class="hourly-rain-bg">
               <div class="hourly-rain-fill" style="height: ${rainPercent}%;"></div>
             </div>
-            <div style="margin-top: 3px; font-size: 0.55rem; color: rgba(0, 122, 255, 0.8); opacity: ${textOpacity};">${rainProb}%</div>
+            <div style="margin-top: 3px; font-size: 0.6rem; font-weight: 700; color: rgba(0, 122, 255, 0.8); opacity: ${textOpacity};">${rainProb}%</div>
           </div>
         `;
 
