@@ -15,7 +15,6 @@
   <link rel="icon" type="image/png" href="./icons/icon-192.png" />
   <title>Fietsmaatje</title>
   <style>
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -26,7 +25,6 @@
       --surface: rgba(255, 255, 255, 0.16);
     }
 
-    /* HIER ZIT DE FIX: De gradiënt staat nu globaal vast op de achtergrond van de hele app */
     html, body {
       height: 100%;
       width: 100%;
@@ -40,18 +38,16 @@
         #9edcff 45%,
         #67c7ff 100%
       );
-      /* background-image: linear-gradient(160deg, #d8f1ff 0%, #9edcff 40%, #67c7ff 100%);*/   
       background-attachment: fixed;
     }
 
-    /* Dark mode aanpassing */
-@media(prefers-color-scheme: dark) {
-  html, body {
-    background-color: #3A2A4A;
-    background-image: linear-gradient(177deg, #4A3A5A 05%, #B89A7A 20%, #A87A9F 45%, #7A6B9A 70%, #3A2A5A 100%);
-    background-attachment: fixed;
-  }
-}
+    @media(prefers-color-scheme: dark) {
+      html, body {
+        background-color: #3A2A4A;
+        background-image: linear-gradient(177deg, #4A3A5A 05%, #B89A7A 20%, #A87A9F 45%, #7A6B9A 70%, #3A2A5A 100%);
+        background-attachment: fixed;
+      }
+    }
 
     body {
       position: relative;
@@ -63,13 +59,12 @@
       left: 0;
       right: 0;
       bottom: 0;
-      /* Zorg dat de content netjes onder de notch begint */
       padding-top: env(safe-area-inset-top, 44px);
       padding-bottom: env(safe-area-inset-bottom);
       min-height: 100vh;
       box-sizing: border-box;
       z-index: 0;
-      overflow-y: auto; /* Zorgt dat de pagina's heerlijk soepel scrollen */
+      overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
 
@@ -78,7 +73,7 @@
       bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
       left: 12px;
       right: 12px;
-      background: rgba(255, 255, 255, 0.25); /* Iets meer contrast op het blauw */
+      background: rgba(255, 255, 255, 0.25);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       border-radius: 100px;
@@ -99,7 +94,7 @@
       padding: 10px 8px;
       font-size: 13px;
       font-weight: 600;
-      color: #0f2c5a; /* Donkerblauw voor betere leesbaarheid op de navbalk */
+      color: #0f2c5a;
       display: inline-flex;
       flex-direction: column;
       align-items: center;
@@ -117,14 +112,13 @@
       box-shadow: 0 3px 8px rgba(0,0,0,0.1);
     }
 
-    /* Splash Screen Styling */
     #splash-screen {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: inherit; /* Neemt de gradiënt van de body over */
+      background: inherit;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -133,18 +127,17 @@
     }
 
     #splash-screen img {
-      width: 250px; /* Pas dit aan naar de grootte van jouw logo */
+      width: 250px;
       height: auto;
     }
 
-    /* --- PWA INSTALLATIE BANNER STYLING --- */
     #install-banner {
-      display: none; /* Wordt aangestuurd via app.js */
+      display: none;
       position: fixed;
-      bottom: calc(env(safe-area-inset-bottom, 0px) + 78px); /* Zweeft perfect boven de pill-nav */
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 78px);
       left: 12px;
       right: 12px;
-      background: rgba(255, 255, 255, 0.75); /* Matcht met de navigatiebalk vibe */
+      background: rgba(255, 255, 255, 0.75);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border-radius: 24px;
@@ -154,11 +147,32 @@
       box-shadow: 0 10px 30px rgba(15, 44, 90, 0.15);
     }
 
+    .close-banner {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      background: rgba(0,0,0,0.05);
+      border: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      color: #0f2c5a;
+      transition: background 0.2s;
+    }
+
+    .close-banner:hover { background: rgba(0,0,0,0.1); }
+
     .banner-content {
       display: flex;
       align-items: center;
       gap: 14px;
       margin-bottom: 14px;
+      padding-right: 20px;
     }
 
     .banner-icon {
@@ -191,11 +205,11 @@
       width: 100%;
       padding: 14px;
       border: none;
-      background: var(--accent); /* Gebruikt je eigen oranje accentkleur */
+      background: var(--accent);
       color: white;
       font-weight: 700;
       font-size: 0.9rem;
-      border-radius: 100px; /* Mooi rond net als de buttons */
+      border-radius: 100px;
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(252, 76, 2, 0.25);
       transition: background 0.2s;
@@ -216,6 +230,7 @@
   <div id="app"></div>
 
   <div id="install-banner">
+    <button class="close-banner" id="close-banner">×</button>
     <div class="banner-content">
       <div class="banner-icon">🚴</div>
       <div class="banner-text">
@@ -234,13 +249,17 @@
   </nav>
 
   <script>
-    // Splash screen verwijderen na laden van de pagina
     window.addEventListener('load', () => {
       const splash = document.getElementById('splash-screen');
       setTimeout(() => {
         splash.style.opacity = '0';
         setTimeout(() => splash.remove(), 500);
-      }, 1000); // 1 seconde zichtbaar
+      }, 1000);
+    });
+
+    // Sluit functie voor de banner
+    document.getElementById('close-banner')?.addEventListener('click', () => {
+      document.getElementById('install-banner').style.display = 'none';
     });
   </script>
   <script type="module" src="app.js"></script>
