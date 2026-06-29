@@ -390,7 +390,7 @@ export const page = {
 
       <div id="precip-section" class="card-container" style="display: none;">
         <div class="section-title">
-          <span>☔️ Neerslagverwachting</span>
+          <span>☔️ Buienradar</span>
           <div class="precip-toggles">
             <button class="precip-btn active" data-hours="3">3u</button>
             <button class="precip-btn" data-hours="8">8u</button>
