@@ -573,17 +573,38 @@ export const page = {
 
     const cleanName = name => (name || 'Onbekende locatie').replace(/,\s*[A-Z]{2,3}$/i, '').trim();
     const reverseGeo = async (lat, lon) => {
+      // 1. Probeer eerst Open-Meteo
       try {
         const res = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&count=1&language=nl`);
         if (res.ok) {
           const data = await res.json();
           if (data.results && data.results.length) {
             const place = data.results[0];
-            const name = place.name || place.address?.city || place.address?.town;
+            // Pak de eerste beschikbare naam-bron
+            const name = place.name || place.address?.city || place.address?.town || place.address?.village || place.address?.county;
             if (name && isNaN(name)) return cleanName(name);
           }
         }
-      } catch (e) {}
+      } catch (e) {
+        console.warn('Open-Meteo reverse geo mislukt, fallback naar Nominatim...');
+      }
+
+      // 2. Fallback naar Nominatim (OpenStreetMap) als Open-Meteo faalt of niets teruggeeft
+      try {
+        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=nl`;
+        const res = await fetch(url, { headers: { 'User-Agent': 'Fietsmaatje/1.0' } });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.address) {
+            const town = data.address.city || data.address.town || data.address.village || data.address.municipality;
+            if (town) return cleanName(town);
+          }
+          if (data.display_name) return cleanName(data.display_name.split(',')[0]);
+        }
+      } catch (e) {
+        console.error('Nominatim reverse geo ook mislukt:', e);
+      }
+
       return 'Je locatie';
     };
 
