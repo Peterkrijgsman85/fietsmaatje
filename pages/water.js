@@ -293,6 +293,11 @@ export const page = {
     const modalLegend = document.getElementById('water-legend-modal');
     const modalLegendClose = document.getElementById('water-legend-close');
 
+    // Helper voor de juiste URL
+    const getMapTileUrl = () => window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png'
+      : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+
     sheetEl.style.bottom = `${BASE_BOTTOM}px`;
     btnLocation.style.bottom = `${BASE_BOTTOM}px`;
 
@@ -491,11 +496,17 @@ export const page = {
     };
 
     const initMapInstance = () => {
-      map = L.map('water-map', { zoomControl: false, maxZoom: 18, minZoom: 6 }).setView(userCoords, 13);
+  map = L.map('water-map', { zoomControl: false, maxZoom: 18, minZoom: 6 }).setView(userCoords, 13);
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '© OpenStreetMap © CARTO'
-      }).addTo(map);
+  // Sla de laag op in een variabele
+  const tileLayer = L.tileLayer(getMapTileUrl(), {
+    attribution: '© OpenStreetMap © CARTO'
+  }).addTo(map);
+
+  // Luister naar systeem-wijzigingen (als gebruiker dark mode in/uitschakelt)
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    tileLayer.setUrl(getMapTileUrl());
+  });
 
       userMarker = L.marker(userCoords, {
         icon: L.divIcon({
