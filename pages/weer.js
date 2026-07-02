@@ -330,6 +330,40 @@ export const page = {
 
       .loading-overlay { text-align: center; padding: 40px 20px; color: #8E8E93; font-weight: 500; }
       .error-note { color: #FF453A; }
+
+      /* --- UITGEBREIDE 24-UURS DASHBOARD --- */
+      .date-selector-container { 
+        display: flex; gap: 4px; overflow-x: auto; padding: 4px; margin-bottom: 16px; scrollbar-width: none; -webkit-overflow-scrolling: touch; 
+        background: rgba(15, 44, 90, 0.08); border-radius: 12px;
+      }
+      .date-selector-container::-webkit-scrollbar { display: none; }
+      .date-btn { 
+        flex: 0 0 auto; background: transparent; border: none; font-size: 0.7rem; font-weight: 700; color: rgba(15, 44, 90, 0.5); 
+        padding: 6px 14px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; white-space: nowrap;
+      }
+      .date-btn.active { 
+        background: #FFFFFF; color: #0f2c5a; box-shadow: 0 2px 6px rgba(0,0,0,0.06); 
+      }
+
+      .graphs-interactive-wrapper { position: relative; width: 100%; display: flex; flex-direction: column; gap: 14px; padding-top: 10px; }
+      .graph-row { display: flex; flex-direction: column; gap: 4px; }
+      .graph-label { font-size: 0.7rem; font-weight: 700; color: rgba(15, 44, 90, 0.8); text-transform: uppercase; display: flex; justify-content: space-between; }
+      .graph-val-dynamic { color: #007AFF; font-weight: 800; }
+      .graph-svg-container { position: relative; width: 100%; height: 65px; background: rgba(255, 255, 255, 0.25); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.4); }
+      .graph-svg { width: 100%; height: 100%; overflow: visible; }
+      
+      .grid-line { stroke: rgba(15, 44, 90, 0.15); stroke-width: 1; stroke-dasharray: 2, 2; }
+      .grid-line { stroke: rgba(15, 44, 90, 0.15); stroke-width: 1; stroke-dasharray: 2, 2; }
+      
+      /* Nieuwe stijl voor onvervormde labels */
+      .x-axis-label { position: absolute; bottom: 2px; font-size: 0.55rem; color: rgba(15, 44, 90, 0.5); font-weight: 700; transform: translateX(-50%); pointer-events: none; }
+      .y-axis-label { position: absolute; left: 4px; font-size: 0.55rem; color: rgba(15, 44, 90, 0.6); font-weight: 700; pointer-events: none; background: rgba(255,255,255,0.7); padding: 0 4px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.8); }
+      .y-max { top: 4px; }
+      .y-min { bottom: 14px; }
+
+      .crosshair-line { position: absolute; top: 0; bottom: 0; width: 1px; background: transparent; border-left: 1.5px dashed #0f2c5a; pointer-events: none; z-index: 10; transform: translateX(-50%); }
+      .crosshair-tooltip { position: absolute; top: -25px; transform: translateX(-50%); background: #0f2c5a; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; pointer-events: none; white-space: nowrap; z-index: 11; box-shadow: 0 4px 12px rgba(15, 44, 90, 0.2); }
+
     </style>
 
     <div id="ptr-indicator" class="ptr-container">
@@ -414,6 +448,43 @@ export const page = {
         <div class="section-title"><span>📅 7-daagse verwachting</span></div>
         <div class="daily-scroll">
           <div class="daily-container" id="daily-list"></div>
+        </div>
+      </div>
+
+      <div id="detailed-graphs-section" class="card-container" style="display: none;">
+        <div class="section-title"><span>📊 Dagverloop & Details</span></div>
+        
+        <div class="date-selector-container" id="graph-date-selector">
+          </div>
+
+        <div class="graphs-interactive-wrapper" id="graphs-wrapper">
+          <div class="crosshair-line" id="crosshair-line" style="display: none;"></div>
+          <div class="crosshair-tooltip" id="crosshair-tooltip" style="display: none;"></div>
+
+          <div class="graph-row">
+            <div class="graph-label">Gevoelstemp. (°C) <span class="graph-val-dynamic" id="lbl-feels"></span></div>
+            <div class="graph-svg-container" id="graph-feels"></div>
+          </div>
+          <div class="graph-row">
+            <div class="graph-label">Neerslag (mm) <span class="graph-val-dynamic" id="lbl-precip"></span></div>
+            <div class="graph-svg-container" id="graph-precip-detail"></div>
+          </div>
+          <div class="graph-row">
+            <div class="graph-label">Vocht (%) / Dauw (°C) <span class="graph-val-dynamic" id="lbl-hum"></span></div>
+            <div class="graph-svg-container" id="graph-hum"></div>
+          </div>
+          <div class="graph-row">
+            <div class="graph-label">Bewolking (%) <span class="graph-val-dynamic" id="lbl-clouds"></span></div>
+            <div class="graph-svg-container" id="graph-clouds"></div>
+          </div>
+          <div class="graph-row">
+            <div class="graph-label">UV Index <span class="graph-val-dynamic" id="lbl-uv"></span></div>
+            <div class="graph-svg-container" id="graph-uv"></div>
+          </div>
+          <div class="graph-row">
+            <div class="graph-label">Luchtdruk (hPa) <span class="graph-val-dynamic" id="lbl-pressure"></span></div>
+            <div class="graph-svg-container" id="graph-pressure"></div>
+          </div>
         </div>
       </div>
 
@@ -540,6 +611,229 @@ export const page = {
       return { text: 'Beter binnen blijven', color: '#FF3B30' };
     };
 
+
+    // Grafiek overzicht 7 dagen
+    let currentDetailedDayOffset = 0;
+
+    const renderDetailedDashboard = (weather, dayOffset) => {
+      const section = document.getElementById('detailed-graphs-section');
+      if (!section) return;
+      section.style.display = 'block';
+
+      const now = new Date();
+      const currentHour = now.getHours();
+      const isToday = dayOffset === 0;
+
+      // 1. Datum Selector Renderen
+      // 1. Datum Selector Renderen
+      const dateSelector = document.getElementById('graph-date-selector');
+      let dateHtml = '';
+      const daysOfWeek = ['Zo', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za'];
+      
+      for(let i = 0; i < 7; i++) {
+        const timeString = weather.daily.time[i]; 
+        const d = new Date(timeString);
+        const isCurrentDay = i === 0;
+        const btnText = isCurrentDay ? 'Vandaag' : `${daysOfWeek[d.getDay()]} ${d.getDate()}`;
+        
+        dateHtml += `
+          <button class="date-btn ${i === dayOffset ? 'active' : ''}" data-offset="${i}">
+            ${btnText}
+          </button>
+        `;
+      }
+      dateSelector.innerHTML = dateHtml;
+
+      document.querySelectorAll('.date-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          currentDetailedDayOffset = parseInt(e.currentTarget.dataset.offset);
+          renderDetailedDashboard(weather, currentDetailedDayOffset);
+        });
+      });
+
+      // 2. Data ophalen voor de gekozen dag (24 uur)
+      const startIndex = dayOffset * 24;
+      const endIndex = startIndex + 24;
+      const h = weather.hourly;
+      
+      const sliceD = (arr) => arr.slice(startIndex, endIndex);
+      const dataFeels = sliceD(h.apparent_temperature);
+      const dataPrecip = sliceD(h.precipitation);
+      const dataHum = sliceD(h.relative_humidity_2m);
+      const dataDew = sliceD(h.dewpoint_2m);
+      const dataClouds = sliceD(h.cloudcover);
+      const dataUV = sliceD(h.uv_index);
+      const dataPressure = sliceD(h.surface_pressure);
+
+      // SVG Teken Functie (Met dynamische schaling en stippellijn-logica)
+      // SVG Teken Functie (Met dynamische schaling, Y-as en stippellijn-logica)
+      const drawGraph = (containerId, dataArr, color, fillArea = false, secDataArr = null) => {
+        const container = document.getElementById(containerId);
+        if(!container) return;
+
+        // Filter null/undefined eruit zodat de min/max berekening niet faalt op lege API data (zoals UV 's nachts)
+        const validData = dataArr.filter(v => v !== null && v !== undefined);
+        let min = validData.length ? Math.min(...validData) : 0;
+        let max = validData.length ? Math.max(...validData) : 1;
+        
+        if (secDataArr) {
+           const validSec = secDataArr.filter(v => v !== null && v !== undefined);
+           if (validSec.length) {
+             min = Math.min(min, ...validSec);
+             max = Math.max(max, ...validSec);
+           }
+        }
+        if (min === max) { min -= 1; max += 1; }
+        const range = max - min;
+        min -= range * 0.1; max += range * 0.1;
+
+        const w = 100, hgt = 65;
+        const getXY = (val, i) => ({ x: (i / 23) * w, y: hgt - (((val - min) / (max - min)) * hgt) });
+        
+        const makePath = (arr, start, end) => {
+          if(start >= end) return '';
+          return arr.slice(start, end + 1).map((val, i) => {
+            const safeVal = val ?? 0; // Voorkom crashes bij ontbrekende data
+            const {x, y} = getXY(safeVal, start + i);
+            return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+          }).join(' ');
+        };
+
+        let svg = `<svg class="graph-svg" viewBox="0 0 ${w} ${hgt}" preserveAspectRatio="none">`;
+        
+        // Rasterlijnen (alleen de lijnen, tekst doen we in HTML)
+        [0, 6, 12, 18].forEach(hour => {
+          const x = (hour / 23) * w;
+          svg += `<line x1="${x}" y1="0" x2="${x}" y2="${hgt}" class="grid-line" />`;
+        });
+
+        if (fillArea) {
+          const path = makePath(dataArr, 0, 23);
+          svg += `<path d="${path} L ${w} ${hgt} L 0 ${hgt} Z" fill="${color}" opacity="0.15" />`;
+        }
+
+        if (secDataArr) {
+          svg += `<path d="${makePath(secDataArr, 0, 23)}" fill="none" stroke="#A200FF" stroke-width="1.2" stroke-dasharray="2,2" vector-effect="non-scaling-stroke"/>`;
+        }
+
+        if (isToday) {
+          const past = makePath(dataArr, 0, currentHour);
+          const future = makePath(dataArr, currentHour, 23);
+          if(past) svg += `<path d="${past}" fill="none" stroke="${color}" stroke-width="2" stroke-dasharray="2,2" vector-effect="non-scaling-stroke" opacity="0.6"/>`;
+          if(future) svg += `<path d="${future}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
+          
+          const nowXY = getXY(dataArr[currentHour] ?? 0, currentHour);
+          svg += `<circle cx="${nowXY.x}" cy="${nowXY.y}" r="1.5" fill="${color}" />`;
+        } else {
+          const isPastDay = dayOffset < 0; 
+          svg += `<path d="${makePath(dataArr, 0, 23)}" fill="none" stroke="${color}" stroke-width="2" stroke-dasharray="${isPastDay ? '2,2' : 'none'}" vector-effect="non-scaling-stroke"/>`;
+        }
+        svg += '</svg>';
+
+        // HTML Overlays (Dit zorgt voor strakke tekst en Y-as waarden)
+        let overlaysHtml = '';
+        
+        // Bepaal opmaak Y-as waarden (geen decimalen voor grote getallen zoals luchtdruk)
+        const formatY = (val) => val > 100 ? Math.round(val) : val.toFixed(1);
+        overlaysHtml += `<div class="y-axis-label y-max">${formatY(max)}</div>`;
+        overlaysHtml += `<div class="y-axis-label y-min">${formatY(min)}</div>`;
+        
+        // X-as labels netjes positioneren
+        [0, 6, 12, 18].forEach(hour => {
+           const xPercent = (hour / 23) * 100;
+           overlaysHtml += `<div class="x-axis-label" style="left: ${xPercent}%;">${hour}u</div>`;
+        });
+
+        container.innerHTML = svg + overlaysHtml;
+      };
+
+      drawGraph('graph-feels', dataFeels, '#FF9500');
+      drawGraph('graph-precip-detail', dataPrecip, '#007AFF', true);
+      drawGraph('graph-hum', dataHum, '#34C759', false, dataDew);
+      drawGraph('graph-clouds', dataClouds, '#8E8E93', true);
+      drawGraph('graph-uv', dataUV, '#FFCC00');
+      drawGraph('graph-pressure', dataPressure, '#5AC8FA');
+
+      // 3. Crosshair & Sync Logic
+      const wrapper = document.getElementById('graphs-wrapper');
+      if (!wrapper) return;
+
+      // Opnieuw binden (verwijder eerst oude listeners om stapelen te voorkomen)
+      const newWrapper = wrapper.cloneNode(true);
+      wrapper.parentNode.replaceChild(newWrapper, wrapper);
+
+      // FIX: Haal de actieve elementen op uit de NIEUWE wrapper die zojuist in de DOM geplaatst is
+      const crosshair = newWrapper.querySelector('#crosshair-line');
+      const tooltip = newWrapper.querySelector('#crosshair-tooltip');
+      const lblFeels = newWrapper.querySelector('#lbl-feels');
+      const lblPrecip = newWrapper.querySelector('#lbl-precip');
+      const lblHum = newWrapper.querySelector('#lbl-hum');
+      const lblClouds = newWrapper.querySelector('#lbl-clouds');
+      const lblUv = newWrapper.querySelector('#lbl-uv');
+      const lblPressure = newWrapper.querySelector('#lbl-pressure');
+
+      const clearLabels = () => {
+        [lblFeels, lblPrecip, lblHum, lblClouds, lblUv, lblPressure].forEach(el => {
+          if (el) el.textContent = '';
+        });
+      };
+
+      const handleMove = (e) => {
+        const rect = newWrapper.getBoundingClientRect();
+        if (rect.width === 0) return;
+
+        let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        let x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+        
+        let hour = Math.round((x / rect.width) * 23);
+        if (isNaN(hour) || hour < 0 || hour > 23) return;
+
+        const lockedX = (hour / 23) * rect.width;
+
+        if (crosshair) {
+          crosshair.style.display = 'block'; 
+          crosshair.style.left = `${lockedX}px`;
+        }
+        if (tooltip) {
+          tooltip.style.display = 'block'; 
+          tooltip.style.left = `${lockedX}px`; 
+          tooltip.innerHTML = `${hour.toString().padStart(2, '0')}:00`;
+        }
+        
+        // Veilige fallbacks voor als Open-Meteo 'null' stuurt
+        const safeUv = dataUV[hour] ?? 0;
+        const safePressure = dataPressure[hour] ?? 0;
+        const safePrecip = dataPrecip[hour] ?? 0;
+        const safeFeels = dataFeels[hour] ?? 0;
+        const safeHum = dataHum[hour] ?? 0;
+        const safeDew = dataDew[hour] ?? 0;
+        const safeClouds = dataClouds[hour] ?? 0;
+
+        if (lblPrecip) {
+          lblPrecip.style.color = safePrecip >= 2 ? '#FF3B30' : '#007AFF';
+          lblPrecip.textContent = `${safePrecip.toFixed(1)} mm`;
+        }
+
+        if (lblFeels) lblFeels.textContent = `${Math.round(safeFeels)}°`;
+        if (lblHum) lblHum.textContent = `${Math.round(safeHum)}% / ${Math.round(safeDew)}°`;
+        if (lblClouds) lblClouds.textContent = `${Math.round(safeClouds)}%`;
+        if (lblUv) lblUv.textContent = safeUv.toFixed(1);
+        if (lblPressure) lblPressure.textContent = `${Math.round(safePressure)} hPa`;
+      };
+
+      const handleLeave = () => {
+        if (crosshair) crosshair.style.display = 'none'; 
+        if (tooltip) tooltip.style.display = 'none'; 
+        clearLabels();
+      };
+
+      newWrapper.addEventListener('mousemove', handleMove);
+      newWrapper.addEventListener('touchmove', handleMove, {passive: true});
+      newWrapper.addEventListener('mouseleave', handleLeave);
+      newWrapper.addEventListener('touchend', handleLeave);
+    };
+
+
     const getAdvice = ({ temperature, feels_like, windspeed, weathercode, precipitation_probability }) => {
       const advice = [];
       const bft = bftFromKmh(windspeed);
@@ -609,24 +903,65 @@ export const page = {
     };
 
     // ==========================================
-    // API AANROEP (AANGEPAST VOOR NEERSLAG)
+    // API AANROEP (OPTIMAAL GESPLITST: KNMI + GERMAN ICON FALLBACKS)
     // ==========================================
     const fetchWeather = async (lat, lon, timezone) => {
-      const url = new URL('https://api.open-meteo.com/v1/forecast');
-      url.searchParams.set('latitude', lat);
-      url.searchParams.set('longitude', lon);
-      // Hourly Aangepast: rain en showers toegevoegd
-      url.searchParams.set('hourly', 'temperature_2m,apparent_temperature,weathercode,windspeed_10m,winddirection_10m,relative_humidity_2m,precipitation_probability,precipitation,rain,showers,shortwave_radiation');
-      // Nieuw: Minutely_15 endpoint voor de 3-uurs buienalarm grafiek (hiervoor gebruikt OM het hoge-resolutie model)
-      url.searchParams.set('minutely_15', 'precipitation');
-      url.searchParams.set('daily', 'weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max,winddirection_10m_dominant');
-      url.searchParams.set('timezone', timezone);
-      url.searchParams.set('forecast_days', '7');
-      url.searchParams.set('models', 'knmi_seamless'); // Zorgt ervoor dat hourly/daily geforceerd KNMI is
+      // 1. KNMI: Basis data + Luchtdruk (voor 7 dagen)
+      const knmiUrl = new URL('https://api.open-meteo.com/v1/forecast');
+      knmiUrl.searchParams.set('latitude', lat);
+      knmiUrl.searchParams.set('longitude', lon);
+      knmiUrl.searchParams.set('hourly', 'temperature_2m,apparent_temperature,weathercode,windspeed_10m,winddirection_10m,relative_humidity_2m,precipitation_probability,precipitation,rain,showers,shortwave_radiation,dewpoint_2m,cloudcover,surface_pressure');
+      knmiUrl.searchParams.set('daily', 'weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max,winddirection_10m_dominant');
+      knmiUrl.searchParams.set('timezone', timezone);
+      knmiUrl.searchParams.set('forecast_days', '7');
+      knmiUrl.searchParams.set('models', 'knmi_seamless');
+
+      // 2. Best Match: UV Index (Dit model garandeert UV-data voor de volledige 7 dagen)
+      const uvUrl = new URL('https://api.open-meteo.com/v1/forecast');
+      uvUrl.searchParams.set('latitude', lat);
+      uvUrl.searchParams.set('longitude', lon);
+      uvUrl.searchParams.set('hourly', 'uv_index');
+      uvUrl.searchParams.set('timezone', timezone);
+      uvUrl.searchParams.set('forecast_days', '7');
+      uvUrl.searchParams.set('models', 'best_match');
+
+      // 3. ICON: Alleen voor de 15-minuten neerslag (de buienradar voor 3 uur)
+      const iconUrl = new URL('https://api.open-meteo.com/v1/forecast');
+      iconUrl.searchParams.set('latitude', lat);
+      iconUrl.searchParams.set('longitude', lon);
+      iconUrl.searchParams.set('minutely_15', 'precipitation');
+      iconUrl.searchParams.set('timezone', timezone);
+      iconUrl.searchParams.set('forecast_days', '1'); 
+      iconUrl.searchParams.set('models', 'icon_seamless');
+
+      // Voer alle aanroepen parallel uit
+      const [knmiRes, uvRes, iconRes] = await Promise.all([
+        fetch(knmiUrl.toString()),
+        fetch(uvUrl.toString()),
+        fetch(iconUrl.toString())
+      ]);
+
+      if (!knmiRes.ok || !uvRes.ok || !iconRes.ok) {
+        throw new Error('Weather fetch failed in one of the data sources');
+      }
+
+      const knmiData = await knmiRes.json();
+      const uvData = await uvRes.json();
+      const iconData = await iconRes.json();
+
+      // Vlecht de extra data in de hoofdset
+      // UV index uit de Best Match dataset
+      knmiData.hourly.uv_index = uvData.hourly.uv_index;
       
-      const response = await fetch(url.toString());
-      if (!response.ok) throw new Error('Weather fetch failed');
-      return response.json();
+      // 15-minuten neerslag: alleen de eerste 12 datapunten (3 uur)
+      if (iconData.minutely_15) {
+          knmiData.minutely_15 = {
+              time: iconData.minutely_15.time ? iconData.minutely_15.time.slice(0, 12) : [],
+              precipitation: iconData.minutely_15.precipitation ? iconData.minutely_15.precipitation.slice(0, 12) : []
+          };
+      }
+
+      return knmiData;
     };
 
     const renderHourly = (weather) => {
@@ -662,7 +997,7 @@ export const page = {
         let mmText = '0 mm';
         let textOpacity = 0.4;
 
-        // Bepaal de tekstinhoud (exact zoals je die had)
+        // Bepaal de tekstinhoud
         if (rainMm >= 0.1) {
           mmText = `${rainMm.toFixed(1)} mm`;
         } else if (rainProb > 0) {
@@ -762,7 +1097,6 @@ export const page = {
       }
       
       // Bepaal de maximale Y-waarde voor de grafiek schaal.
-      // Zet een minimum van 2mm/u zodat een miezerbuitje niet als orkaan oogt.
       const maxPrecip = Math.max(2, ...dataPoints.map(d => d.total));
       
       // Achtergrond lijnen & Labels (Y-as)
@@ -775,14 +1109,12 @@ export const page = {
       let barsHtml = '';
       dataPoints.forEach((dp, index) => {
         let timeLabel = '';
-        // Bepaal wanneer we een tijd-label onder de balk zetten (voorkom overlap)
         if (hours === 3 && index % 4 === 0) { timeLabel = formatTime(dp.time); }
         if (hours === 8 && index % 2 === 0) { timeLabel = formatTime(dp.time); }
         if (hours === 24 && index % 4 === 0) { timeLabel = formatTime(dp.time); }
         if (hours === 48 && index % 8 === 0) { timeLabel = formatTime(dp.time); }
         
         if (dp.isMinutely) {
-           // Simpele balken voor de 3-uur (we hebben hier de rain/showers split niet)
            const percent = (dp.total / maxPrecip) * 100;
            barsHtml += `
              <div class="precip-bar-wrapper">
@@ -791,7 +1123,6 @@ export const page = {
              </div>
            `;
         } else {
-           // KNMI Data: Gestapelde balken! Flexbox stackt ze van onder naar boven dankzij flex-end
            const rainPercent = (dp.rain / maxPrecip) * 100;
            const showersPercent = (dp.showers / maxPrecip) * 100;
            barsHtml += `
@@ -1056,12 +1387,12 @@ export const page = {
         renderHourly(weather);
         
         // --- RENDERING VAN DE NIEUWE NEERSLAGGRAFIEK ---
-        // We pakken standaard de state van de actieve knop
         const activeBtn = document.querySelector('.precip-btn.active');
         const defaultHours = activeBtn ? parseInt(activeBtn.dataset.hours, 10) : 3;
         renderPrecipGraph(defaultHours);
 
         renderDaily(weather);
+        renderDetailedDashboard(weather, currentDetailedDayOffset);
         renderAdvice(advice);
 
         if (loader) loader.style.display = 'none';
