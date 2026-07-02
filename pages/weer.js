@@ -1307,7 +1307,7 @@ export const page = {
         if (isCancelled) return;
 
         const CACHE_KEY = 'fietsmaatje_weather_cache';
-        const CACHE_TTL = 5 * 60 * 1000;
+        const CACHE_TTL = 15 * 60 * 1000;
 
         let placeName;
         let weather;
@@ -1428,10 +1428,21 @@ export const page = {
 
     updateWeather();
 
+    // Vernieuw automatisch als de app terugkeert naar de voorgrond
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    // We roepen updateWeather(false) aan. 
+    // Omdat je in updateWeather zelf checkt of de data "fresh" is, 
+    // zal hij alleen echt fetchen als die 15 minuten voorbij zijn.
+    updateWeather(false); 
+  }
+});
    
     // In je init() functie:
 document.getElementById('weer-btn-locations')?.addEventListener('click', () => window.navigate('weer-locaties'));
 }
+
+
   
 
 
