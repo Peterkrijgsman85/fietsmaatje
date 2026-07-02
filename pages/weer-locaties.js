@@ -60,20 +60,6 @@ export const page = {
         box-sizing: border-box;
       }
 
-      .btn-back {
-        background: transparent;
-        color: rgba(15, 44, 90, 0.6);
-        border: 1px solid rgba(15, 44, 90, 0.2);
-        padding: 14px 24px;
-        border-radius: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        width: 100%;
-        text-align: center;
-        transition: all 0.2s;
-        margin-top: 20px;
-      }
-      .btn-back:active { background: rgba(15, 44, 90, 0.05); }
 
       .list-item {
         display: flex;
@@ -119,6 +105,13 @@ export const page = {
     </style>
 
     <div class="weather-page">
+      <button id="btn-close-locations" style="position: absolute; top: 12px; right: 16px; background: rgba(0,0,0,0.2); border: none; padding: 8px; border-radius: 50%; cursor: pointer; z-index: 999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"></line>
+    <line x1="6" y1="6" x2="18" y2="18"></line>
+  </svg>
+</button>
+
       <div style="font-size: 48px; margin-bottom: 20px; text-align: center;">📍</div> 
       <h1 style="font-size: 20px; margin-bottom: 10px; font-weight: 800; text-align: center; color: #0f2c5a;">Weer locaties</h1> 
       <p style="font-size: 14px; color: rgba(15, 44, 90, 0.6); margin-bottom: 24px; text-align: center;"> 
@@ -140,12 +133,12 @@ export const page = {
         <div id="locations-list"></div>
       </div>
       
-      <button id="btn-back" class="btn-back">Terug naar instellingen</button>
+      
     </div>
   `,
 
   init() {
-    document.getElementById('btn-back')?.addEventListener('click', () => window.navigate('menu'));
+    document.getElementById('btn-close-locations')?.addEventListener('click', () => window.navigate('weer'));
 
     const CACHE_KEY = 'weather_saved_locations';
     const inputEl = document.getElementById('location-input');
