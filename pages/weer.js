@@ -345,8 +345,8 @@ export const page = {
         background: #FFFFFF; color: #0f2c5a; box-shadow: 0 2px 6px rgba(0,0,0,0.06); 
       }
 
-      .graphs-interactive-wrapper { position: relative; width: 100%; display: flex; flex-direction: column; gap: 14px; padding-top: 10px; }
-      .graph-row { display: flex; flex-direction: column; gap: 4px; }
+      .graphs-interactive-wrapper { position: relative; z-index: 1; width: 100%; display: flex; flex-direction: column; gap: 14px; padding-top: 10px; }
+      .graph-row { display: flex; flex-direction: column; gap: 4px; position: relative; z-index: 0; }
       .graph-label { font-size: 0.7rem; font-weight: 700; color: rgba(15, 44, 90, 0.8); text-transform: uppercase; display: flex; justify-content: space-between; }
       .graph-val-dynamic { color: #007AFF; font-weight: 800; }
       .graph-svg-container { position: relative; width: 100%; height: 65px; background: rgba(255, 255, 255, 0.25); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.4); }
