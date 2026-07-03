@@ -345,8 +345,8 @@ export const page = {
         background: #FFFFFF; color: #0f2c5a; box-shadow: 0 2px 6px rgba(0,0,0,0.06); 
       }
 
-      .graphs-interactive-wrapper { position: relative; z-index: 1; width: 100%; display: flex; flex-direction: column; gap: 14px; padding-top: 10px; }
-      .graph-row { display: flex; flex-direction: column; gap: 4px; position: relative; z-index: 0; }
+      .graphs-interactive-wrapper { position: relative; z-index: 100; width: 100%; display: flex; flex-direction: column; gap: 14px; padding-top: 10px; }
+      .graph-row { display: flex; flex-direction: column; gap: 4px; position: relative; }
       .graph-label { font-size: 0.7rem; font-weight: 700; color: rgba(15, 44, 90, 0.8); text-transform: uppercase; display: flex; justify-content: space-between; }
       .graph-val-dynamic { color: #007AFF; font-weight: 800; }
       .graph-svg-container { position: relative; width: 100%; height: 65px; background: rgba(255, 255, 255, 0.25); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.4); }
@@ -361,8 +361,8 @@ export const page = {
       .y-max { top: 4px; }
       .y-min { bottom: 14px; }
 
-      .crosshair-line { position: absolute; top: 0; bottom: 0; width: 1px; background: transparent; border-left: 1.5px dashed #0f2c5a; pointer-events: none; z-index: 10; transform: translateX(-50%); }
-      .crosshair-tooltip { position: absolute; top: -25px; transform: translateX(-50%); background: #0f2c5a; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; pointer-events: none; white-space: nowrap; z-index: 11; box-shadow: 0 4px 12px rgba(15, 44, 90, 0.2); }
+      .crosshair-line { position: absolute; top: 0; bottom: 0; width: 1px; background: transparent; border-left: 1.5px dashed #0f2c5a; pointer-events: none; z-index: 200; transform: translateX(-50%); }
+      .crosshair-tooltip { position: absolute; top: -25px; transform: translateX(-50%); background: #0f2c5a; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; pointer-events: none; white-space: nowrap; z-index: 210; box-shadow: 0 4px 12px rgba(15, 44, 90, 0.2); }
 
     </style>
 
