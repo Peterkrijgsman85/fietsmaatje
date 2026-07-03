@@ -345,11 +345,11 @@ export const page = {
         background: #FFFFFF; color: #0f2c5a; box-shadow: 0 2px 6px rgba(0,0,0,0.06); 
       }
 
-      .graphs-interactive-wrapper { position: relative; z-index: 100; isolation: isolate; overflow: visible; width: 100%; display: flex; flex-direction: column; gap: 14px; padding-top: 10px; transform: translate3d(0,0,0); -webkit-transform: translate3d(0,0,0); }
+      .graphs-interactive-wrapper { position: relative; overflow: visible; width: 100%; display: flex; flex-direction: column; gap: 14px; padding-top: 10px; }
       .graph-row { display: flex; flex-direction: column; gap: 4px; }
       .graph-label { font-size: 0.7rem; font-weight: 700; color: rgba(15, 44, 90, 0.8); text-transform: uppercase; display: flex; justify-content: space-between; }
       .graph-val-dynamic { color: #007AFF; font-weight: 800; }
-      .graph-svg-container { position: relative; width: 100%; height: 65px; background: rgba(255, 255, 255, 0.25); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.4); z-index: 0; }
+      .graph-svg-container { position: relative; width: 100%; height: 65px; background: rgba(255, 255, 255, 0.25); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.4); }
       .graph-svg { width: 100%; height: 100%; overflow: visible; }
       
       .grid-line { stroke: rgba(15, 44, 90, 0.15); stroke-width: 1; stroke-dasharray: 2, 2; }
@@ -361,8 +361,8 @@ export const page = {
       .y-max { top: 4px; }
       .y-min { bottom: 14px; }
 
-      .crosshair-line { position: absolute; top: 0; bottom: 0; width: 1px; background: transparent; border-left: 1.5px dashed #0f2c5a; pointer-events: none; z-index: 9999; transform: translateX(-50%); }
-      .crosshair-tooltip { position: absolute; top: -25px; transform: translateX(-50%); background: #0f2c5a; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; pointer-events: none; white-space: nowrap; z-index: 10000; box-shadow: 0 4px 12px rgba(15, 44, 90, 0.2); }
+      .crosshair-line { position: absolute; top: 0; bottom: 0; width: 1px; background: transparent; border-left: 1.5px dashed #0f2c5a; pointer-events: none; z-index: 999999; transform: translateX(-50%); }
+      .crosshair-tooltip { position: absolute; top: -25px; transform: translateX(-50%); background: #0f2c5a; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; pointer-events: none; white-space: nowrap; z-index: 1000000; box-shadow: 0 4px 12px rgba(15, 44, 90, 0.2); }
 
     </style>
 
@@ -465,9 +465,6 @@ export const page = {
           </div>
 
         <div class="graphs-interactive-wrapper" id="graphs-wrapper">
-          <div class="crosshair-line" id="crosshair-line" style="display: none;"></div>
-          <div class="crosshair-tooltip" id="crosshair-tooltip" style="display: none;"></div>
-
           <div class="graph-row">
             <div class="graph-label">Gevoelstemp. (°C) <span class="graph-val-dynamic" id="lbl-feels"></span></div>
             <div class="graph-svg-container" id="graph-feels"></div>
@@ -488,6 +485,8 @@ export const page = {
             <div class="graph-label">UV Index <span class="graph-val-dynamic" id="lbl-uv"></span></div>
             <div class="graph-svg-container" id="graph-uv"></div>
           </div>
+          <div class="crosshair-line" id="crosshair-line" style="display: none;"></div>
+          <div class="crosshair-tooltip" id="crosshair-tooltip" style="display: none;"></div>
         </div>
       </div>
 
