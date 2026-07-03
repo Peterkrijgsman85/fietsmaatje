@@ -350,7 +350,8 @@ export const page = {
       .graph-label { font-size: 0.7rem; font-weight: 700; color: rgba(15, 44, 90, 0.8); text-transform: uppercase; display: flex; justify-content: space-between; }
       .graph-val-dynamic { color: #007AFF; font-weight: 800; }
       .graph-svg-container { position: relative; width: 100%; height: 65px; background: rgba(255, 255, 255, 0.25); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.4); }
-      .graph-svg { width: 100%; height: 100%; overflow: visible; }
+      .graph-svg-container { -ms-touch-action: none; touch-action: none; }
+      .graph-svg { width: 100%; height: 100%; overflow: visible; shape-rendering: geometricPrecision; image-rendering: optimizeQuality; }
       
       .grid-line { stroke: rgba(15, 44, 90, 0.15); stroke-width: 1; stroke-dasharray: 2, 2; }
       .grid-line { stroke: rgba(15, 44, 90, 0.15); stroke-width: 1; stroke-dasharray: 2, 2; }
@@ -361,8 +362,12 @@ export const page = {
       .y-max { top: 4px; }
       .y-min { bottom: 14px; }
 
-      .crosshair-line { position: absolute; top: 0; bottom: 0; width: 1px; background: transparent; border-left: 1.5px dashed #0f2c5a; pointer-events: none; z-index: 999999; transform: translateX(-50%); }
+      .crosshair-line { position: absolute; top: 0; bottom: 0; width: 1px; background: transparent; border-left: 2px dashed rgba(15,44,90,0.95); pointer-events: none; z-index: 999999; transform: translateX(-50%); box-shadow: 0 0 6px rgba(15,44,90,0.12); transition: opacity 120ms ease; }
       .crosshair-tooltip { position: absolute; top: -25px; transform: translateX(-50%); background: #0f2c5a; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; pointer-events: none; white-space: nowrap; z-index: 1000000; box-shadow: 0 4px 12px rgba(15, 44, 90, 0.2); }
+
+      /* Global crosshair fixed to viewport to avoid being clipped by card stacking contexts */
+      .global-crosshair-line { position: fixed; width: 1px; background: transparent; border-left: 2px dashed rgba(15,44,90,0.98); pointer-events: none; z-index: 2147483646; transform: translateX(-50%); box-shadow: 0 0 8px rgba(15,44,90,0.14); transition: opacity 120ms ease; }
+      .global-crosshair-tooltip { position: fixed; transform: translateX(-50%); background: #0f2c5a; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; pointer-events: none; white-space: nowrap; z-index: 2147483647; box-shadow: 0 4px 12px rgba(15, 44, 90, 0.2); }
 
     </style>
 
@@ -761,9 +766,24 @@ export const page = {
       const newWrapper = wrapper.cloneNode(true);
       wrapper.parentNode.replaceChild(newWrapper, wrapper);
 
-      // FIX: Haal de actieve elementen op uit de NIEUWE wrapper die zojuist in de DOM geplaatst is
-      const crosshair = newWrapper.querySelector('#crosshair-line');
-      const tooltip = newWrapper.querySelector('#crosshair-tooltip');
+      // FIX: Gebruik global (viewport-fixed) crosshair/tooltip zodat deze niet achter cards valt
+      let crosshair = document.getElementById('global-crosshair-line');
+      if (!crosshair) {
+        crosshair = document.createElement('div');
+        crosshair.id = 'global-crosshair-line';
+        crosshair.className = 'global-crosshair-line';
+        crosshair.style.display = 'none';
+        document.body.appendChild(crosshair);
+      }
+
+      let tooltip = document.getElementById('global-crosshair-tooltip');
+      if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = 'global-crosshair-tooltip';
+        tooltip.className = 'global-crosshair-tooltip';
+        tooltip.style.display = 'none';
+        document.body.appendChild(tooltip);
+      }
       const lblFeels = newWrapper.querySelector('#lbl-feels');
       const lblPrecip = newWrapper.querySelector('#lbl-precip');
       const lblWind = newWrapper.querySelector('#lbl-wind');
@@ -786,15 +806,21 @@ export const page = {
         let hour = Math.round((x / rect.width) * 23);
         if (isNaN(hour) || hour < 0 || hour > 23) return;
 
-        const lockedX = (hour / 23) * rect.width;
+        const lockedX = Math.round((hour / 23) * rect.width);
+        const pageX = Math.round(rect.left + lockedX);
 
         if (crosshair) {
-          crosshair.style.display = 'block'; 
-          crosshair.style.left = `${lockedX}px`;
+          crosshair.style.display = 'block';
+          crosshair.style.left = `${pageX}px`;
+          crosshair.style.top = `${Math.round(rect.top)}px`;
+          crosshair.style.height = `${Math.round(rect.height)}px`;
         }
         if (tooltip) {
-          tooltip.style.display = 'block'; 
-          tooltip.style.left = `${lockedX}px`; 
+          tooltip.style.display = 'block';
+          // place tooltip above the graph area, but keep inside viewport
+          const ttTop = Math.max(6, Math.round(rect.top - 30));
+          tooltip.style.left = `${pageX}px`;
+          tooltip.style.top = `${ttTop}px`;
           tooltip.innerHTML = `${hour.toString().padStart(2, '0')}:00`;
         }
         
@@ -817,13 +843,15 @@ export const page = {
       };
 
       const handleLeave = () => {
-        if (crosshair) crosshair.style.display = 'none'; 
-        if (tooltip) tooltip.style.display = 'none'; 
+        const globalCross = document.getElementById('global-crosshair-line');
+        const globalTip = document.getElementById('global-crosshair-tooltip');
+        if (globalCross) globalCross.style.display = 'none';
+        if (globalTip) globalTip.style.display = 'none';
         clearLabels();
       };
 
       newWrapper.addEventListener('mousemove', handleMove);
-      newWrapper.addEventListener('touchmove', handleMove, {passive: true});
+      newWrapper.addEventListener('touchmove', handleMove, {passive: false});
       newWrapper.addEventListener('mouseleave', handleLeave);
       newWrapper.addEventListener('touchend', handleLeave);
     };
