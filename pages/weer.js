@@ -477,8 +477,8 @@ export const page = {
             <div class="graph-svg-container" id="graph-precip-detail"></div>
           </div>
           <div class="graph-row">
-            <div class="graph-label">Vocht (%) / Dauw (°C) <span class="graph-val-dynamic" id="lbl-hum"></span></div>
-            <div class="graph-svg-container" id="graph-hum"></div>
+            <div class="graph-label">Wind (km/u) <span class="graph-val-dynamic" id="lbl-wind"></span></div>
+            <div class="graph-svg-container" id="graph-wind"></div>
           </div>
           <div class="graph-row">
             <div class="graph-label">Bewolking (%) <span class="graph-val-dynamic" id="lbl-clouds"></span></div>
@@ -487,10 +487,6 @@ export const page = {
           <div class="graph-row">
             <div class="graph-label">UV Index <span class="graph-val-dynamic" id="lbl-uv"></span></div>
             <div class="graph-svg-container" id="graph-uv"></div>
-          </div>
-          <div class="graph-row">
-            <div class="graph-label">Luchtdruk (hPa) <span class="graph-val-dynamic" id="lbl-pressure"></span></div>
-            <div class="graph-svg-container" id="graph-pressure"></div>
           </div>
         </div>
       </div>
@@ -666,11 +662,9 @@ export const page = {
       const sliceD = (arr) => arr.slice(startIndex, endIndex);
       const dataFeels = sliceD(h.apparent_temperature);
       const dataPrecip = sliceD(h.precipitation);
-      const dataHum = sliceD(h.relative_humidity_2m);
-      const dataDew = sliceD(h.dewpoint_2m);
+      const dataWind = sliceD(h.windspeed_10m);
       const dataClouds = sliceD(h.cloudcover);
       const dataUV = sliceD(h.uv_index);
-      const dataPressure = sliceD(h.surface_pressure);
 
       // SVG Teken Functie (Met dynamische schaling en stippellijn-logica)
       // SVG Teken Functie (Met dynamische schaling, Y-as en stippellijn-logica)
@@ -756,10 +750,9 @@ export const page = {
 
       drawGraph('graph-feels', dataFeels, '#FF9500');
       drawGraph('graph-precip-detail', dataPrecip, '#007AFF', true);
-      drawGraph('graph-hum', dataHum, '#34C759', false, dataDew);
+      drawGraph('graph-wind', dataWind, '#5AC8FA');
       drawGraph('graph-clouds', dataClouds, '#8E8E93', true);
       drawGraph('graph-uv', dataUV, '#FFCC00');
-      drawGraph('graph-pressure', dataPressure, '#5AC8FA');
 
       // 3. Crosshair & Sync Logic
       const wrapper = document.getElementById('graphs-wrapper');
@@ -774,13 +767,12 @@ export const page = {
       const tooltip = newWrapper.querySelector('#crosshair-tooltip');
       const lblFeels = newWrapper.querySelector('#lbl-feels');
       const lblPrecip = newWrapper.querySelector('#lbl-precip');
-      const lblHum = newWrapper.querySelector('#lbl-hum');
+      const lblWind = newWrapper.querySelector('#lbl-wind');
       const lblClouds = newWrapper.querySelector('#lbl-clouds');
       const lblUv = newWrapper.querySelector('#lbl-uv');
-      const lblPressure = newWrapper.querySelector('#lbl-pressure');
 
       const clearLabels = () => {
-        [lblFeels, lblPrecip, lblHum, lblClouds, lblUv, lblPressure].forEach(el => {
+        [lblFeels, lblPrecip, lblWind, lblClouds, lblUv].forEach(el => {
           if (el) el.textContent = '';
         });
       };
@@ -809,11 +801,9 @@ export const page = {
         
         // Veilige fallbacks voor als Open-Meteo 'null' stuurt
         const safeUv = dataUV[hour] ?? 0;
-        const safePressure = dataPressure[hour] ?? 0;
         const safePrecip = dataPrecip[hour] ?? 0;
         const safeFeels = dataFeels[hour] ?? 0;
-        const safeHum = dataHum[hour] ?? 0;
-        const safeDew = dataDew[hour] ?? 0;
+        const safeWind = dataWind[hour] ?? 0;
         const safeClouds = dataClouds[hour] ?? 0;
 
         if (lblPrecip) {
@@ -822,10 +812,9 @@ export const page = {
         }
 
         if (lblFeels) lblFeels.textContent = `${Math.round(safeFeels)}°`;
-        if (lblHum) lblHum.textContent = `${Math.round(safeHum)}% / ${Math.round(safeDew)}°`;
+        if (lblWind) lblWind.textContent = `${Math.round(safeWind)} km/u`;
         if (lblClouds) lblClouds.textContent = `${Math.round(safeClouds)}%`;
         if (lblUv) lblUv.textContent = safeUv.toFixed(1);
-        if (lblPressure) lblPressure.textContent = `${Math.round(safePressure)} hPa`;
       };
 
       const handleLeave = () => {
