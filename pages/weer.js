@@ -1431,5 +1431,4 @@ document.getElementById('weer-btn-locations')?.addEventListener('click', () => w
 }
 
 
-  
 };
