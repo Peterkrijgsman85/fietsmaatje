@@ -954,7 +954,7 @@ export const page = {
       iconUrl.searchParams.set('longitude', lon);
       iconUrl.searchParams.set('minutely_15', 'precipitation');
       iconUrl.searchParams.set('timezone', timezone);
-      iconUrl.searchParams.set('forecast_days', '1'); 
+      iconUrl.searchParams.set('forecast_days', '2');
       iconUrl.searchParams.set('models', 'icon_seamless');
 
       // Voer alle aanroepen parallel uit
@@ -976,11 +976,11 @@ export const page = {
       // UV index uit de Best Match dataset
       knmiData.hourly.uv_index = uvData.hourly.uv_index;
       
-      // 15-minuten neerslag: alleen de eerste 12 datapunten (3 uur)
+      // 15-minuten neerslag: hou de volledige timeline, we bepalen pas later de eerste 12 kwartieren vanaf nu
       if (iconData.minutely_15) {
           knmiData.minutely_15 = {
-              time: iconData.minutely_15.time ? iconData.minutely_15.time.slice(0, 12) : [],
-              precipitation: iconData.minutely_15.precipitation ? iconData.minutely_15.precipitation.slice(0, 12) : []
+              time: iconData.minutely_15.time ? iconData.minutely_15.time : [],
+              precipitation: iconData.minutely_15.precipitation ? iconData.minutely_15.precipitation : []
           };
       }
 
@@ -1081,16 +1081,22 @@ export const page = {
         // Gebruik hoge resolutie data (per kwartier) voor 3 uur weergave
         const times = currentWeatherData.minutely_15.time;
         const precips = currentWeatherData.minutely_15.precipitation;
-        
+
         let startIndex = times.findIndex(t => new Date(t).getTime() >= now);
-        if (startIndex === -1) startIndex = 0;
-        
-        // 3 uur = 12 kwartieren
-        for(let i = 0; i < 12; i++) {
-          if (times[startIndex + i]) {
+        if (startIndex > 0) {
+          // Begin bij het afgelopen kwartier als we tussen twee meetmomenten zitten
+          startIndex -= 1;
+        } else if (startIndex === -1) {
+          startIndex = Math.max(0, times.length - 12);
+        }
+
+        // 3 uur = 12 kwartieren vanaf het meest recente historische datapunt
+        for (let i = 0; i < 12; i++) {
+          const idx = startIndex + i;
+          if (times[idx]) {
             dataPoints.push({
-              time: times[startIndex + i],
-              total: precips[startIndex + i] || 0,
+              time: times[idx],
+              total: precips[idx] || 0,
               isMinutely: true
             });
           }
