@@ -90,6 +90,29 @@ export const page = {
         font-weight: bold;
       }
 
+      .drag-handle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 12px;
+        background: rgba(15, 44, 90, 0.08);
+        color: rgba(15, 44, 90, 0.7);
+        cursor: grab;
+        margin-right: 12px;
+        flex-shrink: 0;
+      }
+
+      .list-item.dragging {
+        opacity: 0.55;
+      }
+
+      .list-item.drag-over {
+        border-color: rgba(15, 44, 90, 0.6);
+        background: rgba(15, 44, 90, 0.05);
+      }
+
       /* Autocomplete lijst staat los van de container flow */
       #autocomplete-results {
         position: absolute;
@@ -165,11 +188,58 @@ export const page = {
       savedLocations.forEach((loc, index) => {
         const item = document.createElement('div');
         item.className = 'list-item';
+        item.setAttribute('draggable', 'true');
+        item.dataset.index = index;
         item.innerHTML = `
-          <span style="font-size: 15px; font-weight: 600; color: #0f2c5a;">${loc.name}</span>
+          <span class="drag-handle" aria-label="Sleep om te verplaatsen">☰</span>
+          <span style="font-size: 15px; font-weight: 600; color: #0f2c5a; flex:1;">${loc.name}</span>
           <button class="delete-btn" data-index="${index}">✕</button>
         `;
         listEl.appendChild(item);
+      });
+
+      let draggedIndex = null;
+
+      const clearDragState = () => {
+        document.querySelectorAll('.list-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+        document.querySelectorAll('.list-item.dragging').forEach(el => el.classList.remove('dragging'));
+      };
+
+      document.querySelectorAll('.list-item').forEach(item => {
+        item.addEventListener('dragstart', (e) => {
+          draggedIndex = Number(item.dataset.index);
+          item.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', '');
+        });
+
+        item.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          if (Number(item.dataset.index) !== draggedIndex) {
+            item.classList.add('drag-over');
+          }
+        });
+
+        item.addEventListener('dragleave', () => {
+          item.classList.remove('drag-over');
+        });
+
+        item.addEventListener('drop', (e) => {
+          e.preventDefault();
+          item.classList.remove('drag-over');
+          const targetIndex = Number(item.dataset.index);
+          if (draggedIndex === null || targetIndex === draggedIndex) return;
+          const [moved] = savedLocations.splice(draggedIndex, 1);
+          savedLocations.splice(targetIndex, 0, moved);
+          localStorage.setItem(CACHE_KEY, JSON.stringify(savedLocations));
+          draggedIndex = null;
+          renderLocations();
+        });
+
+        item.addEventListener('dragend', () => {
+          clearDragState();
+          draggedIndex = null;
+        });
       });
 
       document.querySelectorAll('.delete-btn').forEach(btn => {
