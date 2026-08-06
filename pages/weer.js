@@ -174,7 +174,7 @@ export const page = {
         display: flex;
         justify-content: center;
         gap: 8px;
-        margin-top: 4px;
+        margin-top: 3px;
       }
 
       .carousel-dot {
