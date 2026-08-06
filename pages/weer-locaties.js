@@ -39,6 +39,10 @@ export const page = {
         position: relative; /* Cruciaal voor autocomplete positionering */
       }
 
+      .autocomplete-card {
+        z-index: 10;
+      }
+
       .section-title {
         font-size: 0.75rem;
         font-weight: 700;
@@ -120,7 +124,7 @@ export const page = {
 
       <div class="dev-notice">⚠️ Deze functie is momenteel in ontwikkeling. Opgeslagen locaties worden nog niet ingeladen in het hoofdoverzicht.</div>
 
-      <div class="card-container">
+      <div class="card-container autocomplete-card">
         <div class="section-title">Zoek locatie</div>
         <input type="text" id="location-input" autocomplete="off" placeholder="Plaatsnaam..." />
         <div id="autocomplete-results"></div>

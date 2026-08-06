@@ -170,6 +170,30 @@ export const page = {
         gap: 6px;
       }
 
+      .carousel-dots {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 5px;
+      }
+
+      .carousel-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(15, 44, 90, 0.15);
+        cursor: pointer;
+        transition: transform 0.15s ease, background-color 0.15s ease;
+      }
+
+      .carousel-dot.active {
+        width: 12px;
+        height: 12px;
+        background: #0f2c5a;
+        transform: scale(1.1);
+      }
+
       /* --- 24-UURS OVERZICHT --- */
       .hourly-scroll {
         display: flex;
@@ -385,6 +409,10 @@ export const page = {
         </svg>
       </button>
 
+      <div id="location-carousel-wrapper" style="margin: 0 auto 18px; max-width: 100%;">
+        <div id="location-carousel-dots" class="carousel-dots"></div>
+      </div>
+
       <div class="hero-section">
         <div class="score-badge" id="top-score-badge">
           🚴 Weer ophalen...
@@ -506,7 +534,111 @@ export const page = {
   init() {
     let isCancelled = false;
     let currentWeatherData = null; // Globaal binnen init om data vast te houden voor de grafiek knoppen
+    let currentPageIndex = 0;
+    let locationPages = [];
+    let swipeStartX = 0;
+    let swipeStartY = 0;
+    let swipeDx = 0;
+    let swipeDy = 0;
     const appContainer = document.getElementById('app');
+    const locationCarouselWrapper = document.getElementById('location-carousel-wrapper');
+    const locationCarouselDots = document.getElementById('location-carousel-dots');
+
+    const getSavedLocations = () => {
+      try {
+        return JSON.parse(localStorage.getItem('weather_saved_locations') || '[]');
+      } catch (e) {
+        return [];
+      }
+    };
+
+    const buildLocationPages = () => {
+      const saved = getSavedLocations();
+      const pages = [{ useGps: true, label: 'Huidige locatie' }];
+      saved.forEach(loc => {
+        if (loc && typeof loc.lat === 'number' && typeof loc.lon === 'number') {
+          pages.push({ useGps: false, label: loc.name || 'Opgeslagen locatie', lat: loc.lat, lon: loc.lon });
+        }
+      });
+      return pages;
+    };
+
+    const updateCarouselIndicator = () => {
+      if (!locationCarouselDots) return;
+      locationCarouselDots.innerHTML = locationPages.map((page, index) => `
+        <button type="button" class="carousel-dot ${index === currentPageIndex ? 'active' : ''}" data-index="${index}" aria-label="Ga naar ${page.label}"></button>
+      `).join('');
+      document.querySelectorAll('.carousel-dot').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = Number(e.currentTarget.dataset.index);
+          if (!Number.isNaN(idx)) {
+            navigateToPage(idx, false);
+          }
+        });
+      });
+    };
+
+    const getPageCacheKey = (lat, lon) => `${Math.round(lat * 100)}_${Math.round(lon * 100)}`;
+
+    const getLocationForPage = async (page) => {
+      if (!page || page.useGps === true) {
+        const gpsLocation = await getLocation();
+        return { ...gpsLocation, label: gpsLocation.label || 'Huidige locatie' };
+      }
+      return { latitude: page.lat, longitude: page.lon, label: page.label };
+    };
+
+    const navigateToPage = async (index, forceRefresh = false) => {
+      locationPages = buildLocationPages();
+      if (locationPages.length === 0) {
+        locationPages = [{ useGps: true, label: 'Huidige locatie' }];
+      }
+      if (index < 0) index = locationPages.length - 1;
+      if (index >= locationPages.length) index = 0;
+      currentPageIndex = index;
+      updateCarouselIndicator();
+      await updateWeather(locationPages[currentPageIndex], forceRefresh);
+    };
+
+    const handleCarouselStart = (event) => {
+      const point = event.touches ? event.touches[0] : event;
+      swipeStartX = point.clientX;
+      swipeStartY = point.clientY;
+      swipeDx = 0;
+      swipeDy = 0;
+    };
+
+    const handleCarouselMove = (event) => {
+      if (swipeStartX === 0 && swipeStartY === 0) return;
+      const point = event.touches ? event.touches[0] : event;
+      swipeDx = point.clientX - swipeStartX;
+      swipeDy = point.clientY - swipeStartY;
+    };
+
+    const handleCarouselEnd = () => {
+      if (swipeStartX === 0 && swipeStartY === 0) return;
+      const threshold = 60;
+      if (Math.abs(swipeDx) > threshold && Math.abs(swipeDy) < 40) {
+        if (swipeDx < 0) {
+          navigateToPage(currentPageIndex + 1, false);
+        } else {
+          navigateToPage(currentPageIndex - 1, false);
+        }
+      }
+      swipeStartX = 0;
+      swipeStartY = 0;
+      swipeDx = 0;
+      swipeDy = 0;
+    };
+
+    if (locationCarouselWrapper) {
+      locationCarouselWrapper.addEventListener('touchstart', handleCarouselStart, { passive: true });
+      locationCarouselWrapper.addEventListener('touchmove', handleCarouselMove, { passive: true });
+      locationCarouselWrapper.addEventListener('touchend', handleCarouselEnd, { passive: true });
+      locationCarouselWrapper.addEventListener('mousedown', handleCarouselStart);
+      locationCarouselWrapper.addEventListener('mousemove', handleCarouselMove);
+      locationCarouselWrapper.addEventListener('mouseup', handleCarouselEnd);
+    }
 
     const getWbgtAdviceText = (wbgt) => {
       if (wbgt < 18) return '<b style="color: #34C759;">🟢 Laag risico</b><br>Geen restricties.';
@@ -558,7 +690,7 @@ export const page = {
       if (currentHeight > 55) {
         ptrIndicator.style.height = '50px';
         ptrContent.innerHTML = '<span class="ptr-icon refresh-spin">↻</span> Weer updaten...';
-        await updateWeather(true);
+        await navigateToPage(currentPageIndex, true);
         ptrIndicator.style.height = '0px';
       } else {
         ptrIndicator.style.height = '0px';
@@ -1320,36 +1452,39 @@ export const page = {
       }
     };
 
-    const updateWeather = async (forceRefresh = false) => {
+    const updateWeather = async (page, forceRefresh = false) => {
       try {
         const loader = document.getElementById('weather-loading');
         if (loader && !forceRefresh) loader.style.display = 'block';
 
-        const location = await getLocation();
+        const location = await getLocationForPage(page);
         if (isCancelled) return;
 
         const CACHE_KEY = 'fietsmaatje_weather_cache';
         const CACHE_TTL = 15 * 60 * 1000;
+        const cacheIndex = getPageCacheKey(location.latitude, location.longitude);
 
         let placeName;
         let weather;
         let useCache = false;
 
-        const cachedData = localStorage.getItem(CACHE_KEY);
-        if (!forceRefresh && cachedData) {
+        const cachedRaw = localStorage.getItem(CACHE_KEY);
+        let cacheStore = {};
+        if (cachedRaw) {
           try {
-            const parsed = JSON.parse(cachedData);
-            const isFresh = (Date.now() - parsed.timestamp) < CACHE_TTL;
-            const isSameLocation = Math.round(parsed.lat * 100) === Math.round(location.latitude * 100) &&
-                                   Math.round(parsed.lon * 100) === Math.round(location.longitude * 100);
-
-            if (isFresh && isSameLocation) {
-              placeName = parsed.placeName;
-              weather = parsed.weather;
-              useCache = true;
-            }
+            cacheStore = JSON.parse(cachedRaw) || {};
           } catch (e) {
-            console.warn('Weercache defect, live gegevens ophalen...');
+            cacheStore = {};
+          }
+        }
+
+        const cachedItem = cacheStore[cacheIndex];
+        if (!forceRefresh && cachedItem) {
+          const isFresh = (Date.now() - cachedItem.timestamp) < CACHE_TTL;
+          if (isFresh) {
+            placeName = cachedItem.placeName;
+            weather = cachedItem.weather;
+            useCache = true;
           }
         }
 
@@ -1362,13 +1497,14 @@ export const page = {
           weather = await fetchWeather(location.latitude, location.longitude, timezone);
           if (isCancelled) return;
 
-          localStorage.setItem(CACHE_KEY, JSON.stringify({
+          cacheStore[cacheIndex] = {
             timestamp: Date.now(),
             lat: location.latitude,
             lon: location.longitude,
             placeName: placeName,
             weather: weather
-          }));
+          };
+          localStorage.setItem(CACHE_KEY, JSON.stringify(cacheStore));
         }
 
         currentWeatherData = weather; // Sla op in state voor de grafiekknoppen
@@ -1448,15 +1584,13 @@ export const page = {
       });
     }
 
-    updateWeather();
+    navigateToPage(currentPageIndex, false);
 
     // Vernieuw automatisch als de app terugkeert naar de voorgrond
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") {
-    // We roepen updateWeather(false) aan. 
-    // Omdat je in updateWeather zelf checkt of de data "fresh" is, 
-    // zal hij alleen echt fetchen als die 15 minuten voorbij zijn.
-    updateWeather(false); 
+    // We roepen navigateToPage aan met de huidige pagina.
+    navigateToPage(currentPageIndex, false);
   }
 });
    
