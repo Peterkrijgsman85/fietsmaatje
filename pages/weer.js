@@ -18,39 +18,30 @@ export const page = {
         color: #1C1C1E;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         padding: 0px 16px 150px; 
-        will-change: transform, opacity;
-        transition: transform 320ms cubic-bezier(.2,.8,.2,1), opacity 320ms ease;
         overflow: hidden;
       }
 
-      .weather-page::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.18) 100%);
+      .weather-page-card {
+        position: relative;
+        width: 100%;
+        will-change: transform, opacity;
+        transition: transform 360ms cubic-bezier(.2,.8,.2,1), opacity 360ms ease;
+        transform-origin: center center;
+      }
+
+      .weather-page-card.is-transitioning[data-direction="next"] {
+        transform: translateX(-100%) scale(0.96);
         opacity: 0;
-        transition: opacity 320ms ease;
-        z-index: 1;
       }
 
-      .weather-page.location-transitioning[data-direction="next"]::before {
+      .weather-page-card.is-transitioning[data-direction="prev"] {
+        transform: translateX(100%) scale(0.96);
+        opacity: 0;
+      }
+
+      .weather-page-card.is-active {
+        transform: translateX(0) scale(1);
         opacity: 1;
-      }
-
-      .weather-page.location-transitioning[data-direction="prev"]::before {
-        background: linear-gradient(90deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 100%);
-        opacity: 1;
-      }
-
-      .weather-page.location-transitioning[data-direction="next"] {
-        transform: translateX(-16px) scale(0.99);
-        opacity: 0.82;
-      }
-
-      .weather-page.location-transitioning[data-direction="prev"] {
-        transform: translateX(16px) scale(0.99);
-        opacity: 0.82;
       }
 
       /* --- PULL TO REFRESH STYLING --- */
@@ -435,6 +426,7 @@ export const page = {
     </div>
 
     <div class="weather-page">
+      <div class="weather-page-card is-active" id="weather-page-card">
       <button id="weer-btn-locations" style="position: absolute; top: 12px; right: 16px; background: none; border: none; cursor: pointer; z-index: 999; padding: 8px;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="3"></circle>
@@ -561,6 +553,7 @@ export const page = {
         <div id="advice-list" class="advice-list"></div>
       </div>
 
+      </div>
     </div>
   `,
 
@@ -577,26 +570,24 @@ export const page = {
     const locationCarouselWrapper = document.getElementById('location-carousel-wrapper');
     const locationCarouselDots = document.getElementById('location-carousel-dots');
     const weatherPageContainer = document.querySelector('.weather-page');
+    const weatherPageCard = document.getElementById('weather-page-card');
     const swipeSurface = weatherPageContainer || locationCarouselWrapper || appContainer;
 
     const animateLocationTransition = async (direction, action) => {
-      if (!weatherPageContainer) return action();
-      const startX = direction > 0 ? -16 : 16;
-      weatherPageContainer.classList.add('location-transitioning');
-      weatherPageContainer.setAttribute('data-direction', direction > 0 ? 'next' : 'prev');
-      weatherPageContainer.style.pointerEvents = 'none';
-      weatherPageContainer.style.transform = `translateX(${startX}px) scale(0.99)`;
-      weatherPageContainer.style.opacity = '0.82';
+      if (!weatherPageCard) return action();
+      weatherPageCard.classList.remove('is-active');
+      weatherPageCard.classList.add('is-transitioning');
+      weatherPageCard.setAttribute('data-direction', direction > 0 ? 'next' : 'prev');
+      weatherPageCard.style.pointerEvents = 'none';
 
-      await new Promise(resolve => setTimeout(resolve, 30));
+      await new Promise(resolve => setTimeout(resolve, 20));
       await action();
 
       requestAnimationFrame(() => {
-        weatherPageContainer.style.transform = 'translateX(0) scale(1)';
-        weatherPageContainer.style.opacity = '1';
-        weatherPageContainer.classList.remove('location-transitioning');
-        weatherPageContainer.removeAttribute('data-direction');
-        weatherPageContainer.style.pointerEvents = '';
+        weatherPageCard.classList.remove('is-transitioning');
+        weatherPageCard.removeAttribute('data-direction');
+        weatherPageCard.classList.add('is-active');
+        weatherPageCard.style.pointerEvents = '';
       });
     };
 
