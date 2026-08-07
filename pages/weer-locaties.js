@@ -145,8 +145,6 @@ export const page = {
         Houd het weer bij op jouw favoriete plekken. Voeg locaties toe en bekijk deze in het weer overzicht.  
       </p>
 
-      <div class="dev-notice">⚠️ Deze functie is momenteel in ontwikkeling. Opgeslagen locaties worden nog niet ingeladen in het hoofdoverzicht.</div>
-
       <div class="card-container autocomplete-card">
         <div class="section-title">Zoek locatie</div>
         <input type="text" id="location-input" autocomplete="off" placeholder="Plaatsnaam..." />

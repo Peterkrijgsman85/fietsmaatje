@@ -178,8 +178,8 @@ export const page = {
       }
 
       .carousel-dot {
-        width: 10px;
-        height: 10px;
+        width: 8px;
+        height: 8px;
         border-radius: 50%;
         border: none;
         background: rgba(15, 44, 90, 0.15);
@@ -188,8 +188,8 @@ export const page = {
       }
 
       .carousel-dot.active {
-        width: 12px;
-        height: 12px;
+        width: 10px;
+        height: 10px;
         background: #0f2c5a;
         transform: scale(1.1);
       }
