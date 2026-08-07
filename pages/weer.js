@@ -543,6 +543,8 @@ export const page = {
     const appContainer = document.getElementById('app');
     const locationCarouselWrapper = document.getElementById('location-carousel-wrapper');
     const locationCarouselDots = document.getElementById('location-carousel-dots');
+    const weatherPageContainer = document.querySelector('.weather-page');
+    const swipeSurface = weatherPageContainer || locationCarouselWrapper || appContainer;
 
     const getSavedLocations = () => {
       try {
@@ -617,27 +619,32 @@ export const page = {
 
     const handleCarouselEnd = () => {
       if (swipeStartX === 0 && swipeStartY === 0) return;
-      const threshold = 60;
-      if (Math.abs(swipeDx) > threshold && Math.abs(swipeDy) < 40) {
+      const threshold = 65;
+      const isHorizontalSwipe = Math.abs(swipeDx) > threshold && Math.abs(swipeDx) > Math.abs(swipeDy) + 12;
+
+      if (isHorizontalSwipe) {
         if (swipeDx < 0) {
           navigateToPage(currentPageIndex + 1, false);
         } else {
           navigateToPage(currentPageIndex - 1, false);
         }
       }
+
       swipeStartX = 0;
       swipeStartY = 0;
       swipeDx = 0;
       swipeDy = 0;
     };
 
-    if (locationCarouselWrapper) {
-      locationCarouselWrapper.addEventListener('touchstart', handleCarouselStart, { passive: true });
-      locationCarouselWrapper.addEventListener('touchmove', handleCarouselMove, { passive: true });
-      locationCarouselWrapper.addEventListener('touchend', handleCarouselEnd, { passive: true });
-      locationCarouselWrapper.addEventListener('mousedown', handleCarouselStart);
-      locationCarouselWrapper.addEventListener('mousemove', handleCarouselMove);
-      locationCarouselWrapper.addEventListener('mouseup', handleCarouselEnd);
+    if (swipeSurface) {
+      swipeSurface.addEventListener('touchstart', handleCarouselStart, { passive: true });
+      swipeSurface.addEventListener('touchmove', handleCarouselMove, { passive: true });
+      swipeSurface.addEventListener('touchend', handleCarouselEnd, { passive: true });
+      swipeSurface.addEventListener('touchcancel', handleCarouselEnd, { passive: true });
+      swipeSurface.addEventListener('mousedown', handleCarouselStart);
+      swipeSurface.addEventListener('mousemove', handleCarouselMove);
+      swipeSurface.addEventListener('mouseup', handleCarouselEnd);
+      swipeSurface.addEventListener('mouseleave', handleCarouselEnd);
     }
 
     const getWbgtAdviceText = (wbgt) => {
