@@ -755,6 +755,19 @@ export const page = {
       99: ['⛈', 'Ernstig onweer']
     };
 
+    const nightIconOverrides = {
+      0: ['🌙', 'Helder'],
+      1: ['🌙🌤', 'Grotendeels helder'],
+      2: ['🌙⛅️', 'Half bewolkt']
+    };
+
+    const getWeatherIcon = (weathercode, isDay = true) => {
+      if (isDay === false && nightIconOverrides[weathercode]) {
+        return nightIconOverrides[weathercode];
+      }
+      return icons[weathercode] || ['❔', 'Onbekend'];
+    };
+
     const adviceEmojis = { thermo: '❄️', long: '👕', short: '👖', wind: '💨', rain: '🌧', windchill: '❄️', storm: '⚠️', default: '✨' };
 
     const windDirection = deg => {
@@ -1102,7 +1115,7 @@ export const page = {
       const knmiUrl = new URL('https://api.open-meteo.com/v1/forecast');
       knmiUrl.searchParams.set('latitude', lat);
       knmiUrl.searchParams.set('longitude', lon);
-      knmiUrl.searchParams.set('hourly', 'temperature_2m,apparent_temperature,weathercode,windspeed_10m,winddirection_10m,relative_humidity_2m,precipitation_probability,precipitation,rain,showers,shortwave_radiation,dewpoint_2m,cloudcover,surface_pressure');
+      knmiUrl.searchParams.set('hourly', 'temperature_2m,apparent_temperature,weathercode,is_day,windspeed_10m,winddirection_10m,relative_humidity_2m,precipitation_probability,precipitation,rain,showers,shortwave_radiation,dewpoint_2m,cloudcover,surface_pressure');
       knmiUrl.searchParams.set('daily', 'weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max,winddirection_10m_dominant');
       knmiUrl.searchParams.set('timezone', timezone);
       knmiUrl.searchParams.set('forecast_days', '7');
@@ -1171,7 +1184,9 @@ export const page = {
       slice.forEach((time, offset) => {
         const idx = startIndex + offset;
         const code = weather.hourly.weathercode[idx];
-        const icon = icons[code] ? icons[code][0] : '❔';
+        const isDay = typeof weather.hourly.is_day?.[idx] === 'number' ? weather.hourly.is_day[idx] === 1 : true;
+        const iconInfo = getWeatherIcon(code, isDay);
+        const icon = iconInfo[0];
         const hourlyTemp = Math.round(weather.hourly.temperature_2m[idx]);
         
         const wind = weather.hourly.windspeed_10m[idx];
@@ -1559,9 +1574,11 @@ export const page = {
         const humidity = weather.hourly.relative_humidity_2m[currentIndex] ?? 0;
         const radiation = weather.hourly.shortwave_radiation[currentIndex] ?? 0;
         const precipProb = weather.hourly.precipitation_probability[currentIndex] ?? 0;
+        const isDay = typeof weather.hourly.is_day?.[currentIndex] === 'number' ? weather.hourly.is_day[currentIndex] === 1 : true;
 
-        const icon = icons[code] ? icons[code][0] : '❔';
-        const description = icons[code] ? icons[code][1] : 'Onbekend weer';
+        const iconInfo = getWeatherIcon(code, isDay);
+        const icon = iconInfo[0];
+        const description = iconInfo[1];
         const bft = bftFromKmh(currentWindspeed);
 
         const score = getScore({ weathercode: code, temperature: currentTemp, windspeed: currentWindspeed, precipitation_probability: precipProb });
