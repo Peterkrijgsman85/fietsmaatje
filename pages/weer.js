@@ -19,17 +19,38 @@ export const page = {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         padding: 0px 16px 150px; 
         will-change: transform, opacity;
-        transition: transform 280ms cubic-bezier(.2,.8,.2,1), opacity 280ms ease;
+        transition: transform 320ms cubic-bezier(.2,.8,.2,1), opacity 320ms ease;
+        overflow: hidden;
+      }
+
+      .weather-page::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.18) 100%);
+        opacity: 0;
+        transition: opacity 320ms ease;
+        z-index: 1;
+      }
+
+      .weather-page.location-transitioning[data-direction="next"]::before {
+        opacity: 1;
+      }
+
+      .weather-page.location-transitioning[data-direction="prev"]::before {
+        background: linear-gradient(90deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 100%);
+        opacity: 1;
       }
 
       .weather-page.location-transitioning[data-direction="next"] {
-        transform: translateX(-80px);
-        opacity: 0.2;
+        transform: translateX(-16px) scale(0.99);
+        opacity: 0.82;
       }
 
       .weather-page.location-transitioning[data-direction="prev"] {
-        transform: translateX(80px);
-        opacity: 0.2;
+        transform: translateX(16px) scale(0.99);
+        opacity: 0.82;
       }
 
       /* --- PULL TO REFRESH STYLING --- */
@@ -560,18 +581,18 @@ export const page = {
 
     const animateLocationTransition = async (direction, action) => {
       if (!weatherPageContainer) return action();
-      const startX = direction > 0 ? -80 : 80;
+      const startX = direction > 0 ? -16 : 16;
       weatherPageContainer.classList.add('location-transitioning');
       weatherPageContainer.setAttribute('data-direction', direction > 0 ? 'next' : 'prev');
       weatherPageContainer.style.pointerEvents = 'none';
-      weatherPageContainer.style.transform = `translateX(${startX}px)`;
-      weatherPageContainer.style.opacity = '0.2';
+      weatherPageContainer.style.transform = `translateX(${startX}px) scale(0.99)`;
+      weatherPageContainer.style.opacity = '0.82';
 
-      await new Promise(resolve => setTimeout(resolve, 40));
+      await new Promise(resolve => setTimeout(resolve, 30));
       await action();
 
       requestAnimationFrame(() => {
-        weatherPageContainer.style.transform = 'translateX(0)';
+        weatherPageContainer.style.transform = 'translateX(0) scale(1)';
         weatherPageContainer.style.opacity = '1';
         weatherPageContainer.classList.remove('location-transitioning');
         weatherPageContainer.removeAttribute('data-direction');
