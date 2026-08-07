@@ -757,8 +757,8 @@ export const page = {
 
     const nightIconOverrides = {
       0: ['🌙', 'Helder'],
-      1: ['🌙🌤', 'Grotendeels helder'],
-      2: ['🌙⛅️', 'Half bewolkt']
+      1: ['🌙', 'Grotendeels helder'],
+      2: ['☁️', 'Half bewolkt']
     };
 
     const getWeatherIcon = (weathercode, isDay = true) => {
