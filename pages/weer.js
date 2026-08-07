@@ -18,6 +18,18 @@ export const page = {
         color: #1C1C1E;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         padding: 0px 16px 150px; 
+        will-change: transform, opacity;
+        transition: transform 220ms ease, opacity 220ms ease;
+      }
+
+      .weather-page.location-transitioning[data-direction="next"] {
+        transform: translateX(-24px);
+        opacity: 0.65;
+      }
+
+      .weather-page.location-transitioning[data-direction="prev"] {
+        transform: translateX(24px);
+        opacity: 0.65;
       }
 
       /* --- PULL TO REFRESH STYLING --- */
@@ -173,7 +185,7 @@ export const page = {
       .carousel-dots {
         display: flex;
         justify-content: center;
-        gap: 8px;
+        gap: 6px;
         margin-top: 5px;
       }
 
@@ -191,7 +203,7 @@ export const page = {
         width: 6px;
         height: 6px;
         background: #0f2c5a;
-        transform: scale(1.05);
+        transform: scale(1.1);
       }
 
       /* --- 24-UURS OVERZICHT --- */
@@ -546,6 +558,24 @@ export const page = {
     const weatherPageContainer = document.querySelector('.weather-page');
     const swipeSurface = weatherPageContainer || locationCarouselWrapper || appContainer;
 
+    const animateLocationTransition = async (direction, action) => {
+      if (!weatherPageContainer) return action();
+      weatherPageContainer.classList.add('location-transitioning');
+      weatherPageContainer.setAttribute('data-direction', direction > 0 ? 'next' : 'prev');
+      weatherPageContainer.style.pointerEvents = 'none';
+
+      await new Promise(resolve => setTimeout(resolve, 110));
+      await action();
+
+      requestAnimationFrame(() => {
+        weatherPageContainer.classList.remove('location-transitioning');
+        weatherPageContainer.removeAttribute('data-direction');
+        weatherPageContainer.style.pointerEvents = '';
+        weatherPageContainer.style.transform = 'translateX(0)';
+        weatherPageContainer.style.opacity = '1';
+      });
+    };
+
     const getSavedLocations = () => {
       try {
         return JSON.parse(localStorage.getItem('weather_saved_locations') || '[]');
@@ -590,16 +620,28 @@ export const page = {
       return { latitude: page.lat, longitude: page.lon, label: page.label };
     };
 
-    const navigateToPage = async (index, forceRefresh = false) => {
+    const navigateToPage = async (index, forceRefresh = false, animate = true) => {
       locationPages = buildLocationPages();
       if (locationPages.length === 0) {
         locationPages = [{ useGps: true, label: 'Huidige locatie' }];
       }
       if (index < 0) index = locationPages.length - 1;
       if (index >= locationPages.length) index = 0;
+
+      const previousIndex = currentPageIndex;
       currentPageIndex = index;
       updateCarouselIndicator();
-      await updateWeather(locationPages[currentPageIndex], forceRefresh);
+
+      const direction = index > previousIndex ? 1 : -1;
+      const runUpdate = async () => {
+        await updateWeather(locationPages[currentPageIndex], forceRefresh);
+      };
+
+      if (animate && locationPages.length > 1 && previousIndex !== index) {
+        await animateLocationTransition(direction, runUpdate);
+      } else {
+        await runUpdate();
+      }
     };
 
     const isInsideGraphArea = (event) => {
@@ -1621,19 +1663,15 @@ export const page = {
       });
     }
 
-    navigateToPage(currentPageIndex, false);
+    navigateToPage(currentPageIndex, false, false);
 
     // Vernieuw automatisch als de app terugkeert naar de voorgrond
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible") {
-    // We roepen navigateToPage aan met de huidige pagina.
-    navigateToPage(currentPageIndex, false);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        navigateToPage(currentPageIndex, false, false);
+      }
+    });
+
+    document.getElementById('weer-btn-locations')?.addEventListener('click', () => window.navigate('weer-locaties'));
   }
-});
-   
-    // In je init() functie:
-document.getElementById('weer-btn-locations')?.addEventListener('click', () => window.navigate('weer-locaties'));
-}
-
-
 };
