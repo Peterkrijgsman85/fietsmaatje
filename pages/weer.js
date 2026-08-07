@@ -29,30 +29,31 @@ export const page = {
         transition: transform 360ms cubic-bezier(.2,.8,.2,1), opacity 360ms ease;
         transform-origin: center center;
         border-radius: 28px;
+        padding: 0 16px 150px;
       }
 
       .weather-page-card.is-exiting[data-direction="next"] {
-        transform: translateX(-28px);
+        transform: translateX(-100%);
         opacity: 0;
       }
 
       .weather-page-card.is-exiting[data-direction="prev"] {
-        transform: translateX(28px);
+        transform: translateX(100%);
         opacity: 0;
       }
 
       .weather-page-card.is-entering[data-direction="next"] {
-        transform: translateX(28px);
+        transform: translateX(100%);
         opacity: 0;
       }
 
       .weather-page-card.is-entering[data-direction="prev"] {
-        transform: translateX(-28px);
+        transform: translateX(-100%);
         opacity: 0;
       }
 
       .weather-page-card.is-active {
-        transform: translateX(0) scale(1);
+        transform: translateX(0);
         opacity: 1;
       }
 
@@ -592,7 +593,7 @@ export const page = {
       weatherPageCard.setAttribute('data-direction', direction > 0 ? 'next' : 'prev');
       weatherPageCard.style.pointerEvents = 'none';
 
-      await new Promise(resolve => setTimeout(resolve, 140));
+      await new Promise(resolve => setTimeout(resolve, 120));
       await action();
 
       requestAnimationFrame(() => {
@@ -601,7 +602,7 @@ export const page = {
         weatherPageCard.classList.add('is-entering');
         weatherPageCard.setAttribute('data-direction', direction > 0 ? 'next' : 'prev');
         weatherPageCard.style.opacity = '0';
-        weatherPageCard.style.transform = direction > 0 ? 'translateX(28px)' : 'translateX(-28px)';
+        weatherPageCard.style.transform = direction > 0 ? 'translateX(100%)' : 'translateX(-100%)';
 
         requestAnimationFrame(() => {
           weatherPageCard.classList.remove('is-entering');
