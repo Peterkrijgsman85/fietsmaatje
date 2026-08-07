@@ -23,13 +23,13 @@ export const page = {
       }
 
       .weather-page.location-transitioning[data-direction="next"] {
-        transform: translateX(-24px);
-        opacity: 0.65;
+        transform: translateX(-40px);
+        opacity: 0.45;
       }
 
       .weather-page.location-transitioning[data-direction="prev"] {
-        transform: translateX(24px);
-        opacity: 0.65;
+        transform: translateX(40px);
+        opacity: 0.45;
       }
 
       /* --- PULL TO REFRESH STYLING --- */
@@ -564,7 +564,7 @@ export const page = {
       weatherPageContainer.setAttribute('data-direction', direction > 0 ? 'next' : 'prev');
       weatherPageContainer.style.pointerEvents = 'none';
 
-      await new Promise(resolve => setTimeout(resolve, 110));
+      await new Promise(resolve => setTimeout(resolve, 120));
       await action();
 
       requestAnimationFrame(() => {
