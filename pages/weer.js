@@ -24,18 +24,30 @@ export const page = {
       .weather-page-card {
         position: relative;
         width: 100%;
+        display: block;
         will-change: transform, opacity;
         transition: transform 360ms cubic-bezier(.2,.8,.2,1), opacity 360ms ease;
         transform-origin: center center;
+        border-radius: 28px;
       }
 
-      .weather-page-card.is-transitioning[data-direction="next"] {
-        transform: translateX(-100%) scale(0.96);
+      .weather-page-card.is-exiting[data-direction="next"] {
+        transform: translateX(-28px);
         opacity: 0;
       }
 
-      .weather-page-card.is-transitioning[data-direction="prev"] {
-        transform: translateX(100%) scale(0.96);
+      .weather-page-card.is-exiting[data-direction="prev"] {
+        transform: translateX(28px);
+        opacity: 0;
+      }
+
+      .weather-page-card.is-entering[data-direction="next"] {
+        transform: translateX(28px);
+        opacity: 0;
+      }
+
+      .weather-page-card.is-entering[data-direction="prev"] {
+        transform: translateX(-28px);
         opacity: 0;
       }
 
@@ -576,18 +588,29 @@ export const page = {
     const animateLocationTransition = async (direction, action) => {
       if (!weatherPageCard) return action();
       weatherPageCard.classList.remove('is-active');
-      weatherPageCard.classList.add('is-transitioning');
+      weatherPageCard.classList.add('is-exiting');
       weatherPageCard.setAttribute('data-direction', direction > 0 ? 'next' : 'prev');
       weatherPageCard.style.pointerEvents = 'none';
 
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise(resolve => setTimeout(resolve, 140));
       await action();
 
       requestAnimationFrame(() => {
-        weatherPageCard.classList.remove('is-transitioning');
+        weatherPageCard.classList.remove('is-exiting');
         weatherPageCard.removeAttribute('data-direction');
-        weatherPageCard.classList.add('is-active');
-        weatherPageCard.style.pointerEvents = '';
+        weatherPageCard.classList.add('is-entering');
+        weatherPageCard.setAttribute('data-direction', direction > 0 ? 'next' : 'prev');
+        weatherPageCard.style.opacity = '0';
+        weatherPageCard.style.transform = direction > 0 ? 'translateX(28px)' : 'translateX(-28px)';
+
+        requestAnimationFrame(() => {
+          weatherPageCard.classList.remove('is-entering');
+          weatherPageCard.removeAttribute('data-direction');
+          weatherPageCard.classList.add('is-active');
+          weatherPageCard.style.opacity = '1';
+          weatherPageCard.style.transform = 'translateX(0)';
+          weatherPageCard.style.pointerEvents = '';
+        });
       });
     };
 
