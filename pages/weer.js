@@ -19,17 +19,17 @@ export const page = {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         padding: 0px 16px 150px; 
         will-change: transform, opacity;
-        transition: transform 220ms ease, opacity 220ms ease;
+        transition: transform 280ms cubic-bezier(.2,.8,.2,1), opacity 280ms ease;
       }
 
       .weather-page.location-transitioning[data-direction="next"] {
-        transform: translateX(-40px);
-        opacity: 0.45;
+        transform: translateX(-80px);
+        opacity: 0.2;
       }
 
       .weather-page.location-transitioning[data-direction="prev"] {
-        transform: translateX(40px);
-        opacity: 0.45;
+        transform: translateX(80px);
+        opacity: 0.2;
       }
 
       /* --- PULL TO REFRESH STYLING --- */
@@ -560,19 +560,22 @@ export const page = {
 
     const animateLocationTransition = async (direction, action) => {
       if (!weatherPageContainer) return action();
+      const startX = direction > 0 ? -80 : 80;
       weatherPageContainer.classList.add('location-transitioning');
       weatherPageContainer.setAttribute('data-direction', direction > 0 ? 'next' : 'prev');
       weatherPageContainer.style.pointerEvents = 'none';
+      weatherPageContainer.style.transform = `translateX(${startX}px)`;
+      weatherPageContainer.style.opacity = '0.2';
 
-      await new Promise(resolve => setTimeout(resolve, 120));
+      await new Promise(resolve => setTimeout(resolve, 40));
       await action();
 
       requestAnimationFrame(() => {
+        weatherPageContainer.style.transform = 'translateX(0)';
+        weatherPageContainer.style.opacity = '1';
         weatherPageContainer.classList.remove('location-transitioning');
         weatherPageContainer.removeAttribute('data-direction');
         weatherPageContainer.style.pointerEvents = '';
-        weatherPageContainer.style.transform = 'translateX(0)';
-        weatherPageContainer.style.opacity = '1';
       });
     };
 
