@@ -602,7 +602,21 @@ export const page = {
       await updateWeather(locationPages[currentPageIndex], forceRefresh);
     };
 
+    const isInsideGraphArea = (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return false;
+      return target.closest('.graph-svg-container, .graph-row, .date-selector-container, .graphs-interactive-wrapper');
+    };
+
     const handleCarouselStart = (event) => {
+      if (isInsideGraphArea(event)) {
+        swipeStartX = 0;
+        swipeStartY = 0;
+        swipeDx = 0;
+        swipeDy = 0;
+        return;
+      }
+
       const point = event.touches ? event.touches[0] : event;
       swipeStartX = point.clientX;
       swipeStartY = point.clientY;
@@ -612,13 +626,29 @@ export const page = {
 
     const handleCarouselMove = (event) => {
       if (swipeStartX === 0 && swipeStartY === 0) return;
+      if (isInsideGraphArea(event)) {
+        swipeStartX = 0;
+        swipeStartY = 0;
+        swipeDx = 0;
+        swipeDy = 0;
+        return;
+      }
+
       const point = event.touches ? event.touches[0] : event;
       swipeDx = point.clientX - swipeStartX;
       swipeDy = point.clientY - swipeStartY;
     };
 
-    const handleCarouselEnd = () => {
+    const handleCarouselEnd = (event) => {
       if (swipeStartX === 0 && swipeStartY === 0) return;
+      if (event && isInsideGraphArea(event)) {
+        swipeStartX = 0;
+        swipeStartY = 0;
+        swipeDx = 0;
+        swipeDy = 0;
+        return;
+      }
+
       const threshold = 65;
       const isHorizontalSwipe = Math.abs(swipeDx) > threshold && Math.abs(swipeDx) > Math.abs(swipeDy) + 12;
 
