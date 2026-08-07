@@ -18,43 +18,6 @@ export const page = {
         color: #1C1C1E;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         padding: 0px 16px 150px; 
-        overflow: hidden;
-      }
-
-      .weather-page-card {
-        position: relative;
-        width: 100%;
-        display: block;
-        will-change: transform, opacity;
-        transition: transform 360ms cubic-bezier(.2,.8,.2,1), opacity 360ms ease;
-        transform-origin: center center;
-        border-radius: 28px;
-        padding: 0 16px 150px;
-      }
-
-      .weather-page-card.is-exiting[data-direction="next"] {
-        transform: translateX(-100%);
-        opacity: 0;
-      }
-
-      .weather-page-card.is-exiting[data-direction="prev"] {
-        transform: translateX(100%);
-        opacity: 0;
-      }
-
-      .weather-page-card.is-entering[data-direction="next"] {
-        transform: translateX(100%);
-        opacity: 0;
-      }
-
-      .weather-page-card.is-entering[data-direction="prev"] {
-        transform: translateX(-100%);
-        opacity: 0;
-      }
-
-      .weather-page-card.is-active {
-        transform: translateX(0);
-        opacity: 1;
       }
 
       /* --- PULL TO REFRESH STYLING --- */
@@ -225,8 +188,8 @@ export const page = {
       }
 
       .carousel-dot.active {
-        width: 6px;
-        height: 6px;
+        width: 7px;
+        height: 7px;
         background: #0f2c5a;
         transform: scale(1.1);
       }
@@ -439,7 +402,6 @@ export const page = {
     </div>
 
     <div class="weather-page">
-      <div class="weather-page-card is-active" id="weather-page-card">
       <button id="weer-btn-locations" style="position: absolute; top: 12px; right: 16px; background: none; border: none; cursor: pointer; z-index: 999; padding: 8px;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="3"></circle>
@@ -566,7 +528,6 @@ export const page = {
         <div id="advice-list" class="advice-list"></div>
       </div>
 
-      </div>
     </div>
   `,
 
@@ -583,37 +544,7 @@ export const page = {
     const locationCarouselWrapper = document.getElementById('location-carousel-wrapper');
     const locationCarouselDots = document.getElementById('location-carousel-dots');
     const weatherPageContainer = document.querySelector('.weather-page');
-    const weatherPageCard = document.getElementById('weather-page-card');
     const swipeSurface = weatherPageContainer || locationCarouselWrapper || appContainer;
-
-    const animateLocationTransition = async (direction, action) => {
-      if (!weatherPageCard) return action();
-      weatherPageCard.classList.remove('is-active');
-      weatherPageCard.classList.add('is-exiting');
-      weatherPageCard.setAttribute('data-direction', direction > 0 ? 'next' : 'prev');
-      weatherPageCard.style.pointerEvents = 'none';
-
-      await new Promise(resolve => setTimeout(resolve, 120));
-      await action();
-
-      requestAnimationFrame(() => {
-        weatherPageCard.classList.remove('is-exiting');
-        weatherPageCard.removeAttribute('data-direction');
-        weatherPageCard.classList.add('is-entering');
-        weatherPageCard.setAttribute('data-direction', direction > 0 ? 'next' : 'prev');
-        weatherPageCard.style.opacity = '0';
-        weatherPageCard.style.transform = direction > 0 ? 'translateX(100%)' : 'translateX(-100%)';
-
-        requestAnimationFrame(() => {
-          weatherPageCard.classList.remove('is-entering');
-          weatherPageCard.removeAttribute('data-direction');
-          weatherPageCard.classList.add('is-active');
-          weatherPageCard.style.opacity = '1';
-          weatherPageCard.style.transform = 'translateX(0)';
-          weatherPageCard.style.pointerEvents = '';
-        });
-      });
-    };
 
     const getSavedLocations = () => {
       try {
@@ -659,28 +590,16 @@ export const page = {
       return { latitude: page.lat, longitude: page.lon, label: page.label };
     };
 
-    const navigateToPage = async (index, forceRefresh = false, animate = true) => {
+    const navigateToPage = async (index, forceRefresh = false) => {
       locationPages = buildLocationPages();
       if (locationPages.length === 0) {
         locationPages = [{ useGps: true, label: 'Huidige locatie' }];
       }
       if (index < 0) index = locationPages.length - 1;
       if (index >= locationPages.length) index = 0;
-
-      const previousIndex = currentPageIndex;
       currentPageIndex = index;
       updateCarouselIndicator();
-
-      const direction = index > previousIndex ? 1 : -1;
-      const runUpdate = async () => {
-        await updateWeather(locationPages[currentPageIndex], forceRefresh);
-      };
-
-      if (animate && locationPages.length > 1 && previousIndex !== index) {
-        await animateLocationTransition(direction, runUpdate);
-      } else {
-        await runUpdate();
-      }
+      await updateWeather(locationPages[currentPageIndex], forceRefresh);
     };
 
     const isInsideGraphArea = (event) => {
@@ -1702,15 +1621,19 @@ export const page = {
       });
     }
 
-    navigateToPage(currentPageIndex, false, false);
+    navigateToPage(currentPageIndex, false);
 
     // Vernieuw automatisch als de app terugkeert naar de voorgrond
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") {
-        navigateToPage(currentPageIndex, false, false);
-      }
-    });
-
-    document.getElementById('weer-btn-locations')?.addEventListener('click', () => window.navigate('weer-locaties'));
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    // We roepen navigateToPage aan met de huidige pagina.
+    navigateToPage(currentPageIndex, false);
   }
+});
+   
+    // In je init() functie:
+document.getElementById('weer-btn-locations')?.addEventListener('click', () => window.navigate('weer-locaties'));
+}
+
+
 };
