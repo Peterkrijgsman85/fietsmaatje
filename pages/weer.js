@@ -174,7 +174,7 @@ export const page = {
         display: flex;
         justify-content: center;
         gap: 6px;
-        margin-top: 5px;
+        margin-top: 15px;
       }
 
       .carousel-dot {
@@ -573,8 +573,10 @@ export const page = {
     const locationCarouselWrapper = document.getElementById('location-carousel-wrapper');
     const locationCarouselDots = document.getElementById('location-carousel-dots');
     const weatherPageContainer = document.querySelector('.weather-page');
-    // Beperk swipe/veeg-navigatie tot de locatie-carousel bovenaan
-    const swipeSurface = locationCarouselWrapper || weatherPageContainer || appContainer;
+    // Beperk swipe/veeg-navigatie tot het gebied vanaf de carousel tot aan de 24-uurs sectie
+    const swipeSurface = weatherPageContainer || appContainer;
+    const hourlySection = document.getElementById('hourly-section');
+    let swipeAllowed = true;
 
     const getSavedLocations = () => {
       try {
@@ -586,7 +588,8 @@ export const page = {
 
     const buildLocationPages = () => {
       const saved = getSavedLocations();
-      const pages = [{ useGps: true, label: 'Huidige locatie' }];
+      // Laat de GPS-label initieel leeg — we vullen deze zodra reverse-geocoding klaar is
+      const pages = [{ useGps: true, label: '' }];
       saved.forEach(loc => {
         if (loc && typeof loc.lat === 'number' && typeof loc.lon === 'number') {
           pages.push({ useGps: false, label: loc.name || 'Opgeslagen locatie', lat: loc.lat, lon: loc.lon });
@@ -600,12 +603,14 @@ export const page = {
       locationCarouselDots.innerHTML = locationPages.map((page, index) => {
         // Eerste knop = outline-pijltje (GPS-stijl)
         if (index === 0) {
-          return `<button type="button" class="carousel-dot carousel-gps ${index === currentPageIndex ? 'active' : ''}" data-index="${index}" aria-label="Ga naar ${page.label}">` +
+          const aria = page.label ? `Ga naar ${page.label}` : 'Ga naar huidige locatie';
+          return `<button type="button" class="carousel-dot carousel-gps ${index === currentPageIndex ? 'active' : ''}" data-index="${index}" aria-label="${aria}">` +
                  `<svg class="gps-dot" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">` +
                  `<path d="M12 2L22 22L12 18L2 22L12 2Z" />` +
                  `</svg></button>`;
         }
-        return `<button type="button" class="carousel-dot ${index === currentPageIndex ? 'active' : ''}" data-index="${index}" aria-label="Ga naar ${page.label}"></button>`;
+        const aria = page.label ? `Ga naar ${page.label}` : `Ga naar ${page.label || 'locatie'}`;
+        return `<button type="button" class="carousel-dot ${index === currentPageIndex ? 'active' : ''}" data-index="${index}" aria-label="${aria}"></button>`;
       }).join('');
       document.querySelectorAll('.carousel-dot').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -622,7 +627,8 @@ export const page = {
     const getLocationForPage = async (page) => {
       if (!page || page.useGps === true) {
         const gpsLocation = await getLocation();
-        return { ...gpsLocation, label: gpsLocation.label || 'Huidige locatie' };
+        // Don't assign a default label here; resolve the human-readable name via reverseGeo
+        return { ...gpsLocation };
       }
       return { latitude: page.lat, longitude: page.lon, label: page.label };
     };
@@ -646,15 +652,32 @@ export const page = {
     };
 
     const handleCarouselStart = (event) => {
+      const point = event.touches ? event.touches[0] : event;
+
+      // Als start binnen grafiekgebied: niet navigeren
       if (isInsideGraphArea(event)) {
         swipeStartX = 0;
         swipeStartY = 0;
         swipeDx = 0;
         swipeDy = 0;
+        swipeAllowed = false;
         return;
       }
 
-      const point = event.touches ? event.touches[0] : event;
+      // Boundary: alleen toestaan als touch/mousedown boven de top van de uurlijkse sectie zit
+      if (hourlySection && typeof point.clientY === 'number') {
+        const topBoundary = hourlySection.getBoundingClientRect().top;
+        if (point.clientY >= topBoundary) {
+          swipeStartX = 0;
+          swipeStartY = 0;
+          swipeDx = 0;
+          swipeDy = 0;
+          swipeAllowed = false;
+          return;
+        }
+      }
+
+      swipeAllowed = true;
       swipeStartX = point.clientX;
       swipeStartY = point.clientY;
       swipeDx = 0;
@@ -662,12 +685,14 @@ export const page = {
     };
 
     const handleCarouselMove = (event) => {
+      if (!swipeAllowed) return;
       if (swipeStartX === 0 && swipeStartY === 0) return;
       if (isInsideGraphArea(event)) {
         swipeStartX = 0;
         swipeStartY = 0;
         swipeDx = 0;
         swipeDy = 0;
+        swipeAllowed = false;
         return;
       }
 
@@ -677,6 +702,7 @@ export const page = {
     };
 
     const handleCarouselEnd = (event) => {
+      if (!swipeAllowed) { swipeAllowed = true; swipeStartX = 0; swipeStartY = 0; swipeDx = 0; swipeDy = 0; return; }
       if (swipeStartX === 0 && swipeStartY === 0) return;
       if (event && isInsideGraphArea(event)) {
         swipeStartX = 0;
@@ -1578,8 +1604,12 @@ export const page = {
         }
 
         if (!useCache) {
-          console.log('🔄 Live weer en locatie ophalen via API...');
-          placeName = location.label || await reverseGeo(location.latitude, location.longitude);
+            console.log('🔄 Live weer en locatie ophalen via API...');
+            if (page && page.useGps) {
+              placeName = await reverseGeo(location.latitude, location.longitude);
+            } else {
+              placeName = location.label || await reverseGeo(location.latitude, location.longitude);
+            }
           if (isCancelled) return;
 
           const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Amsterdam';
@@ -1594,6 +1624,22 @@ export const page = {
             weather: weather
           };
           localStorage.setItem(CACHE_KEY, JSON.stringify(cacheStore));
+        }
+
+        // Als we de weerdata uit cache gebruiken maar de plaatsnaam ontbreekt of nog 'Huidige locatie' is,
+        // probeer dan alsnog reverse-geocoding en update de cache zodat de echte plaatsnaam getoond wordt.
+        if (useCache && (!placeName || String(placeName).toLowerCase().includes('huidige locatie'))) {
+          try {
+            const resolved = await reverseGeo(location.latitude, location.longitude);
+            if (resolved) {
+              placeName = resolved;
+              cacheStore[cacheIndex] = cacheStore[cacheIndex] || {};
+              cacheStore[cacheIndex].placeName = placeName;
+              localStorage.setItem(CACHE_KEY, JSON.stringify(cacheStore));
+            }
+          } catch (e) {
+            // swallow
+          }
         }
 
         currentWeatherData = weather; // Sla op in state voor de grafiekknoppen
