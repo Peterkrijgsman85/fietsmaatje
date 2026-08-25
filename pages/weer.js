@@ -185,14 +185,43 @@ export const page = {
         background: rgba(15, 44, 90, 0.15);
         cursor: pointer;
         transition: transform 0.15s ease, background-color 0.15s ease;
+        color: rgba(15, 44, 90, 0.15);
       }
 
       .carousel-dot.active {
         width: 7px;
         height: 7px;
         background: #0f2c5a;
+        color: #ffffff;
         transform: scale(1.1);
       }
+
+      /* GPS icon (outline arrow) styling - uses currentColor so it matches the dot */
+      .carousel-dot svg.gps-dot {
+        width: 7px;
+        height: 7px;
+        display: inline-block;
+        fill: currentColor;
+        stroke: none;
+        transform: rotate(45deg); /* point a bit NO */
+      }
+
+      /* Make the first (gps) button show only the SVG (no circular background)
+         Inactive: faint color like the other dots; Active: use the active dot color */
+      .carousel-dot.carousel-gps {
+        width: auto;
+        height: auto;
+        padding: 0;
+        margin: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent !important; /* no circular background */
+        border-radius: 0;
+        color: rgba(15,44,90,0.6); /* sets svg fill via currentColor */
+      }
+      .carousel-dot.carousel-gps svg.gps-dot { width: 7px; height: 7px; display: block; }
+      .carousel-dot.carousel-gps.active { background: transparent !important; color: #0f2c5a; transform: none; }
 
       /* --- 24-UURS OVERZICHT --- */
       .hourly-scroll {
@@ -544,7 +573,8 @@ export const page = {
     const locationCarouselWrapper = document.getElementById('location-carousel-wrapper');
     const locationCarouselDots = document.getElementById('location-carousel-dots');
     const weatherPageContainer = document.querySelector('.weather-page');
-    const swipeSurface = weatherPageContainer || locationCarouselWrapper || appContainer;
+    // Beperk swipe/veeg-navigatie tot de locatie-carousel bovenaan
+    const swipeSurface = locationCarouselWrapper || weatherPageContainer || appContainer;
 
     const getSavedLocations = () => {
       try {
@@ -567,9 +597,16 @@ export const page = {
 
     const updateCarouselIndicator = () => {
       if (!locationCarouselDots) return;
-      locationCarouselDots.innerHTML = locationPages.map((page, index) => `
-        <button type="button" class="carousel-dot ${index === currentPageIndex ? 'active' : ''}" data-index="${index}" aria-label="Ga naar ${page.label}"></button>
-      `).join('');
+      locationCarouselDots.innerHTML = locationPages.map((page, index) => {
+        // Eerste knop = outline-pijltje (GPS-stijl)
+        if (index === 0) {
+          return `<button type="button" class="carousel-dot carousel-gps ${index === currentPageIndex ? 'active' : ''}" data-index="${index}" aria-label="Ga naar ${page.label}">` +
+                 `<svg class="gps-dot" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">` +
+                 `<path d="M12 2L22 22L12 18L2 22L12 2Z" />` +
+                 `</svg></button>`;
+        }
+        return `<button type="button" class="carousel-dot ${index === currentPageIndex ? 'active' : ''}" data-index="${index}" aria-label="Ga naar ${page.label}"></button>`;
+      }).join('');
       document.querySelectorAll('.carousel-dot').forEach(btn => {
         btn.addEventListener('click', (e) => {
           const idx = Number(e.currentTarget.dataset.index);
@@ -1561,6 +1598,11 @@ export const page = {
 
         currentWeatherData = weather; // Sla op in state voor de grafiekknoppen
         setText('weather-location', placeName);
+
+        // Zorg dat de eerste carousel-knop (gps) de echte plaatsnaam krijgt voor aria/labels
+        locationPages = buildLocationPages();
+        if (locationPages[0]) locationPages[0].label = placeName;
+        updateCarouselIndicator();
 
         const nowTime = Date.now();
         let currentIndex = weather.hourly.time.findIndex(t => new Date(t).getTime() > nowTime);
