@@ -3,14 +3,8 @@ export const page = {
   
   <style>
   @media (prefers-color-scheme: dark) {
-  /* De kaart dimmen */
-  #water-map {
+  #water-map .leaflet-tile {
     filter: invert(100%) hue-rotate(180deg) brightness(0.9) contrast(0.9);
-  }
-  
-  /* De markers corrigeren zodat ze hun eigen kleur behouden */
-  .water-emoji-icon {
-    filter: invert(100%) hue-rotate(180deg);
   }
 }</style>
   
@@ -507,8 +501,9 @@ export const page = {
     const initMapInstance = () => {
       map = L.map('water-map', { zoomControl: false, maxZoom: 18, minZoom: 6 }).setView(userCoords, 13);
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '© OpenStreetMap © CARTO'
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Sources: Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCan, Esri Japan, METI, Esri China (Hong Kong), Esri Korea, Esri (Thailand), NGCC, © OpenStreetMap contributors, and the GIS User Community',
+        maxZoom: 18
       }).addTo(map);
 
       userMarker = L.marker(userCoords, {

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fietsmaatje-cache-v1';
+const CACHE_NAME = 'fietsmaatje-cache-v2';
 
 // Alle paden zijn nu relatief gemaakt met ./ zodat ze keurig binnen de /fietsmaatje/ submap blijven
 const ASSETS_TO_CACHE = [

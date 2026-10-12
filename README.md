@@ -10,7 +10,8 @@ Fietsmaatje is een lichtgewicht, mobielvriendelijke webapplicatie speciaal ontwo
 * **WBGT Sportwaarde:** Live berekening van de *WetBulb Globe Temperature* ( outdoor sportindex) die rekening houdt met luchtvochtigheid, zonnestraling en windkoeling voor een veilige inschatting bij warme dagen.
 
 ### Drinkwaterpunten Kaart
-* Een interactieve, rustige kaartstijl (*CartoDB Voyager* via *Leaflet.js*) die je live GPS-locatie (blauwe stip) toont.
+* Een interactieve stratenkaart (*Esri World Street Map* via *Leaflet.js*) met duidelijk zichtbare straatnamen en je live GPS-locatie (blauwe stip). In dark mode worden alleen de kaarttegels donker gemaakt, zodat de markers goed zichtbaar blijven.
+* De Esri-kaarttegels werken zonder API-key; de verplichte bronvermelding en gebruiksvoorwaarden van Esri blijven wel van toepassing.
 * Laadt realtime duizenden RIVM-drinkwaterpunten in en filtert automatisch de **15 dichtstbijzijnde tappunten** om vastlopers op je telefoon te voorkomen.
 * Inclusief handige "Open in Maps"-knop per kaartje om direct de navigatie te starten.
 
