@@ -17,7 +17,7 @@ export const page = {
         width: 100%;
         color: #1C1C1E;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        padding: max(0px, calc(44px - env(safe-area-inset-top, 0px))) 16px 150px;
+        padding: max(0px, calc(20px - env(safe-area-inset-top, 0px))) 16px 150px;
       }
 
       /* --- PULL TO REFRESH STYLING --- */
